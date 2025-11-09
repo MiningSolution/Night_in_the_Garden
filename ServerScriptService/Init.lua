@@ -1,5 +1,10 @@
-require(script.Parent:WaitForChild('CreateRemotes'))
-require(script.Parent:WaitForChild('RemoteHandlers'))
-require(script.Parent:WaitForChild('PlantGrowthService'))
-require(script.Parent:WaitForChild('DayNightManager'))
-print('✅ Server Init complete')
+-- Init.lua
+require(script.Parent:WaitForChild("CreateRemotes"))
+local PlayerData = require(script.Parent:WaitForChild("PlayerDataManager"))
+PlayerData.BindPlayerLifecycle()
+
+require(script.Parent:WaitForChild("RemoteHandlers"))
+require(script.Parent:WaitForChild("PlantGrowthService"))
+require(script.Parent:WaitForChild("DayNightManager"))
+
+print("[Init] Server initialized")

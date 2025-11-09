@@ -1,5 +1,7 @@
+-- CreateRemotes.lua
 local RS = game:GetService("ReplicatedStorage")
-local function ensure(className, name)
+
+local function ensureEvent(name, className)
     local obj = RS:FindFirstChild(name)
     if not obj then
         obj = Instance.new(className)
@@ -8,15 +10,19 @@ local function ensure(className, name)
     end
     return obj
 end
-ensure("RemoteEvent","InteractWithPlot")
-ensure("RemoteEvent","OnToolUse")
-ensure("RemoteEvent","UpdateCurrency")
-ensure("RemoteEvent","UpdateInventory")
-ensure("RemoteEvent","PlotStateChanged")
-ensure("RemoteEvent","PlotStateUpdated")
-ensure("RemoteEvent","DayNightUpdate")
-ensure("RemoteFunction","GetShopData")
-ensure("RemoteFunction","BuyItem")
-ensure("RemoteFunction","SellItem")
-ensure("RemoteFunction","GetPlayerData")
-print("✅ Remotes ensured")
+
+ensureEvent("InteractWithPlot", "RemoteEvent")
+ensureEvent("OnToolUse", "RemoteEvent")
+
+ensureEvent("GetShopData", "RemoteFunction")
+ensureEvent("BuyItem", "RemoteFunction")
+ensureEvent("SellItem", "RemoteFunction")
+ensureEvent("GetPlayerData", "RemoteFunction")
+
+ensureEvent("UpdateCurrency", "RemoteEvent")
+ensureEvent("UpdateInventory", "RemoteEvent")
+ensureEvent("PlotStateChanged", "RemoteEvent")
+ensureEvent("PlotStateUpdated", "RemoteEvent")
+ensureEvent("DayNightUpdate", "RemoteEvent")
+
+print("[Remotes] Ready")
