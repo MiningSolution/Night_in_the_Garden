@@ -392,8 +392,8 @@ function UIController.Initialize()
     StateManager.subscribe(function(state, oldState, action)
         -- Handle currency updates
         if action.type == "UPDATE_CURRENCY" or action.type == "UPDATE_CURRENCY_FULL" or action.type == "APPLY_SNAPSHOT" then
-            local coins = state.player.currency.coins or 0
-            local dreamSeeds = state.player.currency.dreamSeeds or 0
+            local coins = state.player.currency.Coins or 0
+            local dreamSeeds = state.player.currency.DreamSeeds or 0
             UIController.UpdateCurrency(coins, dreamSeeds, true)
         end
         

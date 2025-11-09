@@ -8,8 +8,8 @@ local StateManager = {}
 local state = {
     player = {
         currency = {
-            coins = 0,
-            dreamSeeds = 0
+            Coins = 0,
+            DreamSeeds = 0
         },
         inventory = {},
         plots = {},
