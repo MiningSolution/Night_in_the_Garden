@@ -2,6 +2,7 @@
 local RS = game:GetService("ReplicatedStorage")
 local PlayerData = require(script.Parent:WaitForChild("PlayerDataManager"))
 local PlantData = require(RS:WaitForChild("PlantData"))
+local GameSettings = require(RS:WaitForChild("GameSettings"))
 
 local PlotStateChanged = RS:WaitForChild("PlotStateChanged")
 local PlotStateUpdated = RS:WaitForChild("PlotStateUpdated")
@@ -27,6 +28,7 @@ end
 
 function M.HandleInteraction(player, plotModel, toolName)
     if typeof(plotModel) ~= "Instance" then return fail("No target") end
+    if type(toolName) ~= "string" then return fail("Invalid tool") end
     local plotId = plotModel.Name
     if not isValidPlotId(plotId) then return fail("Invalid plot: "..tostring(plotId)) end
 
@@ -35,7 +37,8 @@ function M.HandleInteraction(player, plotModel, toolName)
     if char and char:FindFirstChild("HumanoidRootPart") then
         local hrp = char.HumanoidRootPart
         local plotPos = plotModel:GetPivot().Position
-        if (hrp.Position - plotPos).Magnitude > 25 then
+        local maxDistance = (GameSettings.PlotSettings and GameSettings.PlotSettings.InteractionDistance) or 25
+        if (hrp.Position - plotPos).Magnitude > maxDistance then
             return fail("Too far from plot")
         end
     end
@@ -82,18 +85,20 @@ function M.HandleInteraction(player, plotModel, toolName)
         local crop = (plot.PlantId or "carrot").."_crop"
         PlayerData.AddItem(player, crop, 1)
 
-        -- Temporary harvest effect
+        -- Temporary harvest effect (non-blocking)
         PlotStateChanged:FireClient(player, plotId, {State="Harvesting", PlantId=plot.PlantId, GrowthProgress=1, IsWatered=false})
-        task.wait(0.5)
+        task.spawn(function()
+            task.wait(0.5)
 
-        plot.State = "Empty"
-        plot.PlantId = nil
-        plot.GrowthProgress = 0
-        plot.IsWatered = false
+            plot.State = "Empty"
+            plot.PlantId = nil
+            plot.GrowthProgress = 0
+            plot.IsWatered = false
 
-        PlotStateChanged:FireClient(player, plotId, plot)
-        local snap = PlayerData.Snapshot(player)
-        PlotStateUpdated:FireClient(player, {PlotId=plotId, Success=true, Snapshot=snap})
+            PlotStateChanged:FireClient(player, plotId, plot)
+            local snap = PlayerData.Snapshot(player)
+            PlotStateUpdated:FireClient(player, {PlotId=plotId, Success=true, Snapshot=snap})
+        end)
         return ok({Action="Harvested", PlotId=plotId})
     end
 

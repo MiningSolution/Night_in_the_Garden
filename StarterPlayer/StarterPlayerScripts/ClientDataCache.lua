@@ -183,50 +183,38 @@ function ClientDataCache.RequestFullSync()
             end
         end
         
+        -- Count inventory items (dictionary-style table)
+        local inventoryCount = 0
+        for _ in pairs(cachedData.Inventory) do inventoryCount = inventoryCount + 1 end
+        
+        -- Count plots (dictionary-style table)
+        local plotCount = 0
+        for _ in pairs(cachedData.Plots) do plotCount = plotCount + 1 end
+        
         print("💾 Full data cache synchronized:")
         print(string.format("   💰 Coins: %d", cachedData.Currency.Coins))
         print(string.format("   🌙 Dreams: %d", cachedData.Currency.DreamSeeds))
-        print(string.format("   📦 Inventory: %d items", #cachedData.Inventory))
-        print(string.format("   🌱 Plots: %d plots", #cachedData.Plots))
+        print(string.format("   📦 Inventory: %d items", inventoryCount))
+        print(string.format("   🌱 Plots: %d plots", plotCount))
     else
         warn("❌ Failed to sync data:", result)
     end
 end
 
--- Initialize
-task.spawn(function()
-    task.wait(2) -- Wait for game to load
-    ClientDataCache.RequestFullSync()
-end)
-
--- Initialize
-task.spawn(function()
-    task.wait(2) -- Wait for game to load
-    ClientDataCache.RequestFullSync()
-end)
-
--- === Added: ApplySnapshot for full syncs ===
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- === ApplySnapshot for full syncs ===
 local PlotVisualizer = require(script.Parent:WaitForChild("PlotVisualizer"))
 
--- Попробуем подтянуть контроллеры, но мягко
+-- Try to load controllers safely
 local UIController, InventoryController = nil, nil
 pcall(function()
     UIController = require(script.Parent.Controllers:WaitForChild("UIController"))
     InventoryController = require(script.Parent.Controllers:WaitForChild("InventoryController"))
 end)
 
--- Гарантируем, что локальный кеш есть
-cachedData = cachedData or {
-    Currency = {Coins = 0, DreamSeeds = 0},
-    Inventory = {},
-    Plots = {}
-}
-
 function ClientDataCache.ApplySnapshot(snapshot)
     if type(snapshot) ~= "table" then return end
 
-    -- Валюта
+    -- Currency
     if snapshot.Currency then
         cachedData.Currency = snapshot.Currency
         if UIController and UIController.UpdateCurrency then
@@ -237,7 +225,7 @@ function ClientDataCache.ApplySnapshot(snapshot)
         end
     end
 
-    -- Инвентарь
+    -- Inventory
     if snapshot.Inventory then
         cachedData.Inventory = snapshot.Inventory
         if InventoryController and InventoryController.UpdateInventory then
@@ -245,7 +233,7 @@ function ClientDataCache.ApplySnapshot(snapshot)
         end
     end
 
-    -- Грядки
+    -- Plots
     if snapshot.Plots then
         cachedData.Plots = snapshot.Plots
         for plotId, plotData in pairs(snapshot.Plots) do
@@ -255,5 +243,11 @@ function ClientDataCache.ApplySnapshot(snapshot)
         end
     end
 end
+
+-- Initialize: Request full sync on load
+task.spawn(function()
+    task.wait(2) -- Wait for game to load
+    ClientDataCache.RequestFullSync()
+end)
 
 return ClientDataCache

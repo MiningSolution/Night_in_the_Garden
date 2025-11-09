@@ -18,6 +18,7 @@ local M = {
         MinY = -5,                        -- минимальная высота спавна
         MaxY = 50,                        -- максимальная высота спавна
         PlayerCollectCooldownSec = 1.0,   -- задержка между сборами у игрока
+        CollectDistance = 10,             -- расстояние для сбора духа (в studs)
         RewardMin = 1,                    -- минимальное количество DreamSeeds за сбор
         RewardMax = 3,                    -- максимальное количество DreamSeeds
         Colors = {
@@ -25,6 +26,11 @@ local M = {
             Rare   = Color3.fromRGB(180, 120, 255),
             Epic   = Color3.fromRGB(255, 200, 120),
         },
+    },
+    
+    -- 🌱 Plot System configuration
+    PlotSettings = {
+        InteractionDistance = 25,         -- максимальное расстояние для взаимодействия с грядкой (в studs)
     },
 }
 

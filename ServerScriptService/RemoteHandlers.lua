@@ -15,7 +15,7 @@ local GetPlayerData = RS:WaitForChild("GetPlayerData")
 local _rl = {}
 local RATE_LIMIT = 5 -- req/s per method
 local function rate_ok(player, key)
-    local t = os.clock()
+    local t = tick() -- Use tick() for real-time tracking, not os.clock()
     _rl[player] = _rl[player] or {}
     local r = _rl[player][key] or {t=t, n=0}
     if t - r.t >= 1 then r.t, r.n = t, 0 end
@@ -23,6 +23,14 @@ local function rate_ok(player, key)
     _rl[player][key] = r
     return r.n <= RATE_LIMIT
 end
+
+-- Cleanup rate limit data when player leaves
+local Players = game:GetService("Players")
+Players.PlayerRemoving:Connect(function(player)
+    if _rl[player] then
+        _rl[player] = nil
+    end
+end)
 
 local function ok(payload) payload = payload or {}; payload.Success=true; return payload end
 local function fail(msg) return {Success=false, Error=tostring(msg or "Unknown")} end

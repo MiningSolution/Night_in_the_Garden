@@ -112,7 +112,8 @@ local function withinCollectDistance(player: Player, part: BasePart)
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if not (hrp and part) then return false end
-    return (hrp.Position - part.Position).Magnitude <= 10
+    local distance = SpiritCfg.CollectDistance or 10
+    return (hrp.Position - part.Position).Magnitude <= distance
 end
 
 local function canCollect(player: Player)
@@ -196,6 +197,9 @@ local function buildSpiritModel(spiritType)
 end
 
 local function onCollect(player: Player, spiritId: string, spirit: Model, sType)
+    -- Check if spirit is still active (race condition prevention)
+    if not active[spiritId] then return end
+    
     -- Cooldown
     if not canCollect(player) then return end
 
@@ -203,6 +207,9 @@ local function onCollect(player: Player, spiritId: string, spirit: Model, sType)
     local orb = spirit:FindFirstChild("Orb")
     if not (orb and orb:IsA("BasePart")) then return end
     if not withinCollectDistance(player, orb) then return end
+    
+    -- Double-check spirit is still active before processing
+    if not active[spiritId] then return end
 
     -- Reward
     local amount = calcReward(sType)
@@ -338,7 +345,7 @@ end
 
 -- Clean up cooldowns on player leave
 Players.PlayerRemoving:Connect(function(player)
-    if lastCollect then
+    if lastCollect[player.UserId] then
         lastCollect[player.UserId] = nil
     end
 end)

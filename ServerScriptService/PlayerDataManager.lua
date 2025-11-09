@@ -21,8 +21,36 @@ local function Migrate(profile)
     end
 end
 
+-- Retry logic for DataStore operations
+local function loadProfileWithRetry(player, maxRetries)
+    maxRetries = maxRetries or 3
+    local retryDelay = 1
+    
+    for attempt = 1, maxRetries do
+        local success, profile = pcall(function()
+            return ProfileStore:LoadProfileAsync("Player_"..player.UserId, "ForceLoad")
+        end)
+        
+        if success and profile then
+            return profile
+        end
+        
+        if attempt < maxRetries then
+            warn(string.format("[PlayerData] Failed to load profile for %s (attempt %d/%d), retrying...", 
+                player.Name, attempt, maxRetries))
+            task.wait(retryDelay)
+            retryDelay = retryDelay * 2 -- Exponential backoff
+        else
+            warn(string.format("[PlayerData] Failed to load profile for %s after %d attempts", 
+                player.Name, maxRetries))
+        end
+    end
+    
+    return nil
+end
+
 function M.InitPlayer(player)
-    local profile = ProfileStore:LoadProfileAsync("Player_"..player.UserId, "ForceLoad")
+    local profile = loadProfileWithRetry(player)
     if not profile then
         player:Kick("Failed to load profile. Try again later.")
         return
