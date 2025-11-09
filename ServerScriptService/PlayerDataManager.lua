@@ -127,6 +127,14 @@ function M.TryConsumeItem(p, itemId, qty)
     return true
 end
 
+function M.AddDreamSeeds(player, amount)
+    local data = M.Get(player)
+    if not data then return 0 end
+    amount = math.max(0, math.floor(amount or 0))
+    data.Currency.DreamSeeds = (data.Currency.DreamSeeds or 0) + amount
+    return data.Currency.DreamSeeds
+end
+
 -- Plots
 function M.GetPlot(p, plotId)
     local d = M.Get(p); if not d then return nil end

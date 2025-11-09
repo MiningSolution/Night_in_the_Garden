@@ -2,6 +2,8 @@
 local RS = game:GetService("ReplicatedStorage")
 local GameSettings = require(RS:WaitForChild("GameSettings"))
 local DayNightUpdate = RS:WaitForChild("DayNightUpdate")
+-- вверху файла:
+local SpiritManager = require(script.Parent:WaitForChild("SpiritManager"))
 
 local M = {}
 function M.Start()
@@ -14,8 +16,14 @@ function M.Start()
         local progress = elapsed / duration
         DayNightUpdate:FireAllClients(phase, progress)
         if progress >= 1 then
-            phase = (phase=="Day") and "Night" or "Day"
             start = os.clock()
+            phase = (phase=="Day") and "Night" or "Day"
+            -- ... внутри цикла смены фаз:
+                if phase == "Night" then
+                     SpiritManager.SetPhaseNight(true)
+                else
+                    SpiritManager.SetPhaseNight(false)
+                end
         end
     end
 end
