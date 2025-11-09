@@ -10,6 +10,9 @@ local Types = require(script.Parent.SpiritTypes)
 
 local M = {}
 
+local GRID_SIZE = 50
+local spatialGrid = {}
+
 M.activeSpirits = {} -- [id] = {model, type, spawnedAt}
 local spiritFolder = nil
 

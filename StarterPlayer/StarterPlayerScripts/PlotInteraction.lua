@@ -23,6 +23,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 local TweenService = game:GetService("TweenService")
 
 -- Get references
