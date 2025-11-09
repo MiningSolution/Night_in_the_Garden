@@ -289,13 +289,15 @@ function UIController.ShowNotification(message, messageType, duration)
         error = Color3.fromRGB(220, 80, 80),
         info = Color3.fromRGB(100, 150, 255),
         warning = Color3.fromRGB(255, 180, 50)
+        spirit = Color3.fromRGB(180, 120, 255)  -- Фиолетовый для духов
     }
     
     local icons = {
         success = "✅",
         error = "❌",
         info = "ℹ️",
-        warning = "⚠️"
+        warning = "⚠️",
+        spirit = "👻"  -- Призрак для духов
     }
     
     local color = colors[messageType] or colors.info

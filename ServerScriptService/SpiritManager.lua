@@ -1,5 +1,6 @@
 -- ServerScriptService/SpiritManager.lua
 -- Night-only Spirit spawner with safe server-side rewards (DreamSeeds)
+-- VERSION: 1.1 (Fixed syntax error + added client feedback)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,6 +14,7 @@ local PlayerData = require(script.Parent:WaitForChild("PlayerDataManager"))
 
 -- RemoteEvent for async currency updates (kept by design)
 local UpdateCurrency = ReplicatedStorage:FindFirstChild("UpdateCurrency")
+local SpiritCollected = ReplicatedStorage:WaitForChild("SpiritCollected", 5) -- NEW: Client feedback
 
 local M = {}
 
@@ -38,7 +40,7 @@ local SpiritCfg = GameSettings.SpiritSettings or {
 
 -- Types of spirits (weights for random spawn)
 local SpiritTypes = {
-    { id = "wisp_common", displayName = "Wisp", rarity = "Common", weight = 70, reward = 0 }, -- reward 0 => use random range
+    { id = "wisp_common", displayName = "Wisp", rarity = "Common", weight = 70, reward = 0 },
     { id = "wisp_rare",   displayName = "Bright Wisp", rarity = "Rare",   weight = 25, reward = 0 },
     { id = "wisp_epic",   displayName = "Ancient Wisp",rarity = "Epic",   weight = 5,  reward = 0 },
 }
@@ -83,7 +85,12 @@ end
 local function getRandomXZ(center: Vector3, radius: number)
     local ang = math.random() * math.pi * 2
     local r = math.random() * radius
-    return Vector3.new(center.X + math.cos(ang)*r, center.Y, center.Z + math.sin(ang)*r)
+    local yOffset = math.random(-5, 15) -- Add vertical variety
+    return Vector3.new(
+        center.X + math.cos(ang)*r, 
+        center.Y + yOffset, 
+        center.Z + math.sin(ang)*r
+    )
 end
 
 local function getAnyPlayerPosition()
@@ -128,6 +135,19 @@ local function calcReward(spiritType)
     return math.random(minR, maxR)
 end
 
+-- Anti-clustering: prevent spawning too close to existing spirits
+local function tooCloseToExisting(pos)
+    for _, rec in pairs(active) do
+        if rec.model and rec.model:FindFirstChild("Orb") then
+            local orbPos = rec.model.Orb.Position
+            if (orbPos - pos).Magnitude < 15 then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- =========================
 -- Spawn / Collect / Cleanup
 -- =========================
@@ -162,10 +182,13 @@ local function buildSpiritModel(spiritType)
     local prompt = Instance.new("ProximityPrompt")
     prompt.Name = "CollectPrompt"
     prompt.ActionText = "Soothe Spirit"
-    prompt.ObjectText = spiritType.displayName
+    prompt.ObjectText = spiritType.displayName .. " (" .. spiritType.rarity .. ")" -- Show rarity
     prompt.MaxActivationDistance = 12
     prompt.HoldDuration = 0.35
     prompt.RequiresLineOfSight = false
+    prompt.KeyboardKeyCode = Enum.KeyCode.E
+    prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+    prompt.UIOffset = Vector2.new(0, 50) -- Raise UI above spirit
     prompt.Parent = orb
 
     mdl.PrimaryPart = orb
@@ -185,8 +208,14 @@ local function onCollect(player: Player, spiritId: string, spirit: Model, sType)
     local amount = calcReward(sType)
     local newBalance = PlayerData.AddDreamSeeds(player, amount)
 
+    -- Update currency (async)
     if UpdateCurrency then
         UpdateCurrency:FireClient(player, "DreamSeeds", newBalance or 0)
+    end
+
+    -- NEW: Client feedback with spirit type and amount
+    if SpiritCollected then
+        SpiritCollected:FireClient(player, sType.displayName, sType.rarity, amount)
     end
 
     -- Stats (optional)
@@ -215,9 +244,16 @@ local function spawnOnce()
     local spiritType = chooseSpiritType()
     local id = HttpService:GenerateGUID(false)
 
-    -- Spawn near any player
+    -- Spawn near any player with anti-clustering
     local center = getAnyPlayerPosition()
     local pos = clampY(getRandomXZ(center, SpiritCfg.SpawnRadius or 60))
+    
+    -- Retry if too close to existing spirits
+    local attempts = 0
+    while tooCloseToExisting(pos) and attempts < 5 do
+        pos = clampY(getRandomXZ(center, SpiritCfg.SpawnRadius or 60))
+        attempts += 1
+    end
 
     local model, prompt = buildSpiritModel(spiritType)
     model:SetPrimaryPartCFrame(CFrame.new(pos))
@@ -297,7 +333,14 @@ function M.SpawnOnce(typeId: string?)
         chooseSpiritType = old
     else
         spawnOnce()
-    }
+    end  -- ✅ FIXED: Added missing "end"
 end
+
+-- Clean up cooldowns on player leave
+Players.PlayerRemoving:Connect(function(player)
+    if lastCollect then
+        lastCollect[player.UserId] = nil
+    end
+end)
 
 return M
