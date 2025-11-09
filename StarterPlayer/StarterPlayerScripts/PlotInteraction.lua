@@ -50,7 +50,7 @@ local clickDetector = interactPart:FindFirstChildOfClass("ClickDetector")
 
 if not clickDetector then
     clickDetector = Instance.new("ClickDetector")
-    clickDetector.MaxActivationDistance = 15 -- 15 studs range
+    clickDetector.MaxActivationDistance = Constants.PLOT.CLIENT_CLICK_DISTANCE
     clickDetector.Parent = interactPart
     print("✅ Created ClickDetector for", plot.Name)
 else
@@ -73,11 +73,14 @@ highlight.OutlineTransparency = 1
 highlight.Enabled = false
 highlight.Parent = plot
 
+-- P2-4: Use constant from Constants
+local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
+
 -- Plot state (can be extended)
 local plotState = {
     isHovered = false,
     lastInteraction = 0,
-    cooldown = 0.5 -- Half second cooldown between interactions
+    cooldown = Constants.PLOT.CLIENT_COOLDOWN
 }
 
 --[[

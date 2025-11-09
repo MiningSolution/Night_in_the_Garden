@@ -155,6 +155,33 @@ function M.TryConsumeItem(p, itemId, qty)
     return true
 end
 
+-- P0-3: Atomic check-and-consume operation (prevents race conditions)
+-- This combines HasItem check and TryConsumeItem into one atomic operation
+function M.TryConsumeItemAtomic(p, itemId, qty)
+    local d = M.Get(p)
+    if not d then 
+        return false, "No data" 
+    end
+    
+    qty = math.max(1, math.floor(tonumber(qty) or 1))
+    local have = d.Inventory[itemId] or 0
+    
+    -- Atomic: check and consume in one step (no race condition window)
+    if have < qty then 
+        return false, "Not enough items" 
+    end
+    
+    -- Consume immediately
+    local left = have - qty
+    if left > 0 then 
+        d.Inventory[itemId] = left 
+    else 
+        d.Inventory[itemId] = nil 
+    end
+    
+    return true, nil
+end
+
 function M.AddDreamSeeds(player, amount)
     local data = M.Get(player)
     if not data then return 0 end

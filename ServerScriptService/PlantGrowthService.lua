@@ -8,6 +8,10 @@ local PlotStateUpdated = RS:WaitForChild("PlotStateUpdated")
 
 local M = {}
 
+-- P0-4: Protection against multiple Start() calls (memory leak fix)
+local growthThread = nil
+local isRunning = false
+
 local function updatePlayerPlots(plr)
     local data = PlayerData.Get(plr); if not data then return end
     for plotId, plot in pairs(data.Plots) do
@@ -42,13 +46,58 @@ local function updatePlayerPlots(plr)
 end
 
 function M.Start()
-    while true do
-        task.wait(1)
-        for _, plr in ipairs(Players:GetPlayers()) do
-            updatePlayerPlots(plr)
+    -- P0-4: Prevent multiple starts (memory leak protection)
+    if isRunning then 
+        warn("[PlantGrowth] Already running! Ignoring duplicate Start() call.")
+        return false
+    end
+    
+    isRunning = true
+    print("[PlantGrowth] Starting growth service...")
+    
+    growthThread = task.spawn(function()
+        while isRunning do
+            task.wait(1)
+            
+            for _, plr in ipairs(Players:GetPlayers()) do
+                local success, err = pcall(function()
+                    updatePlayerPlots(plr)
+                end)
+                
+                if not success then
+                    warn("[PlantGrowth] Error updating player:", plr.Name, err)
+                end
+            end
         end
+        print("[PlantGrowth] Stopped.")
+    end)
+    
+    return true
+end
+
+-- P0-4: Stop function for cleanup
+function M.Stop()
+    if not isRunning then 
+        return 
+    end
+    
+    print("[PlantGrowth] Stopping growth service...")
+    isRunning = false
+    
+    if growthThread then
+        task.cancel(growthThread)
+        growthThread = nil
     end
 end
 
-task.spawn(M.Start)
+-- P0-4: Cleanup on game close
+game:BindToClose(function()
+    M.Stop()
+end)
+
+-- Auto-start (only once)
+task.spawn(function()
+    M.Start()
+end)
+
 return M

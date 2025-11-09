@@ -23,6 +23,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local StateManager = require(script.Parent.Parent:WaitForChild("StateManager"))
 
 local UIController = {}
 
@@ -387,6 +388,21 @@ function UIController.Initialize()
     print("🎮 Initializing UIController...")
     print("========================================")
     
+    -- P1-2: Subscribe to StateManager changes
+    StateManager.subscribe(function(state, oldState, action)
+        -- Handle currency updates
+        if action.type == "UPDATE_CURRENCY" or action.type == "UPDATE_CURRENCY_FULL" or action.type == "APPLY_SNAPSHOT" then
+            local coins = state.player.currency.coins or 0
+            local dreamSeeds = state.player.currency.dreamSeeds or 0
+            UIController.UpdateCurrency(coins, dreamSeeds, true)
+        end
+        
+        -- Handle day/night updates
+        if action.type == "UPDATE_DAY_NIGHT" then
+            UIController.UpdateDayNight(state.ui.dayNightPhase, state.ui.dayNightProgress)
+        end
+    end)
+    
     -- Bind keyboard shortcuts
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         -- Don't process input if player is typing in chat
@@ -404,21 +420,22 @@ function UIController.Initialize()
         end
     end)
     
-    -- Set initial currency values (starting balance)
-    UIController.UpdateCurrency(50, 0, false) -- No animation on init
+    -- Set initial currency values from StateManager
+    local coins = StateManager.getCurrency("Coins") or 0
+    local dreamSeeds = StateManager.getCurrency("DreamSeeds") or 0
+    UIController.UpdateCurrency(coins, dreamSeeds, false) -- No animation on init
     
-    -- Set initial day/night state (start at day, 0% progress)
-    UIController.UpdateDayNight("Day", 0)
+    -- Set initial day/night state from StateManager
+    local phase, progress = StateManager.getDayNight()
+    UIController.UpdateDayNight(phase or "Day", progress or 0)
     
     print("✅ Keyboard shortcuts registered:")
     print("   [I] - Toggle Inventory")
     print("   [B] - Toggle Shop")
     print("   [ESC] - Close all UIs")
     print("")
-    print("✅ Initial values set:")
-    print("   💰 Coins: 50")
-    print("   🌙 Dream Seeds: 0")
-    print("   ☀️ Phase: Day (0%)")
+    print("✅ StateManager subscription active")
+    print("✅ Initial values loaded from StateManager")
     print("========================================")
     print("✨ UIController ready!")
     print("========================================")

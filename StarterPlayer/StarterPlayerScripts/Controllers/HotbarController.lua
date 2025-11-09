@@ -34,13 +34,18 @@ if HUD then
     hotbar = HUD:WaitForChild("Hotbar", 5)
 end
 
--- RemoteEvent for plot interaction
+-- RemoteEvents for plot interaction and tool syncing
 local InteractWithPlot
+local EquipTool
 
 task.spawn(function()
     InteractWithPlot = ReplicatedStorage:WaitForChild("InteractWithPlot", 30)
+    EquipTool = ReplicatedStorage:WaitForChild("EquipTool", 30)
     if InteractWithPlot then
         print("✅ InteractWithPlot RemoteEvent connected")
+    end
+    if EquipTool then
+        print("✅ EquipTool RemoteEvent connected")
     end
 end)
 
@@ -149,7 +154,30 @@ function HotbarController.EquipSlot(slotNumber)
     local toolName = slots[slotNumber].tool
     local displayName = slots[slotNumber].displayName
     
-    print(string.format("🔧 Equipped slot %d: %s", slotNumber, displayName))
+    -- Convert tool name to server format
+    -- Map client tool names to server item names
+    local serverToolName = toolName
+    if toolName == "WateringCan" then
+        serverToolName = "basic_watering_can"
+    elseif toolName:match("^Seed_") then
+        -- Convert "Seed_Carrot" to "carrot_seed"
+        local plantName = toolName:gsub("^Seed_", ""):lower()
+        serverToolName = plantName .. "_seed"
+    elseif toolName == "Harvest" then
+        serverToolName = "Harvest"
+    end
+    
+    -- Sync to server
+    if EquipTool then
+        local success, err = pcall(function()
+            EquipTool:FireServer(serverToolName)
+        end)
+        if not success then
+            warn("⚠️ Failed to sync tool to server:", err)
+        end
+    end
+    
+    print(string.format("🔧 Equipped slot %d: %s (server: %s)", slotNumber, displayName, serverToolName))
     
     -- Optional: Show notification
     local UIController = script.Parent:FindFirstChild("UIController")

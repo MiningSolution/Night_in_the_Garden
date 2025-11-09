@@ -21,6 +21,9 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local StateManager = require(script.Parent.Parent:WaitForChild("StateManager"))
+local Debounce = require(script.Parent.Parent.Utils.Debounce)
+local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 
 local InventoryController = {}
 
@@ -46,15 +49,7 @@ local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(Re
 
 -- State
 local currentTab = "Seeds" -- "Seeds" or "Items"
-local cachedInventory = {
-    -- Sample data for testing
-    ["carrot_seed"] = 10,
-    ["tomato_seed"] = 5,
-    ["wheat_seed"] = 3,
-    ["watering_can"] = 1,
-    ["lantern"] = 1,
-    ["fertilizer"] = 8
-}
+local cachedInventory = {} -- P1-2: Will be synced from StateManager
 
 -- Item categories
 local SEED_KEYWORDS = {"seed", "carrot", "tomato", "wheat", "pumpkin", "moonflower", "starberry"}
@@ -126,8 +121,63 @@ local function GetItemDisplayData(itemName)
 end
 
 --[[
+    Update existing slot instead of recreating (P1-4: Performance optimization)
+    @param slot (Frame) - Existing slot frame
+    @param itemName (string) - Item name
+    @param quantity (number) - Item quantity
+]]
+local function UpdateSlot(slot, itemName, quantity)
+    -- Update quantity badge
+    local qtyBadge = slot:FindFirstChild("QuantityBadge")
+    
+    if quantity > 1 then
+        if not qtyBadge then
+            -- Create badge if needed
+            qtyBadge = Instance.new("Frame")
+            qtyBadge.Name = "QuantityBadge"
+            qtyBadge.Size = UDim2.new(0, 35, 0, 18)
+            qtyBadge.Position = UDim2.new(1, -3, 1, -3)
+            qtyBadge.AnchorPoint = Vector2.new(1, 1)
+            qtyBadge.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            qtyBadge.BackgroundTransparency = 0.4
+            qtyBadge.BorderSizePixel = 0
+            qtyBadge.Parent = slot
+            
+            local badgeCorner = Instance.new("UICorner")
+            badgeCorner.CornerRadius = UDim.new(0, 4)
+            badgeCorner.Parent = qtyBadge
+            
+            local qtyLabel = Instance.new("TextLabel")
+            qtyLabel.Size = UDim2.new(1, 0, 1, 0)
+            qtyLabel.BackgroundTransparency = 1
+            qtyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            qtyLabel.TextSize = 12
+            qtyLabel.Font = Enum.Font.GothamBold
+            qtyLabel.Parent = qtyBadge
+        end
+        
+        local qtyLabel = qtyBadge:FindFirstChild("TextLabel")
+        if qtyLabel then
+            qtyLabel.Text = "×" .. quantity
+        end
+    else
+        -- Remove badge if quantity is 1 or less
+        if qtyBadge then
+            qtyBadge:Destroy()
+        end
+    end
+    
+    -- Update item name if changed
+    local nameLabel = slot:FindFirstChild("ItemName")
+    if nameLabel then
+        local itemData = GetItemDisplayData(itemName)
+        nameLabel.Text = itemData.displayName
+    end
+end
+
+--[[
     Refresh inventory grid based on current tab
-    Clears existing slots and creates new ones
+    P1-4: Optimized to use incremental updates instead of full recreation
 ]]
 function InventoryController.RefreshGrid()
     if not itemGrid then
@@ -135,14 +185,7 @@ function InventoryController.RefreshGrid()
         return
     end
     
-    print("🔄 Refreshing inventory grid (Tab: " .. currentTab .. ")...")
-    
-    -- Clear existing slots
-    for _, child in ipairs(itemGrid:GetChildren()) do
-        if child:IsA("Frame") and child.Name == "ItemSlot" then
-            child:Destroy()
-        end
-    end
+    print("🔄 Refreshing inventory grid (incremental, Tab: " .. currentTab .. ")...")
     
     -- Filter items by current tab
     local displayItems = {}
@@ -162,13 +205,44 @@ function InventoryController.RefreshGrid()
         return a.name < b.name
     end)
     
-    -- Create slots
-    for i, item in ipairs(displayItems) do
-        local slot = InventoryController.CreateSlot(item.name, item.qty)
-        slot.Parent = itemGrid
+    -- P1-4: Get existing slots (incremental update)
+    local existingSlots = {}
+    for _, child in ipairs(itemGrid:GetChildren()) do
+        if child:IsA("Frame") and child.Name == "ItemSlot" then
+            local itemNameAttr = child:GetAttribute("ItemName")
+            if itemNameAttr then
+                existingSlots[itemNameAttr] = child
+            end
+        end
     end
     
-    print(string.format("✅ Created %d item slots in %s tab", #displayItems, currentTab))
+    -- P1-4: Update/create slots incrementally
+    local usedSlots = {}
+    
+    for i, item in ipairs(displayItems) do
+        local existingSlot = existingSlots[item.name]
+        
+        if existingSlot then
+            -- Update existing slot
+            UpdateSlot(existingSlot, item.name, item.qty)
+            usedSlots[item.name] = true
+        else
+            -- Create new slot
+            local slot = InventoryController.CreateSlot(item.name, item.qty)
+            slot:SetAttribute("ItemName", item.name) -- Store item name for future lookups
+            slot.Parent = itemGrid
+            usedSlots[item.name] = true
+        end
+    end
+    
+    -- P1-4: Remove slots that are no longer needed
+    for itemName, slot in pairs(existingSlots) do
+        if not usedSlots[itemName] then
+            slot:Destroy()
+        end
+    end
+    
+    print(string.format("✅ Grid refreshed: %d items displayed (incremental update)", #displayItems))
 end
 
 --[[
@@ -432,7 +506,7 @@ function InventoryController.SwitchTab(tabName)
 end
 
 --[[
-    Update cached inventory data
+    Update cached inventory data (P1-2: Uses StateManager)
     @param newInventory (table) - New inventory data from server
 ]]
 function InventoryController.UpdateInventory(newInventory)
@@ -442,7 +516,12 @@ function InventoryController.UpdateInventory(newInventory)
     end
     
     cachedInventory = newInventory
-    print("💾 Inventory cache updated:", #newInventory, "items")
+    
+    -- Count items (dictionary-style table)
+    local itemCount = 0
+    for _ in pairs(newInventory) do itemCount = itemCount + 1 end
+    
+    print("💾 Inventory cache updated:", itemCount, "items")
     
     -- Refresh display if inventory is open
     if inventoryUI and inventoryUI.Enabled then
@@ -506,7 +585,7 @@ end
 
 --[[
     Initialize inventory controller
-    Sets up tab buttons and connections
+    Sets up tab buttons, connections, and StateManager subscription
 ]]
 function InventoryController.Initialize()
     print("========================================")
@@ -518,43 +597,66 @@ function InventoryController.Initialize()
         return
     end
     
-    -- Setup tab buttons
+    -- P1-2: Subscribe to StateManager changes
+    StateManager.subscribe(function(state, oldState, action)
+        -- Handle inventory updates
+        if action.type == "UPDATE_INVENTORY" or action.type == "APPLY_SNAPSHOT" then
+            local newInventory = state.player.inventory or {}
+            InventoryController.UpdateInventory(newInventory)
+        end
+    end)
+    
+    -- Load initial inventory from StateManager
+    cachedInventory = StateManager.getInventory()
+    
+    -- Setup tab buttons (P2-5: Debounced)
     local tabContainer = inventoryFrame:FindFirstChild("TabContainer")
     if tabContainer then
         local seedsTab = tabContainer:FindFirstChild("SeedsTab")
         local itemsTab = tabContainer:FindFirstChild("ItemsTab")
         
+        local debouncedSwitchTab = Debounce.create(function(tabName)
+            InventoryController.SwitchTab(tabName)
+        end, Constants.ANIMATION.FAST_TWEEN_DURATION)
+        
         if seedsTab then
             seedsTab.MouseButton1Click:Connect(function()
-                InventoryController.SwitchTab("Seeds")
+                debouncedSwitchTab("Seeds")
             end)
         end
         
         if itemsTab then
             itemsTab.MouseButton1Click:Connect(function()
-                InventoryController.SwitchTab("Items")
+                debouncedSwitchTab("Items")
             end)
         end
     end
     
-    -- Setup close button
+    -- Setup close button (P2-5: Debounced)
     local headerBar = inventoryFrame:FindFirstChild("HeaderBar")
     if headerBar then
         local closeButton = headerBar:FindFirstChild("CloseButton")
         if closeButton then
-            closeButton.MouseButton1Click:Connect(function()
+            local debouncedClose = Debounce.create(function()
                 local UIController = require(script.Parent.UIController)
                 UIController.ToggleInventory()
-            end)
+            end, Constants.ANIMATION.FAST_TWEEN_DURATION)
+            
+            closeButton.MouseButton1Click:Connect(debouncedClose)
         end
     end
     
     -- Initial grid refresh
     InventoryController.RefreshGrid()
     
+    -- Count items
+    local itemCount = 0
+    for _ in pairs(cachedInventory) do itemCount = itemCount + 1 end
+    
     print("✅ Tab buttons configured")
     print("✅ Close button configured")
-    print(string.format("📊 Cached items: %d", #cachedInventory))
+    print("✅ StateManager subscription active")
+    print(string.format("📊 Cached items: %d", itemCount))
     print("========================================")
     print("✨ InventoryController ready!")
     print("========================================")

@@ -1,6 +1,6 @@
 -- ServerScriptService/AdminCommands.lua
 local Players = game:GetService("Players")
-local SpiritManager = require(script.Parent:WaitForChild("SpiritManager"))
+local SpiritManager = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritManager"))
 
 local ADMINS = { -- укажи свои UserId
     1234567890,

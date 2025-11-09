@@ -1,131 +1,84 @@
 -- StarterPlayer / StarterPlayerScripts / ClientDataCache
--- Caches player data from server to avoid repeated RemoteFunction calls
+-- P1-2: Refactored to use StateManager as single source of truth
+-- Provides backward-compatible API while using StateManager internally
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local StateManager = require(script.Parent:WaitForChild("StateManager"))
 
 local ClientDataCache = {}
 
--- State
-local cachedData = {
-    Currency = {
-        Coins = 50,
-        DreamSeeds = 0
-    },
-    Inventory = {
-        ["carrot_seed"] = 5,
-        ["basic_watering_can"] = 1,
-        ["basic_lantern"] = 1
-    },
-    Plots = {
-        ["Plot1"] = {
-            State = "Empty",
-            PlantId = nil,
-            GrowthProgress = 0,
-            IsWatered = false,
-            TimeRemaining = nil
-        },
-        ["Plot2"] = {
-            State = "Empty",
-            PlantId = nil,
-            GrowthProgress = 0,
-            IsWatered = false,
-            TimeRemaining = nil
-        },
-        ["Plot3"] = {
-            State = "Empty",
-            PlantId = nil,
-            GrowthProgress = 0,
-            IsWatered = false,
-            TimeRemaining = nil
-        }
-    }
-}
-
 --[[
-    Get cached currency
+    Get cached currency (P1-2: Uses StateManager)
 ]]
 function ClientDataCache.GetCurrency(currencyType)
-    return cachedData.Currency[currencyType] or 0
+    return StateManager.getCurrency(currencyType)
 end
 
 --[[
-    Get cached inventory
+    Get cached inventory (P1-2: Uses StateManager)
 ]]
 function ClientDataCache.GetInventory()
-    return cachedData.Inventory
+    return StateManager.getInventory()
 end
 
 --[[
-    Get cached plot data
+    Get cached plot data (P1-2: Uses StateManager)
     @param plotId (string) - Plot identifier
     @return table - Plot data
 ]]
 function ClientDataCache.GetPlot(plotId)
-    return cachedData.Plots[plotId]
+    return StateManager.getPlot(plotId)
 end
 
 --[[
-    Get all cached plots
+    Get all cached plots (P1-2: Uses StateManager)
     @return table - All plot data
 ]]
 function ClientDataCache.GetAllPlots()
-    return cachedData.Plots
+    return StateManager.getAllPlots()
 end
 
 --[[
-    Update cache when server sends changes
+    Update cache when server sends changes (P1-2: Uses StateManager dispatch)
     @param currencyType (string) - "Coins" or "DreamSeeds"
     @param newValue (number) - New currency value
-    @param shouldNotifyUI (boolean) - Whether to update UI (default: true)
+    @param shouldNotifyUI (boolean) - Deprecated, kept for compatibility
 ]]
 function ClientDataCache.UpdateCurrency(currencyType, newValue, shouldNotifyUI)
-    if shouldNotifyUI == nil then shouldNotifyUI = true end
-    
-    cachedData.Currency[currencyType] = newValue
-    
-    -- Notify UI
-    if shouldNotifyUI then
-        local UIController = require(script.Parent.Controllers.UIController)
-        UIController.UpdateCurrency(
-            cachedData.Currency.Coins,
-            cachedData.Currency.DreamSeeds
-        )
-    end
+    -- P1-2: Dispatch action to StateManager
+    StateManager.dispatch({
+        type = "UPDATE_CURRENCY",
+        currencyType = currencyType,
+        value = newValue
+    })
 end
 
 --[[
-    Update inventory cache
+    Update inventory cache (P1-2: Uses StateManager dispatch)
     @param newInventory (table) - New inventory data
-    @param shouldNotifyUI (boolean) - Whether to update UI (default: true)
+    @param shouldNotifyUI (boolean) - Deprecated, kept for compatibility
 ]]
 function ClientDataCache.UpdateInventory(newInventory, shouldNotifyUI)
-    if shouldNotifyUI == nil then shouldNotifyUI = true end
-    
-    cachedData.Inventory = newInventory
-    
-    -- Notify inventory UI
-    if shouldNotifyUI then
-        local InventoryController = require(script.Parent.Controllers.InventoryController)
-        InventoryController.UpdateInventory(newInventory)
-    end
+    -- P1-2: Dispatch action to StateManager
+    StateManager.dispatch({
+        type = "UPDATE_INVENTORY",
+        inventory = newInventory
+    })
 end
 
 --[[
-    Update plot cache
+    Update plot cache (P1-2: Uses StateManager dispatch)
     @param plotId (string) - Plot identifier
     @param plotData (table) - New plot data
 ]]
 function ClientDataCache.UpdatePlot(plotId, plotData)
-    -- Create plot entry if doesn't exist
-    if not cachedData.Plots[plotId] then
-        cachedData.Plots[plotId] = {}
-    end
-    
-    -- Update plot data
-    for key, value in pairs(plotData) do
-        cachedData.Plots[plotId][key] = value
-    end
+    -- P1-2: Dispatch action to StateManager
+    StateManager.dispatch({
+        type = "UPDATE_PLOT",
+        plotId = plotId,
+        plotData = plotData
+    })
     
     print(string.format("💾 Cache updated: %s → %s (%.0f%%)", 
         plotId, 
@@ -135,7 +88,20 @@ function ClientDataCache.UpdatePlot(plotId, plotData)
 end
 
 --[[
-    Request full data refresh from server
+    Update day/night state (P1-2: New function for StateManager)
+    @param phase (string) - "Day" or "Night"
+    @param progress (number) - Progress through phase (0-1)
+]]
+function ClientDataCache.UpdateDayNight(phase, progress)
+    StateManager.dispatch({
+        type = "UPDATE_DAY_NIGHT",
+        phase = phase,
+        progress = progress
+    })
+end
+
+--[[
+    Request full data refresh from server (P1-2: Uses StateManager)
     (Call this when player joins)
 ]]
 function ClientDataCache.RequestFullSync()
@@ -152,48 +118,26 @@ function ClientDataCache.RequestFullSync()
         return GetPlayerData:InvokeServer()
     end)
     
-    if success and result then
+    if success and result and result.Success then
         print("✅ Received full data sync from server")
         
-        -- Update currency
-        if result.Currency then
-            cachedData.Currency = result.Currency
-            local UIController = require(script.Parent.Controllers.UIController)
-            UIController.UpdateCurrency(
-                cachedData.Currency.Coins or 0,
-                cachedData.Currency.DreamSeeds or 0
-            )
-        end
-        
-        -- Update inventory
-        if result.Inventory then
-            cachedData.Inventory = result.Inventory
-            local InventoryController = require(script.Parent.Controllers.InventoryController)
-            InventoryController.UpdateInventory(cachedData.Inventory)
-        end
-        
-        -- Update plots
-        if result.Plots then
-            cachedData.Plots = result.Plots
-            
-            -- Update plot visuals
-            local PlotVisualizer = require(script.Parent.PlotVisualizer)
-            for plotId, plotData in pairs(result.Plots) do
-                PlotVisualizer.UpdatePlot(plotId, plotData)
-            end
-        end
+        -- P1-2: Dispatch snapshot to StateManager
+        StateManager.dispatch({
+            type = "APPLY_SNAPSHOT",
+            snapshot = result
+        })
         
         -- Count inventory items (dictionary-style table)
         local inventoryCount = 0
-        for _ in pairs(cachedData.Inventory) do inventoryCount = inventoryCount + 1 end
+        for _ in pairs(result.Inventory or {}) do inventoryCount = inventoryCount + 1 end
         
         -- Count plots (dictionary-style table)
         local plotCount = 0
-        for _ in pairs(cachedData.Plots) do plotCount = plotCount + 1 end
+        for _ in pairs(result.Plots or {}) do plotCount = plotCount + 1 end
         
         print("💾 Full data cache synchronized:")
-        print(string.format("   💰 Coins: %d", cachedData.Currency.Coins))
-        print(string.format("   🌙 Dreams: %d", cachedData.Currency.DreamSeeds))
+        print(string.format("   💰 Coins: %d", result.Currency and result.Currency.Coins or 0))
+        print(string.format("   🌙 Dreams: %d", result.Currency and result.Currency.DreamSeeds or 0))
         print(string.format("   📦 Inventory: %d items", inventoryCount))
         print(string.format("   🌱 Plots: %d plots", plotCount))
     else
@@ -201,47 +145,20 @@ function ClientDataCache.RequestFullSync()
     end
 end
 
--- === ApplySnapshot for full syncs ===
-local PlotVisualizer = require(script.Parent:WaitForChild("PlotVisualizer"))
-
--- Try to load controllers safely
-local UIController, InventoryController = nil, nil
-pcall(function()
-    UIController = require(script.Parent.Controllers:WaitForChild("UIController"))
-    InventoryController = require(script.Parent.Controllers:WaitForChild("InventoryController"))
-end)
-
+-- === ApplySnapshot for full syncs (P1-2: Uses StateManager) ===
 function ClientDataCache.ApplySnapshot(snapshot)
     if type(snapshot) ~= "table" then return end
 
-    -- Currency
-    if snapshot.Currency then
-        cachedData.Currency = snapshot.Currency
-        if UIController and UIController.UpdateCurrency then
-            UIController.UpdateCurrency(
-                snapshot.Currency.Coins or 0,
-                snapshot.Currency.DreamSeeds or 0
-            )
-        end
-    end
+    -- P1-2: Dispatch snapshot to StateManager
+    StateManager.dispatch({
+        type = "APPLY_SNAPSHOT",
+        snapshot = snapshot
+    })
+end
 
-    -- Inventory
-    if snapshot.Inventory then
-        cachedData.Inventory = snapshot.Inventory
-        if InventoryController and InventoryController.UpdateInventory then
-            InventoryController.UpdateInventory(snapshot.Inventory)
-        end
-    end
-
-    -- Plots
-    if snapshot.Plots then
-        cachedData.Plots = snapshot.Plots
-        for plotId, plotData in pairs(snapshot.Plots) do
-            if PlotVisualizer and PlotVisualizer.UpdatePlot then
-                PlotVisualizer.UpdatePlot(plotId, plotData)
-            end
-        end
-    end
+-- P1-2: Backward compatibility - SetAll function
+function ClientDataCache.SetAll(data)
+    ClientDataCache.ApplySnapshot(data)
 end
 
 -- Initialize: Request full sync on load

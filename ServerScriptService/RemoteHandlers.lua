@@ -1,11 +1,14 @@
 -- RemoteHandlers.lua
 local RS = game:GetService("ReplicatedStorage")
 local PlayerData = require(script.Parent:WaitForChild("PlayerDataManager"))
+local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
+local AntiCheat = require(script.Parent:WaitForChild("AntiCheatLogger"))
 local ShopConfig = require(RS:WaitForChild("ShopConfig"))
 local PlotManager = require(script.Parent:WaitForChild("PlotManager"))
 
 -- Remotes
 local InteractWithPlot = RS:WaitForChild("InteractWithPlot")
+local EquipTool = RS:WaitForChild("EquipTool")
 local GetShopData = RS:WaitForChild("GetShopData")
 local BuyItem = RS:WaitForChild("BuyItem")
 local SellItem = RS:WaitForChild("SellItem")
@@ -35,6 +38,46 @@ end)
 local function ok(payload) payload = payload or {}; payload.Success=true; return payload end
 local function fail(msg) return {Success=false, Error=tostring(msg or "Unknown")} end
 
+-- Strict quantity validation (P0-2: Security fix)
+-- P2-4: Use constant from Constants
+local Constants = require(RS:WaitForChild("Constants"))
+local function validateQuantity(qty, maxQty)
+    maxQty = maxQty or Constants.SHOP.MAX_PURCHASE_QUANTITY
+    
+    -- First check type
+    if type(qty) ~= "number" and type(qty) ~= "string" then
+        return nil, "Invalid quantity type"
+    end
+    
+    -- Convert to number
+    qty = tonumber(qty)
+    if not qty then
+        return nil, "Quantity must be a number"
+    end
+    
+    -- Check for NaN or Infinity
+    if qty ~= qty or qty == math.huge or qty == -math.huge then
+        return nil, "Invalid quantity value"
+    end
+    
+    -- Check positive
+    if qty < 1 then
+        return nil, "Quantity must be positive"
+    end
+    
+    -- Check max limit
+    if qty > maxQty then
+        return nil, string.format("Quantity too large (max: %d)", maxQty)
+    end
+    
+    -- Check integer
+    if qty ~= math.floor(qty) then
+        return nil, "Quantity must be an integer"
+    end
+    
+    return math.floor(qty), nil
+end
+
 local function buyPrice(cat, itemId)
     local c = ShopConfig.buy[cat]; if not c then return 0 end
     local row = c[itemId]; if not row then return 0 end
@@ -46,54 +89,187 @@ local function sellPrice(itemId)
 end
 
 GetPlayerData.OnServerInvoke = function(player)
-    if not rate_ok(player,"GetPlayerData") then return fail("You're doing that too fast. Please wait a moment.") end
-    local d = PlayerData.Get(player); if not d then return fail("Data not loaded") end
-    return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats })
+    -- P0-5: Error handling wrapper
+    local success, result = pcall(function()
+        if not rate_ok(player,"GetPlayerData") then 
+            return fail("You're doing that too fast. Please wait a moment.") 
+        end
+        local d = PlayerData.Get(player)
+        if not d then 
+            return fail("Data not loaded") 
+        end
+        return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats })
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] GetPlayerData error for", player.Name, ":", result)
+        -- Log to analytics/monitoring if available
+        return fail("Internal server error")
+    end
+    
+    return result
 end
 
 GetShopData.OnServerInvoke = function(player)
-    if not rate_ok(player,"GetShopData") then return fail("You're doing that too fast. Please wait a moment.") end
-    local d = PlayerData.Get(player); if not d then return fail("Data not loaded") end
-    return ok({ Config=ShopConfig, PlayerCoins=d.Currency.Coins })
+    -- P0-5: Error handling wrapper
+    local success, result = pcall(function()
+        if not rate_ok(player,"GetShopData") then 
+            return fail("You're doing that too fast. Please wait a moment.") 
+        end
+        local d = PlayerData.Get(player)
+        if not d then 
+            return fail("Data not loaded") 
+        end
+        return ok({ Config=ShopConfig, PlayerCoins=d.Currency.Coins })
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] GetShopData error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    
+    return result
 end
 
 BuyItem.OnServerInvoke = function(player, category, itemId, quantity)
-    if not rate_ok(player,"BuyItem") then return fail("You're doing that too fast. Please wait a moment.") end
-    if type(category)~="string" or type(itemId)~="string" then return fail("Bad args") end
-    quantity = math.max(1, math.min(999, math.floor(tonumber(quantity) or 1)))
+    -- P0-5: Error handling wrapper
+    local success, result = pcall(function()
+        if not rate_ok(player,"BuyItem") then 
+            return fail("You're doing that too fast. Please wait a moment.") 
+        end
+        if type(category)~="string" or type(itemId)~="string" then 
+            return fail("Bad args") 
+        end
+        
+        -- P0-2: Strict quantity validation BEFORE any operations
+        local validQty, err = validateQuantity(quantity, Constants.SHOP.MAX_SALE_QUANTITY)
+        if not validQty then
+            -- P1-5: Log suspicious quantity
+            AntiCheat.log(player, AntiCheat.LOG_LEVELS.SUSPICIOUS, "INVALID_QUANTITY_BUY", {
+                category = category,
+                item = itemId,
+                quantity = quantity,
+                error = err
+            })
+            warn(string.format("[BuyItem] Invalid quantity from %s: %s (value: %s)", player.Name, err, tostring(quantity)))
+            return fail(err)
+        end
+        quantity = validQty
 
-    local price = buyPrice(category, itemId)
-    if price <= 0 then return fail("Item not purchasable") end
+        -- P1-5: Log large purchases
+        if quantity > Constants.ANTICHEAT.LARGE_PURCHASE_THRESHOLD then
+            AntiCheat.log(player, AntiCheat.LOG_LEVELS.INFO, "LARGE_PURCHASE", {
+                category = category,
+                item = itemId,
+                quantity = quantity
+            })
+        end
 
-    local oksp, newBal = PlayerData.TrySpendCoins(player, price*quantity)
-    if not oksp then return fail("Not enough coins") end
+        local price = buyPrice(category, itemId)
+        if price <= 0 then 
+            return fail("Item not purchasable") 
+        end
 
-    PlayerData.AddItem(player, itemId, quantity)
-    local snap = PlayerData.Snapshot(player)
-    return ok({ ItemName=itemId, Quantity=quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory })
+        local oksp, newBal = PlayerData.TrySpendCoins(player, price*quantity)
+        if not oksp then 
+            return fail("Not enough coins") 
+        end
+
+        PlayerData.AddItem(player, itemId, quantity)
+        local snap = PlayerData.Snapshot(player)
+        return ok({ ItemName=itemId, Quantity=quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory })
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] BuyItem error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    
+    return result
 end
 
 SellItem.OnServerInvoke = function(player, itemId, quantity)
-    if not rate_ok(player,"SellItem") then return fail("You're doing that too fast. Please wait a moment.") end
-    if type(itemId)~="string" then return fail("Bad args") end
-    quantity = math.max(1, math.min(999, math.floor(tonumber(quantity) or 1)))
+    -- P0-5: Error handling wrapper
+    local success, result = pcall(function()
+        if not rate_ok(player,"SellItem") then 
+            return fail("You're doing that too fast. Please wait a moment.") 
+        end
+        if type(itemId)~="string" then 
+            return fail("Bad args") 
+        end
+        
+        -- P0-2: Strict quantity validation BEFORE any operations
+        local validQty, err = validateQuantity(quantity, Constants.SHOP.MAX_SALE_QUANTITY)
+        if not validQty then
+            warn(string.format("[SellItem] Invalid quantity from %s: %s (value: %s)", player.Name, err, tostring(quantity)))
+            return fail(err)
+        end
+        quantity = validQty
 
-    if not PlayerData.HasItem(player, itemId, quantity) then return fail("Not enough items") end
-    local price = sellPrice(itemId)
-    if price <= 0 then return fail("Item cannot be sold") end
+        if not PlayerData.HasItem(player, itemId, quantity) then 
+            return fail("Not enough items") 
+        end
+        local price = sellPrice(itemId)
+        if price <= 0 then 
+            return fail("Item cannot be sold") 
+        end
 
-    if not PlayerData.TryConsumeItem(player, itemId, quantity) then return fail("Failed to remove") end
-    PlayerData.AddCoins(player, price*quantity)
+        if not PlayerData.TryConsumeItem(player, itemId, quantity) then 
+            return fail("Failed to remove") 
+        end
+        PlayerData.AddCoins(player, price*quantity)
 
-    local snap = PlayerData.Snapshot(player)
-    return ok({ ItemName=itemId, Quantity=quantity, TotalEarned=price*quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory })
+        local snap = PlayerData.Snapshot(player)
+        return ok({ ItemName=itemId, Quantity=quantity, TotalEarned=price*quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory })
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] SellItem error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    
+    return result
 end
 
+-- Handle tool equipping (client → server sync)
+EquipTool.OnServerEvent:Connect(function(player, toolName)
+    -- P0-5: Error handling wrapper
+    local success, err = pcall(function()
+        if not rate_ok(player, "EquipTool") then 
+            warn(string.format("[EquipTool] Rate limit exceeded for %s", player.Name))
+            return 
+        end
+        
+        if type(toolName) ~= "string" then
+            warn(string.format("[EquipTool] Invalid tool name from %s: %s", player.Name, tostring(toolName)))
+            return
+        end
+        
+        local equipSuccess = InventoryService.SetEquipped(player, toolName)
+        if equipSuccess then
+            print(string.format("[EquipTool] %s equipped: %s", player.Name, toolName))
+        else
+            warn(string.format("[EquipTool] Failed to equip tool '%s' for %s (validation failed)", toolName, player.Name))
+        end
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] EquipTool error for", player.Name, ":", err)
+    end
+end)
+
 InteractWithPlot.OnServerEvent:Connect(function(player, plotModel, toolName)
-    local res = PlotManager.HandleInteraction(player, plotModel, toolName)
-    -- This is an event; we don't return a value. Client listens to PlotState* updates.
-    if not res.Success then
-        warn(string.format("[PLOT] %s: %s", player.Name, tostring(res.Error)))
+    -- P0-5: Error handling wrapper
+    local success, err = pcall(function()
+        local res = PlotManager.HandleInteraction(player, plotModel, toolName)
+        -- This is an event; we don't return a value. Client listens to PlotState* updates.
+        if not res.Success then
+            warn(string.format("[PLOT] %s: %s", player.Name, tostring(res.Error)))
+        end
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] InteractWithPlot error for", player.Name, ":", err)
     end
 end)
 

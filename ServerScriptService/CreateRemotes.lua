@@ -20,6 +20,7 @@ end
 -- Plot interaction
 ensureEvent("InteractWithPlot", "RemoteEvent")
 ensureEvent("OnToolUse", "RemoteEvent")
+ensureEvent("EquipTool", "RemoteEvent") -- NEW: Sync equipped tool to server
 
 -- Shop system
 ensureEvent("GetShopData", "RemoteFunction")

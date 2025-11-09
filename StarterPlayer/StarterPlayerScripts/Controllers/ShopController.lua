@@ -21,6 +21,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local Debounce = require(script.Parent.Parent.Utils.Debounce)
+local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 
 local ShopController = {}
 
@@ -401,7 +403,12 @@ end
     @param delta (number) - Change in quantity (+1 or -1)
 ]]
 function ShopController.UpdateQuantity(delta)
-    currentQuantity = math.max(1, math.min(99, currentQuantity + delta))
+    -- P2-4: Use constant from Constants
+    local Constants = require(game:GetService("ReplicatedStorage"):WaitForChild("Constants"))
+    currentQuantity = math.max(
+        Constants.SHOP.MIN_PURCHASE_QUANTITY, 
+        math.min(Constants.SHOP.CLIENT_MAX_QUANTITY_DISPLAY, currentQuantity + delta)
+    )
     
     if not selectedItem then return end
     
@@ -573,48 +580,57 @@ function ShopController.Initialize()
         return
     end
     
-    -- Setup close button
+    -- Setup close button (P2-5: Debounced)
     local headerBar = shopFrame:FindFirstChild("HeaderBar")
     if headerBar then
         local closeButton = headerBar:FindFirstChild("CloseButton")
         if closeButton then
-            closeButton.MouseButton1Click:Connect(function()
+            local debouncedClose = Debounce.create(function()
                 local UIController = require(script.Parent.UIController)
                 UIController.ToggleShop()
-            end)
-            print("✅ Close button configured")
+            end, Constants.ANIMATION.FAST_TWEEN_DURATION)
+            
+            closeButton.MouseButton1Click:Connect(debouncedClose)
+            print("✅ Close button configured (debounced)")
         end
     end
     
-    -- Setup quantity stepper buttons
+    -- Setup quantity stepper buttons (P2-5: Throttled)
     if rightPanel then
         local quantityStepper = rightPanel:FindFirstChild("QuantityStepper")
         if quantityStepper then
             local minusBtn = quantityStepper:FindFirstChild("MinusBtn")
             local plusBtn = quantityStepper:FindFirstChild("PlusBtn")
             
+            -- Throttle quantity changes (max 10 per second)
+            local throttledQuantityChange = Debounce.throttle(function(delta)
+                ShopController.UpdateQuantity(delta)
+            end, 10)
+            
             if minusBtn then
                 minusBtn.MouseButton1Click:Connect(function()
-                    ShopController.UpdateQuantity(-1)
+                    throttledQuantityChange(-1)
                 end)
             end
             
             if plusBtn then
                 plusBtn.MouseButton1Click:Connect(function()
-                    ShopController.UpdateQuantity(1)
+                    throttledQuantityChange(1)
                 end)
             end
             
-            print("✅ Quantity stepper configured")
+            print("✅ Quantity stepper configured (throttled)")
         end
         
-        -- Setup buy button
+        -- Setup buy button (P2-5: Debounced)
         local buyButton = rightPanel:FindFirstChild("BuyButton")
         if buyButton then
-            buyButton.MouseButton1Click:Connect(function()
+            local debouncedBuy = Debounce.create(function()
                 ShopController.BuyItem()
-            end)
-            print("✅ Buy button configured")
+            end, 1.0) -- 1 second cooldown for purchases
+            
+            buyButton.MouseButton1Click:Connect(debouncedBuy)
+            print("✅ Buy button configured (debounced)")
         end
     end
     

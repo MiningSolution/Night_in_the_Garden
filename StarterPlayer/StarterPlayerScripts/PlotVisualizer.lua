@@ -44,6 +44,13 @@ local PlantData = require(ReplicatedStorage:WaitForChild("PlantData"))
 -- Cache for plot visuals
 local plotVisuals = {} -- [plotId] = {model, plantInstance, progressBar, etc.}
 
+-- P2-6: Object pooling for particle emitters
+local particlePool = {
+    water = {},
+    grow = {},
+    harvest = {}
+}
+
 -- ========================================
 -- CONFIGURATION
 -- ========================================
@@ -455,21 +462,27 @@ end
     @param visual (table) - Plot visual data
     @param effectType (string) - "water", "grow", "harvest"
 ]]
-local function CreateParticleEffect(visual, effectType)
-    if not CONFIG.EnableParticles then return end
-    if not visual.plotBase then return end
-    
-    -- Remove existing particles
-    if visual.particleEmitter then
-        visual.particleEmitter:Destroy()
-        visual.particleEmitter = nil
+-- P2-6: Get or create particle emitter from pool
+local function getParticleFromPool(effectType)
+    local pool = particlePool[effectType]
+    if not pool then
+        warn("[PlotVisualizer] Unknown particle effect type:", effectType)
+        return nil
     end
     
+    -- Try to get inactive emitter from pool
+    for i, emitter in ipairs(pool) do
+        if not emitter.Enabled and emitter.Parent == nil then
+            return emitter
+        end
+    end
+    
+    -- Create new if pool empty
     local emitter = Instance.new("ParticleEmitter")
     emitter.Name = effectType .. "Effect"
     
+    -- Configure based on type
     if effectType == "water" then
-        -- Water droplets
         emitter.Texture = "rbxasset://textures/particles/smoke_main.dds"
         emitter.Color = ColorSequence.new(Color3.fromRGB(100, 150, 255))
         emitter.Size = NumberSequence.new(0.3, 0.1)
@@ -478,18 +491,8 @@ local function CreateParticleEffect(visual, effectType)
         emitter.Rate = 20
         emitter.Speed = NumberRange.new(2, 4)
         emitter.SpreadAngle = Vector2.new(30, 30)
-        emitter.Enabled = true
-        
-        task.delay(2, function()
-            if emitter then
-                emitter.Enabled = false
-                task.wait(1)
-                emitter:Destroy()
-            end
-        end)
         
     elseif effectType == "grow" then
-        -- Growth sparkles
         emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
         emitter.Color = ColorSequence.new(Color3.fromRGB(80, 200, 120))
         emitter.Size = NumberSequence.new(0.2, 0)
@@ -497,10 +500,8 @@ local function CreateParticleEffect(visual, effectType)
         emitter.Lifetime = NumberRange.new(1, 2)
         emitter.Rate = 5
         emitter.Speed = NumberRange.new(1, 2)
-        emitter.Enabled = true
         
     elseif effectType == "harvest" then
-        -- Harvest celebration
         emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
         emitter.Color = ColorSequence.new(Color3.fromRGB(255, 215, 0))
         emitter.Size = NumberSequence.new(0.5, 0)
@@ -509,19 +510,54 @@ local function CreateParticleEffect(visual, effectType)
         emitter.Rate = 50
         emitter.Speed = NumberRange.new(5, 10)
         emitter.SpreadAngle = Vector2.new(180, 180)
-        emitter.Enabled = true
-        
+    end
+    
+    table.insert(pool, emitter)
+    return emitter
+end
+
+-- P2-6: Return emitter to pool
+local function returnParticleToPool(emitter)
+    if not emitter then return end
+    emitter.Enabled = false
+    emitter.Parent = nil
+end
+
+local function CreateParticleEffect(visual, effectType)
+    if not CONFIG.EnableParticles then return end
+    if not visual.plotBase then return end
+    
+    -- P2-6: Remove existing particles and return to pool
+    if visual.particleEmitter then
+        returnParticleToPool(visual.particleEmitter)
+        visual.particleEmitter = nil
+    end
+    
+    -- P2-6: Get from pool
+    local emitter = getParticleFromPool(effectType)
+    if not emitter then return end
+    
+    emitter.Parent = visual.plotBase
+    emitter.Enabled = true
+    visual.particleEmitter = emitter
+    
+    -- P2-6: Auto-disable and return to pool after duration
+    if effectType == "water" then
+        task.delay(2, function()
+            if emitter and visual.particleEmitter == emitter then
+                returnParticleToPool(emitter)
+                visual.particleEmitter = nil
+            end
+        end)
+    elseif effectType == "harvest" then
         task.delay(1, function()
-            if emitter then
-                emitter.Enabled = false
-                task.wait(2)
-                emitter:Destroy()
+            if emitter and visual.particleEmitter == emitter then
+                returnParticleToPool(emitter)
+                visual.particleEmitter = nil
             end
         end)
     end
-    
-    emitter.Parent = visual.plotBase
-    visual.particleEmitter = emitter
+    -- "grow" particles stay active until manually disabled
 end
 
 -- ========================================

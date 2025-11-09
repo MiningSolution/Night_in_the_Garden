@@ -21,8 +21,15 @@ local SpiritCollected = RS:WaitForChild("SpiritCollected", 5) -- NEW: Spirit fee
 -- DAY/NIGHT CYCLE UPDATES
 -- ========================================
 DayNightUpdate.OnClientEvent:Connect(function(phase, progress)
-    if ClientDataCache.UpdateDayNight then
-        ClientDataCache.UpdateDayNight(phase, progress)
+    -- P0-5: Error handling wrapper
+    local success, err = pcall(function()
+        if ClientDataCache.UpdateDayNight then
+            ClientDataCache.UpdateDayNight(phase, progress)
+        end
+    end)
+    
+    if not success then
+        warn("❌ DayNightUpdate handler error:", err)
     end
 end)
 
@@ -31,10 +38,17 @@ end)
 -- ========================================
 if UpdateCurrency then
     UpdateCurrency.OnClientEvent:Connect(function(currencyType, newValue)
-        print(string.format("💰 Currency update: %s = %d", currencyType, newValue))
+        -- P0-5: Error handling wrapper
+        local success, err = pcall(function()
+            print(string.format("💰 Currency update: %s = %d", currencyType, newValue))
+            
+            if ClientDataCache.UpdateCurrency then
+                ClientDataCache.UpdateCurrency(currencyType, newValue)
+            end
+        end)
         
-        if ClientDataCache.UpdateCurrency then
-            ClientDataCache.UpdateCurrency(currencyType, newValue)
+        if not success then
+            warn("❌ UpdateCurrency handler error:", err)
         end
     end)
 end
@@ -44,10 +58,17 @@ end
 -- ========================================
 if UpdateInventory then
     UpdateInventory.OnClientEvent:Connect(function(newInventory)
-        print("📦 Inventory updated")
+        -- P0-5: Error handling wrapper
+        local success, err = pcall(function()
+            print("📦 Inventory updated")
+            
+            if ClientDataCache.UpdateInventory then
+                ClientDataCache.UpdateInventory(newInventory)
+            end
+        end)
         
-        if ClientDataCache.UpdateInventory then
-            ClientDataCache.UpdateInventory(newInventory)
+        if not success then
+            warn("❌ UpdateInventory handler error:", err)
         end
     end)
 end
@@ -56,19 +77,27 @@ end
 -- PLOT STATE CHANGES (Real-time updates)
 -- ========================================
 PlotStateChanged.OnClientEvent:Connect(function(plotId, plotData)
-    if type(plotId) ~= "string" or type(plotData) ~= "table" then 
-        warn("⚠️ Invalid PlotStateChanged data received")
-        return 
-    end
+    -- P0-5: Error handling wrapper
+    local success, err = pcall(function()
+        if type(plotId) ~= "string" or type(plotData) ~= "table" then 
+            warn("⚠️ Invalid PlotStateChanged data received")
+            return 
+        end
+        
+        -- Update cache
+        if ClientDataCache.UpdatePlot then
+            ClientDataCache.UpdatePlot(plotId, plotData)
+        end
+        
+        -- Update visuals
+        if PlotVisualizer.UpdatePlot then
+            PlotVisualizer.UpdatePlot(plotId, plotData)
+        end
+    end)
     
-    -- Update cache
-    if ClientDataCache.UpdatePlot then
-        ClientDataCache.UpdatePlot(plotId, plotData)
-    end
-    
-    -- Update visuals
-    if PlotVisualizer.UpdatePlot then
-        PlotVisualizer.UpdatePlot(plotId, plotData)
+    if not success then
+        warn("❌ PlotStateChanged handler error:", err)
+        -- Could show notification to user
     end
 end)
 
@@ -76,28 +105,35 @@ end)
 -- PLOT STATE SNAPSHOTS (After actions)
 -- ========================================
 PlotStateUpdated.OnClientEvent:Connect(function(payload)
-    if type(payload) ~= "table" then 
-        warn("⚠️ Invalid PlotStateUpdated payload")
-        return 
-    end
-    
-    local snap = payload.Snapshot
-    if snap then
-        -- Apply full snapshot to cache
-        if ClientDataCache.ApplySnapshot then
-            ClientDataCache.ApplySnapshot(snap)
-        elseif ClientDataCache.SetAll then
-            ClientDataCache.SetAll(snap)
+    -- P0-5: Error handling wrapper
+    local success, err = pcall(function()
+        if type(payload) ~= "table" then 
+            warn("⚠️ Invalid PlotStateUpdated payload")
+            return 
         end
         
-        -- Update all plot visuals from snapshot
-        if snap.Plots then
-            for pid, pdata in pairs(snap.Plots) do
-                if PlotVisualizer.UpdatePlot then 
-                    PlotVisualizer.UpdatePlot(pid, pdata) 
+        local snap = payload.Snapshot
+        if snap then
+            -- Apply full snapshot to cache
+            if ClientDataCache.ApplySnapshot then
+                ClientDataCache.ApplySnapshot(snap)
+            elseif ClientDataCache.SetAll then
+                ClientDataCache.SetAll(snap)
+            end
+            
+            -- Update all plot visuals from snapshot
+            if snap.Plots then
+                for pid, pdata in pairs(snap.Plots) do
+                    if PlotVisualizer.UpdatePlot then 
+                        PlotVisualizer.UpdatePlot(pid, pdata) 
+                    end
                 end
             end
         end
+    end)
+    
+    if not success then
+        warn("❌ PlotStateUpdated handler error:", err)
     end
 end)
 
@@ -106,31 +142,38 @@ end)
 -- ========================================
 if SpiritCollected then
     SpiritCollected.OnClientEvent:Connect(function(spiritName, spiritRarity, amount)
-        print(string.format("👻 Collected %s (%s) for +%d Dream Seeds!", spiritName, spiritRarity, amount))
-        
-        -- Try to get UIController for visual feedback
-        local success, UIController = pcall(function()
-            return require(script.Parent.Controllers.UIController)
+        -- P0-5: Error handling wrapper
+        local success, err = pcall(function()
+            print(string.format("👻 Collected %s (%s) for +%d Dream Seeds!", spiritName, spiritRarity, amount))
+            
+            -- Try to get UIController for visual feedback
+            local uiSuccess, UIController = pcall(function()
+                return require(script.Parent.Controllers.UIController)
+            end)
+            
+            if uiSuccess and UIController and UIController.ShowNotification then
+                -- Determine icon based on rarity
+                local rarityIcons = {
+                    Common = "👻",
+                    Rare = "✨",
+                    Epic = "🌟"
+                }
+                local icon = rarityIcons[spiritRarity] or "👻"
+                
+                -- Show notification with spirit info
+                UIController.ShowNotification(
+                    string.format("%s +%d 🌙 from %s!", icon, amount, spiritName),
+                    "spirit",
+                    2.5
+                )
+            else
+                -- Fallback: Just print if UIController not available
+                warn("⚠️ UIController not available for spirit notification")
+            end
         end)
         
-        if success and UIController and UIController.ShowNotification then
-            -- Determine icon based on rarity
-            local rarityIcons = {
-                Common = "👻",
-                Rare = "✨",
-                Epic = "🌟"
-            }
-            local icon = rarityIcons[spiritRarity] or "👻"
-            
-            -- Show notification with spirit info
-            UIController.ShowNotification(
-                string.format("%s +%d 🌙 from %s!", icon, amount, spiritName),
-                "spirit",
-                2.5
-            )
-        else
-            -- Fallback: Just print if UIController not available
-            warn("⚠️ UIController not available for spirit notification")
+        if not success then
+            warn("❌ SpiritCollected handler error:", err)
         end
     end)
     
