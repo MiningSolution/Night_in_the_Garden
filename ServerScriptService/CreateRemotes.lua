@@ -28,6 +28,9 @@ ensureEvent("BuyItem", "RemoteFunction")
 ensureEvent("SellItem", "RemoteFunction")
 ensureEvent("GetPlayerData", "RemoteFunction")
 
+-- Spirit system
+ensureEvent("CollectSpirit", "RemoteFunction")
+
 -- Data updates (server → client)
 ensureEvent("UpdateCurrency", "RemoteEvent")
 ensureEvent("UpdateInventory", "RemoteEvent")

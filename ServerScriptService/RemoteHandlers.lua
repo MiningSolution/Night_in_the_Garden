@@ -5,6 +5,9 @@ local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
 local AntiCheat = require(script.Parent:WaitForChild("AntiCheatLogger"))
 local ShopConfig = require(RS:WaitForChild("ShopConfig"))
 local PlotManager = require(script.Parent:WaitForChild("PlotManager"))
+local SpiritManager = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritManager"))
+local SpiritSpawner = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritSpawner"))
+local SpiritCollector = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritCollector"))
 
 -- Remotes
 local InteractWithPlot = RS:WaitForChild("InteractWithPlot")
@@ -13,6 +16,7 @@ local GetShopData = RS:WaitForChild("GetShopData")
 local BuyItem = RS:WaitForChild("BuyItem")
 local SellItem = RS:WaitForChild("SellItem")
 local GetPlayerData = RS:WaitForChild("GetPlayerData")
+local CollectSpirit = RS:WaitForChild("CollectSpirit")
 
 -- Simple per-player rate limit (RFs)
 local _rl = {}
@@ -272,5 +276,68 @@ InteractWithPlot.OnServerEvent:Connect(function(player, plotModel, toolName)
         warn("[RemoteHandlers] InteractWithPlot error for", player.Name, ":", err)
     end
 end)
+
+-- Handle spirit collection (client → server)
+CollectSpirit.OnServerInvoke = function(player, spiritId)
+    -- P0-5: Error handling wrapper
+    local success, result = pcall(function()
+        if not rate_ok(player, "CollectSpirit") then 
+            return fail("You're doing that too fast. Please wait a moment.") 
+        end
+        
+        if type(spiritId) ~= "string" or spiritId == "" then
+            return fail("Invalid spirit ID")
+        end
+        
+        -- Get spirit data
+        local spiritData = SpiritSpawner.getSpirit(spiritId)
+        if not spiritData or not spiritData.model then
+            return fail("Spirit not found or already collected")
+        end
+        
+        local spirit = spiritData.model
+        local spiritType = spiritData.type
+        
+        -- Check if spirit is still active
+        local isActive = function(id)
+            return SpiritSpawner.getSpirit(id) ~= nil
+        end
+        
+        local removeSpirit = function(id)
+            SpiritSpawner.removeSpirit(id)
+        end
+        
+        -- Try to collect (validates distance, cooldown, etc.)
+        local collectSuccess, rewardAmount = SpiritCollector.tryCollect(
+            player, 
+            spiritId, 
+            spirit, 
+            spiritType, 
+            isActive, 
+            removeSpirit
+        )
+        
+        if not collectSuccess then
+            return fail("Failed to collect spirit (cooldown or distance)")
+        end
+        
+        -- Return success with snapshot
+        local snap = PlayerData.Snapshot(player)
+        return ok({
+            Success = true,
+            Reward = rewardAmount,
+            NewBalance = snap.Currency.DreamSeeds,
+            Currency = snap.Currency,
+            Inventory = snap.Inventory
+        })
+    end)
+    
+    if not success then
+        warn("[RemoteHandlers] CollectSpirit error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    
+    return result
+end
 
 print("[RemoteHandlers] Bound")

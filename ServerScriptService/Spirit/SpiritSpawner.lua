@@ -254,6 +254,12 @@ function M.spawnOne(onCollectCallback)
     model:SetPrimaryPartCFrame(CFrame.new(pos))
     model.Parent = spiritFolder
 
+    -- Store spirit ID in model for client access
+    local spiritIdValue = Instance.new("StringValue")
+    spiritIdValue.Name = "SpiritId"
+    spiritIdValue.Value = id
+    spiritIdValue.Parent = model
+
     M.activeSpirits[id] = { 
         model = model, 
         spawnedAt = tick(), 
@@ -266,8 +272,10 @@ function M.spawnOne(onCollectCallback)
     end
 
     -- Handle prompt on server
+    -- Note: ProximityPrompt works on server, but we can also use RemoteFunction for additional validation
     if onCollectCallback then
         prompt.Triggered:Connect(function(player)
+            -- Call callback (existing system - this already handles reward via SpiritCollector)
             onCollectCallback(player, id, model, spiritType)
         end)
     end

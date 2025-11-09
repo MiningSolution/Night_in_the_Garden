@@ -748,4 +748,18 @@ end
 -- Auto-initialize
 PlotVisualizer.Initialize()
 
+-- P1-2: Subscribe to StateManager for snapshot updates
+local StateManager = require(script.Parent:WaitForChild("StateManager"))
+StateManager.subscribe(function(state, oldState, action)
+    if action.type == "APPLY_SNAPSHOT" and action.snapshot and action.snapshot.Plots then
+        -- Update all plots from snapshot
+        for plotId, plotData in pairs(action.snapshot.Plots) do
+            PlotVisualizer.UpdatePlot(plotId, plotData)
+        end
+    elseif action.type == "UPDATE_PLOT" and action.plotId and action.plotData then
+        -- Update single plot
+        PlotVisualizer.UpdatePlot(action.plotId, action.plotData)
+    end
+end)
+
 return PlotVisualizer
