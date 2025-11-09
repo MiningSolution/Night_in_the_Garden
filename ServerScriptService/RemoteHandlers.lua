@@ -38,19 +38,19 @@ local function sellPrice(itemId)
 end
 
 GetPlayerData.OnServerInvoke = function(player)
-    if not rate_ok(player,"GetPlayerData") then return fail("Rate limit") end
+    if not rate_ok(player,"GetPlayerData") then return fail("You're doing that too fast. Please wait a moment.") end
     local d = PlayerData.Get(player); if not d then return fail("Data not loaded") end
     return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats })
 end
 
 GetShopData.OnServerInvoke = function(player)
-    if not rate_ok(player,"GetShopData") then return fail("Rate limit") end
+    if not rate_ok(player,"GetShopData") then return fail("You're doing that too fast. Please wait a moment.") end
     local d = PlayerData.Get(player); if not d then return fail("Data not loaded") end
     return ok({ Config=ShopConfig, PlayerCoins=d.Currency.Coins })
 end
 
 BuyItem.OnServerInvoke = function(player, category, itemId, quantity)
-    if not rate_ok(player,"BuyItem") then return fail("Rate limit") end
+    if not rate_ok(player,"BuyItem") then return fail("You're doing that too fast. Please wait a moment.") end
     if type(category)~="string" or type(itemId)~="string" then return fail("Bad args") end
     quantity = math.max(1, math.min(999, math.floor(tonumber(quantity) or 1)))
 
@@ -66,7 +66,7 @@ BuyItem.OnServerInvoke = function(player, category, itemId, quantity)
 end
 
 SellItem.OnServerInvoke = function(player, itemId, quantity)
-    if not rate_ok(player,"SellItem") then return fail("Rate limit") end
+    if not rate_ok(player,"SellItem") then return fail("You're doing that too fast. Please wait a moment.") end
     if type(itemId)~="string" then return fail("Bad args") end
     quantity = math.max(1, math.min(999, math.floor(tonumber(quantity) or 1)))
 

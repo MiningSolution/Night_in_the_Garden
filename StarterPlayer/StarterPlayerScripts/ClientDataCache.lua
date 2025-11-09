@@ -199,4 +199,61 @@ task.spawn(function()
     ClientDataCache.RequestFullSync()
 end)
 
+-- Initialize
+task.spawn(function()
+    task.wait(2) -- Wait for game to load
+    ClientDataCache.RequestFullSync()
+end)
+
+-- === Added: ApplySnapshot for full syncs ===
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PlotVisualizer = require(script.Parent:WaitForChild("PlotVisualizer"))
+
+-- Попробуем подтянуть контроллеры, но мягко
+local UIController, InventoryController = nil, nil
+pcall(function()
+    UIController = require(script.Parent.Controllers:WaitForChild("UIController"))
+    InventoryController = require(script.Parent.Controllers:WaitForChild("InventoryController"))
+end)
+
+-- Гарантируем, что локальный кеш есть
+cachedData = cachedData or {
+    Currency = {Coins = 0, DreamSeeds = 0},
+    Inventory = {},
+    Plots = {}
+}
+
+function ClientDataCache.ApplySnapshot(snapshot)
+    if type(snapshot) ~= "table" then return end
+
+    -- Валюта
+    if snapshot.Currency then
+        cachedData.Currency = snapshot.Currency
+        if UIController and UIController.UpdateCurrency then
+            UIController.UpdateCurrency(
+                snapshot.Currency.Coins or 0,
+                snapshot.Currency.DreamSeeds or 0
+            )
+        end
+    end
+
+    -- Инвентарь
+    if snapshot.Inventory then
+        cachedData.Inventory = snapshot.Inventory
+        if InventoryController and InventoryController.UpdateInventory then
+            InventoryController.UpdateInventory(snapshot.Inventory)
+        end
+    end
+
+    -- Грядки
+    if snapshot.Plots then
+        cachedData.Plots = snapshot.Plots
+        for plotId, plotData in pairs(snapshot.Plots) do
+            if PlotVisualizer and PlotVisualizer.UpdatePlot then
+                PlotVisualizer.UpdatePlot(plotId, plotData)
+            end
+        end
+    end
+end
+
 return ClientDataCache
