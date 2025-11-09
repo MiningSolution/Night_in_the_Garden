@@ -1,8 +1,5 @@
-
-local SSS=game:GetService("ServerScriptService")
-require(SSS:WaitForChild("CreateRemotes"))
-require(SSS:WaitForChild("PlayerDataManager")).BindPlayerLifecycle()
-require(SSS:WaitForChild("DayNightManager"))
-require(SSS:WaitForChild("PlantGrowthService"))
-require(SSS:WaitForChild("RemoteHandlers"))
-print("🌙 Night in the Garden — Server initialized (Claude ↔ ChatGPT integration)")
+require(script.Parent:WaitForChild('CreateRemotes'))
+require(script.Parent:WaitForChild('RemoteHandlers'))
+require(script.Parent:WaitForChild('PlantGrowthService'))
+require(script.Parent:WaitForChild('DayNightManager'))
+print('✅ Server Init complete')

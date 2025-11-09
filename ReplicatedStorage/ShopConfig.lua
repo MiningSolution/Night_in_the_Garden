@@ -1,6 +1,17 @@
-local ShopConfig = {
-    buy = { seeds = {carrot_seed=8,tomato_seed=12,wheat_seed=10,pumpkin_seed=22,moonflower_seed=32,starberry_seed=42},
-            tools = {basic_watering_can=50,basic_lantern=40}, items = {fertilizer=25,scarecrow=60} },
-    sell= { crops = {carrot_crop=12,tomato_crop=21,wheat_crop=17,pumpkin_crop=36,moonflower_crop=48,starberry_crop=68},
-            items = {}, night_resources = {} },
-} return ShopConfig
+return {
+    buy = {
+        Seeds = {
+            carrot_seed = { price = 5, gives = "carrot_seed" },
+            tomato_seed = { price = 8, gives = "tomato_seed" },
+            wheat_seed  = { price = 6, gives = "wheat_seed"  },
+        },
+        Tools = {
+            basic_watering_can = { price = 0, gives = "basic_watering_can" },
+        }
+    },
+    sell = {
+        carrot_crop = { price = 3 },
+        tomato_crop = { price = 5 },
+        wheat_crop  = { price = 4 },
+    }
+}
