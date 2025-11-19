@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local ProfileService = require(ServerScriptService:WaitForChild("ProfileService"))
+local ProfileService = require(script.Parent:WaitForChild("ProfileServiceLoader"))
 local GameSettings = require(ReplicatedStorage:WaitForChild("GameSettings"))
 local DEFAULT_DATA = require(ReplicatedStorage:WaitForChild("DefaultData"))
 
