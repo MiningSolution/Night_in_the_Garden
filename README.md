@@ -8,7 +8,7 @@ Plot visualization pipeline, and security/validation hardening.
 - StarterPlayer/StarterPlayerScripts (client cache + visualization scripts)
 - ReplicatedStorage
 - ServerScriptService
-  - Services (core server modules, including Spirit system and `ProfileServiceLoader.lua`)
+  - Services (core server modules, including Spirit system)
 - Workspace
 - Docs
 
