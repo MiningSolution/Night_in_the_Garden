@@ -1,6 +1,6 @@
 --[[
     PlotInteraction.lua
-    Location: Workspace / [PlotModel] / (attach to PrimaryPart or specific part)
+    Location: StarterPlayer/StarterPlayerScripts/Utils/ (module to be attached to Plot parts)
     
     PURPOSE:
     Handles player interaction with garden plots including:

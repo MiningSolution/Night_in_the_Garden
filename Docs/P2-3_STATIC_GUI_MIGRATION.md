@@ -63,9 +63,9 @@ StarterGui/
 ### Шаг 5: Удаление creation scripts
 
 После успешного копирования можно удалить:
-- `StarterPlayer/StarterPlayerScripts/CreateHUD.lua`
-- `StarterPlayer/StarterPlayerScripts/CreateInventoryUI.lua`
-- `StarterPlayer/StarterPlayerScripts/CreateShopUI.lua`
+- `StarterGui/CreateHUD.lua`
+- `StarterGui/CreateInventoryUI.lua`
+- `StarterGui/CreateShopUI.lua`
 
 **⚠️ ВАЖНО:** Удаляйте только после проверки, что статический GUI работает!
 

@@ -1,6 +1,6 @@
 --[[
     PlotVisualizer.lua
-    Location: StarterPlayer/StarterPlayerScripts/
+    Location: StarterPlayer/StarterPlayerScripts/Utils/
     
     PURPOSE:
     Handles 3D visualization of garden plots including:
