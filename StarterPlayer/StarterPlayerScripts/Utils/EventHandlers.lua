@@ -1,4 +1,4 @@
--- StarterPlayer/StarterPlayerScripts/EventHandlers.lua
+-- StarterPlayer/StarterPlayerScripts/Utils/EventHandlers.lua
 -- Client-side event handlers for server updates
 -- VERSION: 1.1 (Added SpiritCollected handler with visual feedback)
 
@@ -148,7 +148,7 @@ if SpiritCollected then
             
             -- Try to get UIController for visual feedback
             local uiSuccess, UIController = pcall(function()
-                return require(script.Parent.Controllers.UIController)
+                return require(script.Parent.Parent.Controllers.UIController)
             end)
             
             if uiSuccess and UIController and UIController.ShowNotification then

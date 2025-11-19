@@ -1,4 +1,4 @@
--- StarterPlayer / StarterPlayerScripts / ClientDataCache
+-- StarterPlayer / StarterPlayerScripts / Utils / ClientDataCache
 -- P1-2: Refactored to use StateManager as single source of truth
 -- Provides backward-compatible API while using StateManager internally
 

@@ -21,7 +21,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local StateManager = require(script.Parent.Parent:WaitForChild("StateManager"))
+local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
 local Debounce = require(script.Parent.Parent.Utils.Debounce)
 local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 

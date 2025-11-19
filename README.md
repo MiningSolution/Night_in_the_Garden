@@ -12,6 +12,29 @@ Plot visualization pipeline, and security/validation hardening.
 - Workspace
 - Docs
 
+📁 UI Scripts to place in StarterGui or StarterPlayerScripts
+1) Must be LocalScripts in StarterGui
+
+- CreateHUD.lua — создаёт HUD (валюта, хотбар, верхняя панель)
+- CreateShopUI.lua — генерирует окно магазина
+- CreateInventoryUI.lua — генерирует окно инвентаря (пропущенный ранее, теперь добавлен)
+
+2) Must be LocalScripts in StarterPlayerScripts/Controllers
+
+- UIController.lua
+- HotbarController.lua
+- InventoryController.lua
+- ShopController.lua
+
+3) Must be LocalScripts in StarterPlayerScripts/Utils
+
+- ClientDataCache.lua
+- Debounce.lua
+- StateManager.lua
+- PlotVisualizer.lua
+- PlotInteraction.lua
+- EventHandlers.lua
+
 ## Getting Started
 1. Insert this tree into Roblox Studio (or copy scripts manually).
 2. Ensure **ProfileService** module is present under `ServerScriptService/ProfileService`.

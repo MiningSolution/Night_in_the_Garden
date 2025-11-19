@@ -23,7 +23,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local StateManager = require(script.Parent.Parent:WaitForChild("StateManager"))
+local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
 
 local UIController = {}
 
