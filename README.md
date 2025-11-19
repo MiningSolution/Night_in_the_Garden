@@ -4,11 +4,11 @@ This bundle contains client + server with ProfileService persistence,
 Plot visualization pipeline, and security/validation hardening.
 
 ## Structure
-- StarterGui (UI creation scripts)
-- StarterPlayer/StarterPlayerScripts
+- StarterGui (UI creation scripts: `CreateHUD.lua`, `CreateShopUI.lua`)
+- StarterPlayer/StarterPlayerScripts (client cache + visualization scripts)
 - ReplicatedStorage
 - ServerScriptService
-  - Services (core server modules, including Spirit system and `ProfileServiceLoader.lua`)
+  - Services (core server modules, including Spirit system)
 - Workspace
 - Docs
 

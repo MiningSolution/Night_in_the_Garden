@@ -64,7 +64,7 @@ StarterGui/
 
 После успешного копирования можно удалить:
 - `StarterGui/CreateHUD.lua`
-- `StarterGui/CreateInventoryUI.lua`
+- `StarterPlayer/StarterPlayerScripts/CreateInventoryUI.lua`
 - `StarterGui/CreateShopUI.lua`
 
 **⚠️ ВАЖНО:** Удаляйте только после проверки, что статический GUI работает!
