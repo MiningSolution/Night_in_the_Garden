@@ -1,13 +1,15 @@
 -- RemoteHandlers.lua
 local RS = game:GetService("ReplicatedStorage")
-local PlayerData = require(script.Parent:WaitForChild("PlayerDataManager"))
-local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
-local AntiCheat = require(script.Parent:WaitForChild("AntiCheatLogger"))
+local Services = script.Parent:WaitForChild("Services")
+local PlayerData = require(Services:WaitForChild("PlayerDataManager"))
+local InventoryService = require(Services:WaitForChild("InventoryService"))
+local AntiCheat = require(Services:WaitForChild("AntiCheatLogger"))
 local ShopConfig = require(RS:WaitForChild("ShopConfig"))
-local PlotManager = require(script.Parent:WaitForChild("PlotManager"))
-local SpiritManager = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritManager"))
-local SpiritSpawner = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritSpawner"))
-local SpiritCollector = require(script.Parent:WaitForChild("Spirit"):WaitForChild("SpiritCollector"))
+local PlotManager = require(Services:WaitForChild("PlotManager"))
+local SpiritFolder = Services:WaitForChild("Spirit")
+local SpiritManager = require(SpiritFolder:WaitForChild("SpiritManager"))
+local SpiritSpawner = require(SpiritFolder:WaitForChild("SpiritSpawner"))
+local SpiritCollector = require(SpiritFolder:WaitForChild("SpiritCollector"))
 
 -- Remotes
 local InteractWithPlot = RS:WaitForChild("InteractWithPlot")
