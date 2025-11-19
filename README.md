@@ -7,6 +7,7 @@ Plot visualization pipeline, and security/validation hardening.
 - StarterPlayer/StarterPlayerScripts
 - ReplicatedStorage
 - ServerScriptService
+  - Services (core server modules, including Spirit system)
 - Workspace
 - Docs
 
