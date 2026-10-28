@@ -43,8 +43,8 @@ viewport size or input mode changes, never per frame
 `CoreUISafeInsets`; no Escape dependency; Roblox-reserved gamepad buttons untouched;
 StreamingEnabled unaffected (UI only)
 
-**Scale/Scope**: 4 ScreenGuis (1 new), 3 builders, 4 controllers touched, 4 new modules
-(`InputActions`, `WindowManager`, `ResponsiveLayout`, `UITheme`), 1 test file
+**Scale/Scope**: 4 ScreenGuis (1 new), 4 builders (3 updated, 1 new), 4 controllers touched,
+4 new modules (`InputActions`, `WindowManager`, `ResponsiveLayout`, `UITheme`), 1 test file
 
 All unknowns from the first draft (backpack vs L1/R1, sizing method, touch control geometry,
 backdrop click-through, gamepad B behaviour, glyphs, theming) are resolved in
@@ -114,6 +114,7 @@ StarterPlayer/StarterPlayerScripts/
 Tools/
 ├── StaticGui/
 │   ├── build_models.py                    # inject UI_THEME for builders
+│   ├── builders/CreateHUDControls.luau    # NEW (menu column + hotbar)
 │   └── builders/CreateHUD.luau, CreateInventoryUI.luau, CreateShopUI.luau  # updated
 └── Tests/
     └── responsive_layout.spec.luau        # NEW offline layout tests
