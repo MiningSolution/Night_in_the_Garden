@@ -8,6 +8,16 @@
 
 **Input**: User description: "Phase 1 of the UI plan: make Night in the Garden fully playable on a phone in landscape orientation, with PC and console input designed in. Today the inventory and shop open only with keyboard keys I and B, so phone and console players cannot open them; the shop (800x550 px) and inventory (600x500 px) are fixed-pixel windows that do not fit a landscape phone (~844x390); windows can only be closed by key (Esc is reserved by Roblox); the hotbar can overlap the thumbstick and jump button. Scope: (1) a vertical column of on-screen menu buttons at the left-centre of the HUD — Shop and Inventory now, room for Rewards and Quests later — touch targets at least 44x44; (2) shop and inventory windows sized by Scale with aspect-ratio and size limits, scaled text with min/max sizes, fitting landscape phone, tablet and PC; (3) phone locked to landscape; (4) close a window with an X button, by tapping the dimmed backdrop, and with gamepad B; (5) hotbar does not overlap the thumbstick or jump button on touch devices (smaller slots, raised row); (6) HUD, InventoryUI and ShopUI stay inside the Roblox safe area; (7) every action works from keyboard, touch and gamepad through one shared action layer: on-screen buttons shown on touch devices, key hints on PC, gamepad selection navigation between buttons so console can be enabled without rework; (8) static GUI models and their builders updated so the repo stays the source of truth. Out of scope: selling, notifications/toasts, shop card list, theming/palettes, new icons (later phases)."
 
+## Clarifications
+
+### Session 2026-10-28
+
+- Q: Should the on-screen menu buttons also be shown on PC, or only keys I/B there? → A: Shown on
+  every platform; on PC each button carries a small key label (B, I), on gamepad a gamepad-button
+  glyph.
+- Q: Which gamepad buttons open the shop and inventory and select hotbar slots? → A: Y opens the
+  shop, X opens the inventory, L1/R1 select the previous/next hotbar slot; B closes windows.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open the shop and inventory on a phone (Priority: P1)
@@ -63,7 +73,7 @@ that every element is visible and readable.
 ### User Story 3 - Close windows without a keyboard (Priority: P1)
 
 A player closes an open window with the X button, by tapping the dimmed area around the window,
-or with the gamepad back button. No step requires the Esc key, which belongs to the Roblox menu.
+or with the gamepad B button. No step requires the Esc key, which belongs to the Roblox menu.
 
 **Why this priority**: a window that cannot be closed on a phone traps the player.
 
@@ -75,8 +85,8 @@ gamepad.
 1. **Given** a window is open, **When** the player taps X, **Then** the window closes.
 2. **Given** a window is open, **When** the player taps the dimmed backdrop outside the window,
    **Then** the window closes and the tap does not act on the game world.
-3. **Given** a window is open and a gamepad is in use, **When** the player presses the gamepad
-   back button, **Then** the window closes.
+3. **Given** a window is open and a gamepad is in use, **When** the player presses the gamepad B
+   button, **Then** the window closes.
 4. **Given** a window is open, **When** the player presses Esc, **Then** the Roblox menu behaves
    as normal and the game does not depend on that key.
 
@@ -105,9 +115,10 @@ hotbar slot; no slot is covered and no tap triggers movement or jump.
 ### User Story 5 - Same actions on keyboard, touch and gamepad (Priority: P2)
 
 Every Phase 1 action — open shop, open inventory, close window, select hotbar slot, move between
-buttons inside a window — works on keyboard/mouse, touch and gamepad. Touch devices show the
-on-screen menu buttons; PC shows key hints (I, B, 1–3) on the corresponding controls; a gamepad
-can move a highlight between buttons and press them.
+buttons inside a window — works on keyboard/mouse, touch and gamepad. The on-screen menu buttons
+are shown on every platform; on PC they carry key labels (B, I) and the hotbar slots show 1–3;
+with a gamepad they carry gamepad-button glyphs, and a highlight can be moved between buttons and
+pressed.
 
 **Why this priority**: console support is planned next; building the input this way now avoids
 rewriting the screens later. It is P2 because the phone fix (P1) delivers value without it.
@@ -120,11 +131,14 @@ highlight to a buy button, press it, close the shop, open the inventory and sele
 1. **Given** a gamepad is the active input, **When** a window opens, **Then** a button inside it
    is highlighted and the D-pad/thumbstick moves the highlight between buttons in a predictable
    order.
-2. **Given** a gamepad is the active input and no window is open, **When** the player presses the
-   assigned gamepad buttons, **Then** the shop or inventory opens and hotbar slots can be
-   selected.
+2. **Given** a gamepad is the active input and no window is open, **When** the player presses Y
+   or X, **Then** the shop or the inventory opens; **When** they press L1 or R1, **Then** the
+   previous or next hotbar slot is selected (wrapping around at the ends).
 3. **Given** the player switches from touch to keyboard (or back) during a session, **When** the
-   switch happens, **Then** the shown controls and hints update to the new input.
+   switch happens, **Then** the key labels or gamepad glyphs on the controls update to the new
+   input; the menu buttons stay visible.
+4. **Given** a player on PC, **When** the HUD is shown, **Then** the menu buttons are visible,
+   clickable and labelled with their keys (B for Shop, I for Inventory).
 
 ---
 
@@ -180,7 +194,7 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **FR-007**: Every window MUST have a close (X) button of at least 44×44 points.
 - **FR-008**: While a window is open, a dimmed backdrop MUST cover the rest of the screen; tapping
   or clicking the backdrop MUST close the window and MUST NOT act on the game world.
-- **FR-009**: The gamepad back button MUST close the open window. No game function MUST depend on
+- **FR-009**: The gamepad B button MUST close the open window. No game function MUST depend on
   the Esc key.
 - **FR-010**: On touch devices the hotbar MUST NOT overlap the thumbstick area or the jump button;
   on PC the hotbar MUST keep its current layout.
@@ -190,11 +204,17 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **FR-013**: Each Phase 1 action (open shop, open inventory, close window, select hotbar slot 1–3,
   move between and press buttons in a window) MUST be defined once and be triggerable from
   keyboard/mouse, touch and gamepad.
+- **FR-013a**: Gamepad bindings MUST be: Y — toggle shop, X — toggle inventory, L1/R1 — previous/
+  next hotbar slot (wrapping), B — close the open window, D-pad/left stick — move the highlight
+  inside a window, A — press the highlighted button. Buttons Roblox reserves (Start, Select, and
+  A/thumbsticks/R2 outside windows) MUST keep their default behaviour.
 - **FR-014**: Existing keyboard shortcuts MUST keep working: I (inventory), B (shop), 1–3 (hotbar);
   shortcuts MUST NOT trigger while the player is typing in chat or another text box.
-- **FR-015**: The game MUST detect the player's current input type and update during the session:
-  on touch, show the on-screen menu buttons; on keyboard/mouse, show key hints next to the
-  matching controls; on gamepad, show gamepad hints and enable highlight navigation.
+- **FR-015**: The on-screen menu buttons MUST be visible on every platform (touch, keyboard/mouse,
+  gamepad). The game MUST detect the player's current input type and update during the session:
+  on keyboard/mouse each menu button shows a small key label (B, I); on gamepad it shows the
+  matching gamepad-button glyph and highlight navigation is enabled; on touch no key labels are
+  shown.
 - **FR-016**: With a gamepad, opening a window MUST highlight a default button inside it, and
   directional input MUST move the highlight between that window's buttons in a predictable order;
   closing the window MUST return the highlight to where it was (or clear it).
@@ -213,7 +233,7 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **Window**: a full-screen-overlay panel (shop, inventory; later rewards, quests) with a title,
   close button, backdrop, size limits and a default gamepad-highlighted button. At most one is open.
 - **Input mode**: the player's current input type (touch, keyboard/mouse, gamepad); decides which
-  controls and hints are shown.
+  key labels or gamepad glyphs are shown on the always-visible controls.
 
 ## Success Criteria *(mandatory)*
 
@@ -241,8 +261,6 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - "Tablet" is handled like a large phone: landscape only, touch input, same layout scaled up.
 - Gamepad support is built and tested with Studio's gamepad emulation; enabling the game for
   console platforms (and console certification) is a later step outside this phase.
-- The exact gamepad buttons for opening shop and inventory are chosen in the plan; the back
-  button closes windows, as is standard on consoles.
 - Opening a window does not pause the game or block character movement via the thumbstick.
 - Existing window contents (shop rows, inventory tabs and items, tooltip) stay as they are;
   only their sizing, opening and closing change. The shop card list and selling come in Phase 2.
