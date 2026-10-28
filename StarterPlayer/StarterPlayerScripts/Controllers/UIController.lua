@@ -35,8 +35,14 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
 -- which can take longer than any fixed timeout on a slow join: wait for it.
 local HUD = playerGui:WaitForChild("HUD")
+local HUDControls = playerGui:WaitForChild("HUDControls")
 local InventoryUI = playerGui:WaitForChild("InventoryUI")
 local ShopUI = playerGui:WaitForChild("ShopUI")
+
+-- Feature 001: single-window state and layout constants.
+local Utils = script.Parent.Parent:WaitForChild("Utils")
+local WindowManager = require(Utils:WaitForChild("WindowManager"))
+local ResponsiveLayout = require(Utils:WaitForChild("ResponsiveLayout"))
 
 -- Currency Display elements
 local currencyDisplay, coinsLabel, dreamSeedsLabel
@@ -60,9 +66,7 @@ if HUD then
     end
 end
 
--- UI State
-local inventoryOpen = false
-local shopOpen = false
+-- UI open/close state now lives in WindowManager (one window at a time, FR-003).
 
 -- Cache for smooth animations
 local lastCoins = 0
@@ -210,35 +214,9 @@ end
     Opens inventory and closes shop if open
 ]]
 function UIController.ToggleInventory()
-    if not InventoryUI then
-        warn("⚠️ InventoryUI not found")
-        return
-    end
-    
-    inventoryOpen = not inventoryOpen
-    InventoryUI.Enabled = inventoryOpen
-    
-    if inventoryOpen then
-        -- Close shop if open
-        if shopOpen then
-            UIController.ToggleShop()
-        end
-        
-        -- Refresh inventory display
-        local success, inventoryController = pcall(function()
-            return require(script.Parent.InventoryController)
-        end)
-        
-        if success and inventoryController then
-            inventoryController.RefreshGrid()
-        else
-            warn("⚠️ Could not load InventoryController:", inventoryController)
-        end
-        
-        print("📦 Inventory opened")
-    else
-        print("📦 Inventory closed")
-    end
+    -- Delegates to WindowManager; opening closes any other window and runs the
+    -- registered onOpen (InventoryController.RefreshGrid).
+    WindowManager.Toggle("Inventory")
 end
 
 --[[
@@ -246,35 +224,9 @@ end
     Opens shop and closes inventory if open
 ]]
 function UIController.ToggleShop()
-    if not ShopUI then
-        warn("⚠️ ShopUI not found")
-        return
-    end
-    
-    shopOpen = not shopOpen
-    ShopUI.Enabled = shopOpen
-    
-    if shopOpen then
-        -- Close inventory if open
-        if inventoryOpen then
-            UIController.ToggleInventory()
-        end
-        
-        -- Load shop data
-        local success, shopController = pcall(function()
-            return require(script.Parent.ShopController)
-        end)
-        
-        if success and shopController then
-            shopController.LoadShopData()
-        else
-            warn("⚠️ Could not load ShopController:", shopController)
-        end
-        
-        print("🏪 Shop opened")
-    else
-        print("🏪 Shop closed")
-    end
+    -- Delegates to WindowManager; opening closes any other window and runs the
+    -- registered onOpen (ShopController.LoadShopData).
+    WindowManager.Toggle("Shop")
 end
 
 --[[
@@ -364,12 +316,7 @@ end
     Close all open UIs
 ]]
 function UIController.CloseAllUIs()
-    if inventoryOpen then
-        UIController.ToggleInventory()
-    end
-    if shopOpen then
-        UIController.ToggleShop()
-    end
+    WindowManager.Close()
 end
 
 --[[
@@ -377,9 +324,10 @@ end
     @return table with inventoryOpen and shopOpen booleans
 ]]
 function UIController.GetUIState()
+    local open = WindowManager.GetOpen()
     return {
-        inventoryOpen = inventoryOpen,
-        shopOpen = shopOpen
+        inventoryOpen = open == "Inventory",
+        shopOpen = open == "Shop"
     }
 end
 
@@ -407,37 +355,58 @@ function UIController.Initialize()
         end
     end)
     
-    -- Bind keyboard shortcuts
+    -- Feature 001: register the two windows with WindowManager (one open at a
+    -- time, FR-003). Window aspect/maxSize come from ResponsiveLayout.WINDOWS
+    -- (single source, constitution II). The keyboard/gamepad open actions are
+    -- owned by InputActions; the menu buttons are wired below (touch path).
+    local function findFrame(gui, ...)
+        for _, n in ipairs({...}) do
+            local f = gui:FindFirstChild(n)
+            if f then return f end
+        end
+        return nil
+    end
+
+    WindowManager.Register("Shop", {
+        gui = ShopUI,
+        frame = findFrame(ShopUI, "ShopFrame", "MainFrame", "Frame"),
+        aspect = ResponsiveLayout.WINDOWS.Shop.aspect,
+        maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Shop.maxW, ResponsiveLayout.WINDOWS.Shop.maxH),
+        onOpen = function()
+            local ok, shop = pcall(require, script.Parent.ShopController)
+            if ok and shop then shop.LoadShopData() else warn("⚠️ Could not load ShopController:", shop) end
+        end,
+    })
+
+    WindowManager.Register("Inventory", {
+        gui = InventoryUI,
+        frame = findFrame(InventoryUI, "InventoryFrame", "MainFrame", "Frame"),
+        aspect = ResponsiveLayout.WINDOWS.Inventory.aspect,
+        maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Inventory.maxW, ResponsiveLayout.WINDOWS.Inventory.maxH),
+        onOpen = function()
+            local ok, inv = pcall(require, script.Parent.InventoryController)
+            if ok and inv then inv.RefreshGrid() else warn("⚠️ Could not load InventoryController:", inv) end
+        end,
+    })
+
+    -- Wire the always-visible menu buttons so touch players can open/switch the
+    -- windows without a keyboard (US1, FR-001/FR-003).
+    local menuButtons = HUDControls:WaitForChild("MenuButtons")
+    menuButtons:WaitForChild("ShopButton").Activated:Connect(function()
+        UIController.ToggleShop()
+    end)
+    menuButtons:WaitForChild("InventoryButton").Activated:Connect(function()
+        UIController.ToggleInventory()
+    end)
+
+    -- Esc still only closes the open window here; no game action depends on it.
+    -- The dedicated close controls (X / backdrop / gamepad B) arrive with US3.
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        -- Don't process input if player is typing in chat
         if gameProcessed then return end
-        
-        -- I (inventory) is bound through ContextActionService below
-        if input.KeyCode == Enum.KeyCode.B then
-            UIController.ToggleShop()
-            
-        elseif input.KeyCode == Enum.KeyCode.Escape then
-            -- Close all UIs
+        if input.KeyCode == Enum.KeyCode.Escape then
             UIController.CloseAllUIs()
         end
     end)
-    
-    -- "I" is also Roblox's camera zoom-in key: UserInputService reports it as
-    -- gameProcessed, so the handler above never saw it and the inventory never
-    -- opened. Bind it above the camera instead (Sink also stops the zoom).
-    -- ContextActionService does not fire while the player is typing in a TextBox.
-    game:GetService("ContextActionService"):BindActionAtPriority(
-        "NightGarden_ToggleInventory",
-        function(_, inputState)
-            if inputState == Enum.UserInputState.Begin then
-                UIController.ToggleInventory()
-            end
-            return Enum.ContextActionResult.Sink
-        end,
-        false,
-        Enum.ContextActionPriority.High.Value,
-        Enum.KeyCode.I
-    )
 
     -- Set initial currency values from StateManager
     local coins = StateManager.getCurrency("Coins") or 0

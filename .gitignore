@@ -1,0 +1,15 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Python (static GUI generator driver)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local tool output
+*.log

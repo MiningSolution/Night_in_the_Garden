@@ -29,11 +29,13 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Wait for UI elements
 -- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
 -- which can take longer than any fixed timeout on a slow join: wait for it.
-local HUD = playerGui:WaitForChild("HUD")
+-- Feature 001: the hotbar moved out of HUD into the always-on-top HUDControls
+-- ScreenGui (so it stays usable above a window backdrop). Read it from there.
+local HUDControls = playerGui:WaitForChild("HUDControls")
 local hotbar
 
-if HUD then
-    hotbar = HUD:WaitForChild("Hotbar", 5)
+if HUDControls then
+    hotbar = HUDControls:WaitForChild("Hotbar", 5)
 end
 
 -- RemoteEvents for plot interaction and tool syncing

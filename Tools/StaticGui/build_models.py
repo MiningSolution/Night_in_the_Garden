@@ -29,7 +29,17 @@ with tempfile.TemporaryDirectory() as tmp:
         name = os.path.splitext(os.path.basename(path))[0]
         src = open(path, encoding="utf-8").read()
         entries.append("{ name = %s, src = %s }" % (long_string(name), long_string(src)))
-    runner = "SOURCES = {\n" + ",\n".join(entries) + "\n}\n" + open(os.path.join(here, "build_models.luau"), encoding="utf-8").read()
+    # Expose the theme tokens (ReplicatedStorage/UITheme.lua) to the builders as
+    # the global UI_THEME, so new/changed elements read colours from one source
+    # (research R10). build_models.luau evaluates UITHEME_SRC after its datatype
+    # mocks are defined.
+    uitheme_path = os.path.join(repo, "ReplicatedStorage", "UITheme.lua")
+    uitheme_src = open(uitheme_path, encoding="utf-8").read() if os.path.exists(uitheme_path) else ""
+    runner = (
+        "UITHEME_SRC = " + long_string(uitheme_src) + "\n"
+        + "SOURCES = {\n" + ",\n".join(entries) + "\n}\n"
+        + open(os.path.join(here, "build_models.luau"), encoding="utf-8").read()
+    )
     run_path = os.path.join(tmp, "run.luau")
     open(run_path, "w", encoding="utf-8").write(runner)
     out = subprocess.run([luau, run_path], capture_output=True, text=True)
