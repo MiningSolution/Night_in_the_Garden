@@ -23,6 +23,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
 local Debounce = require(script.Parent.Parent.Utils.Debounce)
+local GuiEffects = require(script.Parent.Parent.Utils:WaitForChild("GuiEffects"))
 local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 
 local InventoryController = {}
@@ -32,14 +33,17 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Wait for UI elements with timeout
-local inventoryUI = playerGui:WaitForChild("InventoryUI", 10)
+-- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
+-- which can take longer than any fixed timeout on a slow join: wait for it.
+local inventoryUI = playerGui:WaitForChild("InventoryUI")
 local inventoryFrame, itemGrid, tooltipFrame
 
 if inventoryUI then
     inventoryFrame = inventoryUI:WaitForChild("InventoryFrame", 5)
     if inventoryFrame then
         itemGrid = inventoryFrame:WaitForChild("ItemGrid", 5)
-        tooltipFrame = inventoryFrame:WaitForChild("TooltipFrame", 5)
+        -- TooltipFrame sits directly under InventoryUI (sibling of InventoryFrame)
+        tooltipFrame = inventoryUI:FindFirstChild("TooltipFrame") or inventoryFrame:FindFirstChild("TooltipFrame")
     end
 end
 
@@ -494,6 +498,20 @@ end
     Switch inventory tab
     @param tabName (string) - "Seeds" or "Items"
 ]]
+-- Highlight the active tab (moved here from CreateInventoryUI in P2-3)
+local function paintTabs(activeTab)
+    local tabContainer = inventoryFrame and inventoryFrame:FindFirstChild("TabContainer")
+    if not tabContainer then return end
+    for _, name in ipairs({ "Seeds", "Items" }) do
+        local tab = tabContainer:FindFirstChild(name .. "Tab")
+        if tab then
+            local active = name == activeTab
+            tab.BackgroundColor3 = active and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(60, 60, 70)
+            tab.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
+        end
+    end
+end
+
 function InventoryController.SwitchTab(tabName)
     if tabName ~= "Seeds" and tabName ~= "Items" then
         warn("⚠️ Invalid tab name:", tabName)
@@ -502,6 +520,7 @@ function InventoryController.SwitchTab(tabName)
     
     currentTab = tabName
     print("📑 Switched to tab:", currentTab)
+    paintTabs(currentTab)
     InventoryController.RefreshGrid()
 end
 
@@ -643,6 +662,7 @@ function InventoryController.Initialize()
             end, Constants.ANIMATION.FAST_TWEEN_DURATION)
             
             closeButton.MouseButton1Click:Connect(debouncedClose)
+            GuiEffects.hoverColor(closeButton, Color3.fromRGB(200, 80, 80), Color3.fromRGB(220, 100, 100))
         end
     end
     

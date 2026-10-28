@@ -55,3 +55,6 @@ print("📞 Functions:")
 print("   - GetShopData, BuyItem, SellItem")
 print("   - GetPlayerData")
 print("========================================")
+
+-- Required by Init.lua as a ModuleScript: must return exactly one value
+return true

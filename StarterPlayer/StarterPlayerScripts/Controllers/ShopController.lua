@@ -22,6 +22,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Debounce = require(script.Parent.Parent.Utils.Debounce)
+local GuiEffects = require(script.Parent.Parent.Utils:WaitForChild("GuiEffects"))
 local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 
 local ShopController = {}
@@ -31,7 +32,9 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Wait for UI elements with timeout
-local shopUI = playerGui:WaitForChild("ShopUI", 10)
+-- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
+-- which can take longer than any fixed timeout on a slow join: wait for it.
+local shopUI = playerGui:WaitForChild("ShopUI")
 local shopFrame, leftPanel, rightPanel, loadingOverlay
 
 if shopUI then
@@ -55,6 +58,12 @@ end)
 
 -- Load configurations
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
+
+-- ShopConfig rows are { price = N }; older configs used a bare number. Accept both.
+local function priceOf(row)
+    if type(row) == "table" then return tonumber(row.price) or 0 end
+    return tonumber(row) or 0
+end
 
 -- State
 local shopData = nil
@@ -307,7 +316,7 @@ function ShopController.SelectCategory(category)
     -- Convert to array and sort
     local itemArray = {}
     for itemName, price in pairs(items) do
-        table.insert(itemArray, {name = itemName, price = price})
+        table.insert(itemArray, {name = itemName, price = priceOf(price)})
     end
     
     table.sort(itemArray, function(a, b)
@@ -334,7 +343,7 @@ function ShopController.DisplayItem(category, itemName)
     selectedItem = {category = category, name = itemName}
     currentQuantity = 1
     
-    local price = (shopData and shopData.buy and shopData.buy[category] and shopData.buy[category][itemName]) or 0
+    local price = priceOf(shopData and shopData.buy and shopData.buy[category] and shopData.buy[category][itemName])
     
     print(string.format("🛒 Displaying item: %s (Price: %d)", itemName, price))
     
@@ -413,7 +422,8 @@ function ShopController.UpdateQuantity(delta)
     if not selectedItem then return end
     
     local price = (shopData and shopData.buy and shopData.buy[selectedItem.category] 
-                   and shopData.buy[selectedItem.category][selectedItem.name]) or 0
+                   and shopData.buy[selectedItem.category][selectedItem.name])
+    price = priceOf(price)
     
     -- Update UI
     local rightPanel = shopFrame and shopFrame:FindFirstChild("RightPanel")
@@ -591,6 +601,7 @@ function ShopController.Initialize()
             end, Constants.ANIMATION.FAST_TWEEN_DURATION)
             
             closeButton.MouseButton1Click:Connect(debouncedClose)
+            GuiEffects.hoverColor(closeButton, Color3.fromRGB(200, 80, 80), Color3.fromRGB(220, 100, 100))
             print("✅ Close button configured (debounced)")
         end
     end
@@ -619,6 +630,10 @@ function ShopController.Initialize()
                 end)
             end
             
+            -- Hover colors (moved here from CreateShopUI in P2-3)
+            for _, btn in ipairs({ minusBtn, plusBtn }) do
+                GuiEffects.hoverColor(btn, Color3.fromRGB(60, 60, 70), Color3.fromRGB(70, 70, 80))
+            end
             print("✅ Quantity stepper configured (throttled)")
         end
         
@@ -630,11 +645,20 @@ function ShopController.Initialize()
             end, 1.0) -- 1 second cooldown for purchases
             
             buyButton.MouseButton1Click:Connect(debouncedBuy)
+            GuiEffects.hoverColor(buyButton, Color3.fromRGB(80, 200, 120), Color3.fromRGB(90, 220, 140))
             print("✅ Buy button configured (debounced)")
         end
     end
     
     print("========================================")
+    -- Loading spinner (moved here from CreateShopUI in P2-3)
+    if loadingOverlay then
+        local spinner = loadingOverlay:FindFirstChild("Spinner", true)
+        if spinner then
+            GuiEffects.spinWhileVisible(spinner, loadingOverlay, 180)
+        end
+    end
+
     print("✨ ShopController ready!")
     print("========================================")
 end

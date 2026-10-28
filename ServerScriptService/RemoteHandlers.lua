@@ -126,7 +126,8 @@ GetShopData.OnServerInvoke = function(player)
         if not d then 
             return fail("Data not loaded") 
         end
-        return ok({ Config=ShopConfig, PlayerCoins=d.Currency.Coins })
+        -- Send data only: ShopConfig also holds helper functions, which do not belong on the wire
+        return ok({ Config={ buy=ShopConfig.buy, sell=ShopConfig.sell }, PlayerCoins=d.Currency.Coins })
     end)
     
     if not success then
@@ -343,3 +344,6 @@ CollectSpirit.OnServerInvoke = function(player, spiritId)
 end
 
 print("[RemoteHandlers] Bound")
+
+-- Required by Init.lua as a ModuleScript: must return exactly one value
+return true
