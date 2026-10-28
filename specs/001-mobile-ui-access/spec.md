@@ -23,6 +23,8 @@
 - Q: How much of the phone screen should an open shop/inventory window take? → A: Phone: up to
   ~85% of the safe-area height above the hotbar, centred between the menu column and the right edge; tablet/PC: same
   proportions, at most ~60% of screen height.
+- Q: What minimum text size counts as readable on a phone? → A: Body text at least 14 px; titles
+  and buttons at least 16 px (at the 844×390 reference).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -71,8 +73,8 @@ that every element is visible and readable.
    **Then** the whole window, including its close button, is visible inside the safe area.
 2. **Given** a PC monitor or tablet, **When** a window is open, **Then** it is no taller than
    about 60% of the screen height and keeps the same proportions as on the phone.
-3. **Given** any supported screen, **When** a window is open, **Then** all text is at least the
-   minimum readable size and does not overflow its box.
+3. **Given** any supported screen, **When** a window is open, **Then** body text is at least
+   14 px and titles and button labels at least 16 px (at phone scale), and no text overflows.
 
 ---
 
@@ -198,7 +200,8 @@ broken layout. Lower priority because most players hold the phone in landscape a
   than about 60% of the screen height. On small screens contents scroll (FR-006) rather than text
   shrinking below its minimum size.
 - **FR-005**: Text in the windows, menu buttons and hotbar MUST scale with the screen while staying
-  between a minimum readable size and a maximum size; text MUST NOT overflow its element.
+  between a minimum and a maximum size; text MUST NOT overflow its element. At the phone reference
+  screen (844×390) body text MUST be at least 14 px and titles and button labels at least 16 px.
 - **FR-006**: When contents are longer than the window (e.g. many inventory items), the window MUST
   scroll instead of cutting content off.
 - **FR-007**: Every window MUST have a close (X) button of at least 44×44 points.
@@ -255,7 +258,8 @@ broken layout. Lower priority because most players hold the phone in landscape a
   the inventory and close it using only taps — 100% of these steps succeed with no keyboard.
 - **SC-002**: At each reference screen — phone landscape 844×390, small phone landscape 667×375,
   tablet landscape 1024×768, PC 1920×1080, ultrawide 2560×1080 — every element of the HUD, shop
-  and inventory is fully visible inside the safe area and no text is clipped (0 issues).
+  and inventory is fully visible inside the safe area, no text is clipped, and on phone screens no
+  body text is under 14 px and no title or button label under 16 px (0 issues).
 - **SC-003**: Every tap target added or changed in this phase is at least 44×44 points at the
   phone reference resolution.
 - **SC-004**: On a touch device, 0 hotbar slots overlap the thumbstick or jump button.
