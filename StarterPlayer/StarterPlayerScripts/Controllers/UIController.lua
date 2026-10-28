@@ -52,7 +52,9 @@ if HUD then
     dayNightIndicator = HUD:WaitForChild("DayNightIndicator", 5)
     if dayNightIndicator then
         phaseLabel = dayNightIndicator:WaitForChild("PhaseLabel", 5)
-        progressBar = dayNightIndicator:WaitForChild("ProgressBar", 5)
+        -- CreateHUD nests the bar: DayNightIndicator > ProgressBarContainer > ProgressBar
+        local barContainer = dayNightIndicator:WaitForChild("ProgressBarContainer", 5)
+        progressBar = barContainer and barContainer:WaitForChild("ProgressBar", 5)
     end
 end
 
@@ -289,7 +291,7 @@ function UIController.ShowNotification(message, messageType, duration)
         success = Color3.fromRGB(80, 200, 120),
         error = Color3.fromRGB(220, 80, 80),
         info = Color3.fromRGB(100, 150, 255),
-        warning = Color3.fromRGB(255, 180, 50)
+        warning = Color3.fromRGB(255, 180, 50),
         spirit = Color3.fromRGB(180, 120, 255)  -- Фиолетовый для духов
     }
     

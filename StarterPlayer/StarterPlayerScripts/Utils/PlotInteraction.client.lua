@@ -28,17 +28,21 @@ local HOVER_OUT = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection
 local wired = {}
 
 local function getInteractPart(plot)
-    return plot.PrimaryPart or plot:FindFirstChild("PlotBase") or plot:FindFirstChildWhichIsA("BasePart")
+    local part = plot.PrimaryPart or plot:FindFirstChild("PlotBase") or plot:FindFirstChildWhichIsA("BasePart")
+    if part then return part end
+    -- StreamingEnabled: the model can reach the client before its parts do
+    return plot:WaitForChild("PlotBase", 15) or plot:FindFirstChildWhichIsA("BasePart")
 end
 
 local function setupPlot(plot)
     if wired[plot] then return end
+    wired[plot] = true
     local part = getInteractPart(plot)
     if not part then
+        wired[plot] = nil
         warn("⚠️ PlotInteraction: no BasePart in", plot:GetFullName())
         return
     end
-    wired[plot] = true
 
     -- ClickDetector gives the hand cursor and hover events; clicks are handled by HotbarController
     local detector = part:FindFirstChildOfClass("ClickDetector")
@@ -89,9 +93,11 @@ local function setupPlot(plot)
     end)
 end
 
+local watched = 0
 local function tryPlot(obj)
     if obj:IsA("Model") and obj:FindFirstChild("PlotMarker") then
-        setupPlot(obj)
+        watched += 1
+        task.spawn(setupPlot, obj) -- may wait for streamed parts
     end
 end
 
@@ -104,6 +110,4 @@ workspace.ChildAdded:Connect(function(obj)
     task.defer(tryPlot, obj)
 end)
 
-local count = 0
-for _ in pairs(wired) do count += 1 end
-print(string.format("🌱 PlotInteraction: hover effects on %d plot(s)", count))
+print(string.format("🌱 PlotInteraction: hover effects on %d plot(s)", watched))

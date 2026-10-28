@@ -14,7 +14,7 @@ local function isAdmin(p)
     return false
 end
 
-Players.PlayerChatted:Connect(function(player, message)
+local function onCommand(player, message)
     if not isAdmin(player) then return end
     local cmd, arg = message:match("^/(%w+)%s*(.*)$")
     if cmd == "spawnspirit" then
@@ -23,6 +23,14 @@ Players.PlayerChatted:Connect(function(player, message)
         SpiritManager.SetPhaseNight(false)
         SpiritManager.SetPhaseNight(true)
     end
-end)
+end
+
+-- Players.PlayerChatted needs the LocalUser capability and fails on the server;
+-- Player.Chatted works per player.
+local function hook(player)
+    player.Chatted:Connect(function(message) onCommand(player, message) end)
+end
+Players.PlayerAdded:Connect(hook)
+for _, p in ipairs(Players:GetPlayers()) do hook(p) end
 
 print("[SPIRIT][ADMIN] commands ready: /spawnspirit [id], /cleanspirits")

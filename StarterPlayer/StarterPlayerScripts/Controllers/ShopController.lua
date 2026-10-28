@@ -56,6 +56,12 @@ end)
 -- Load configurations
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
 
+-- ShopConfig rows are { price = N }; older configs used a bare number. Accept both.
+local function priceOf(row)
+    if type(row) == "table" then return tonumber(row.price) or 0 end
+    return tonumber(row) or 0
+end
+
 -- State
 local shopData = nil
 local selectedItem = nil
@@ -307,7 +313,7 @@ function ShopController.SelectCategory(category)
     -- Convert to array and sort
     local itemArray = {}
     for itemName, price in pairs(items) do
-        table.insert(itemArray, {name = itemName, price = price})
+        table.insert(itemArray, {name = itemName, price = priceOf(price)})
     end
     
     table.sort(itemArray, function(a, b)
@@ -334,7 +340,7 @@ function ShopController.DisplayItem(category, itemName)
     selectedItem = {category = category, name = itemName}
     currentQuantity = 1
     
-    local price = (shopData and shopData.buy and shopData.buy[category] and shopData.buy[category][itemName]) or 0
+    local price = priceOf(shopData and shopData.buy and shopData.buy[category] and shopData.buy[category][itemName])
     
     print(string.format("🛒 Displaying item: %s (Price: %d)", itemName, price))
     
@@ -413,7 +419,8 @@ function ShopController.UpdateQuantity(delta)
     if not selectedItem then return end
     
     local price = (shopData and shopData.buy and shopData.buy[selectedItem.category] 
-                   and shopData.buy[selectedItem.category][selectedItem.name]) or 0
+                   and shopData.buy[selectedItem.category][selectedItem.name])
+    price = priceOf(price)
     
     -- Update UI
     local rightPanel = shopFrame and shopFrame:FindFirstChild("RightPanel")

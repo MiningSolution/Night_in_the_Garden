@@ -37,7 +37,7 @@ local PlotVisualizer = {}
 
 -- References
 local player = Players.LocalPlayer
-local workspace = game:Workspace
+local workspace = game:GetService("Workspace")
 
 -- Load plant configuration
 local PlantData = require(ReplicatedStorage:WaitForChild("PlantData"))
@@ -139,19 +139,30 @@ end
     @param plotModel (Model) - The plot model
     @return table - Visual data structure
 ]]
+-- StreamingEnabled: a plot model can be cached before its parts reach the client,
+-- so fill in any part that is still missing every time the visual is used.
+-- Attachments live under PlotBase, hence the recursive search.
+local function RefreshPlotParts(visual)
+    local m = visual.model
+    visual.plotBase = visual.plotBase or m:FindFirstChild("PlotBase") or m.PrimaryPart or m:FindFirstChildWhichIsA("BasePart")
+    visual.plantAttachment = visual.plantAttachment or m:FindFirstChild("PlantAttachment", true)
+    visual.progressBarAttachment = visual.progressBarAttachment or m:FindFirstChild("ProgressBarAttachment", true)
+    return visual
+end
+
 local function GetPlotVisual(plotModel)
     local plotId = plotModel.Name
     
     if plotVisuals[plotId] then
-        return plotVisuals[plotId]
+        return RefreshPlotParts(plotVisuals[plotId])
     end
     
     -- Create new visual data
     local visual = {
         model = plotModel,
-        plotBase = plotModel:FindFirstChild("PlotBase") or plotModel.PrimaryPart or plotModel:FindFirstChildWhichIsA("Part"),
-        plantAttachment = plotModel:FindFirstChild("PlantAttachment"),
-        progressBarAttachment = plotModel:FindFirstChild("ProgressBarAttachment"),
+        plotBase = plotModel:FindFirstChild("PlotBase") or plotModel.PrimaryPart or plotModel:FindFirstChildWhichIsA("BasePart"),
+        plantAttachment = plotModel:FindFirstChild("PlantAttachment", true),
+        progressBarAttachment = plotModel:FindFirstChild("ProgressBarAttachment", true),
         plantInstance = nil,
         progressBarGui = nil,
         particleEmitter = nil,
@@ -178,6 +189,7 @@ local function GetOrCreateProgressBar(visual)
     end
     
     local attachment = visual.progressBarAttachment or visual.plotBase
+    if not attachment then return nil end -- plot parts not streamed in yet
     
     -- Create BillboardGui
     local billboardGui = Instance.new("BillboardGui")
@@ -241,6 +253,7 @@ end
 ]]
 local function UpdateProgressBar(visual, progress, state, timeRemaining)
     local progressBar = GetOrCreateProgressBar(visual)
+    if not progressBar then return end
     
     -- Show/hide based on state
     if state == "Growing" then
@@ -601,9 +614,10 @@ function PlotVisualizer.UpdatePlot(plotId, plotData)
         
         local tweenInfo = TweenInfo.new(CONFIG.AnimationSpeed, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
         TweenService:Create(visual.plotBase, tweenInfo, {
-            Color = targetColor,
-            Material = targetMaterial
+            Color = targetColor
         }):Play()
+        -- Material is an enum and cannot be tweened; set it directly
+        visual.plotBase.Material = targetMaterial
         
         -- Watered effect (darker/wetter look)
         if isWatered and (state == "Planted" or state == "Growing") then

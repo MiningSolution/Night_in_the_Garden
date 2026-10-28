@@ -111,7 +111,7 @@ function ClientDataCache.RequestFullSync()
     
     if not GetPlayerData then
         warn("⚠️ GetPlayerData RemoteFunction not found")
-        return
+        return false
     end
     
     local success, result = pcall(function()
@@ -140,8 +140,10 @@ function ClientDataCache.RequestFullSync()
         print(string.format("   🌙 Dreams: %d", result.Currency and result.Currency.DreamSeeds or 0))
         print(string.format("   📦 Inventory: %d items", inventoryCount))
         print(string.format("   🌱 Plots: %d plots", plotCount))
+        return true
     else
         warn("❌ Failed to sync data:", result)
+        return false
     end
 end
 
@@ -161,10 +163,18 @@ function ClientDataCache.SetAll(data)
     ClientDataCache.ApplySnapshot(data)
 end
 
--- Initialize: Request full sync on load
+-- Initialize: Request full sync on load.
+-- The server answers "Data not loaded" until ProfileService has loaded the
+-- profile, which can take longer than the first request, so retry with backoff.
 task.spawn(function()
     task.wait(2) -- Wait for game to load
-    ClientDataCache.RequestFullSync()
+    local delay = 1
+    for attempt = 1, 8 do
+        if ClientDataCache.RequestFullSync() then return end
+        task.wait(delay)
+        delay = math.min(delay * 2, 8)
+    end
+    warn("❌ ClientDataCache: initial data sync gave up after 8 attempts")
 end)
 
 return ClientDataCache
