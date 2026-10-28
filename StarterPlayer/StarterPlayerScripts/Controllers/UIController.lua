@@ -401,6 +401,48 @@ function UIController.Initialize()
         UIController.ToggleInventory()
     end)
 
+    -- US2 (FR-004): size and position the menu column and the windows from
+    -- ResponsiveLayout so they fit every screen inside the safe area. Recompute
+    -- only on viewport-size or input-mode changes, never per frame (R2, SC-006).
+    -- The touch hotbar geometry (slot resize) is applied in US4.
+    local InputActions = require(Utils:WaitForChild("InputActions"))
+    local camera = workspace.CurrentCamera
+    local shopFrame = ShopUI:WaitForChild("ShopFrame")
+    local inventoryFrame = InventoryUI:WaitForChild("InventoryFrame")
+
+    local function placeFrame(frame, r)
+        if frame and r then
+            frame.AnchorPoint = Vector2.new(0, 0)
+            frame.Position = UDim2.fromOffset(r.x, r.y)
+            frame.Size = UDim2.fromOffset(r.w, r.h)
+        end
+    end
+
+    local function applyLayout()
+        local absSize = HUDControls.AbsoluteSize
+        if absSize.X < 1 or absSize.Y < 1 then return end
+        local vp = camera and camera.ViewportSize or absSize
+        local res = ResponsiveLayout.compute({
+            viewport = { w = vp.X, h = vp.Y },
+            gui = { x = 0, y = 0, w = absSize.X, h = absSize.Y },
+            mode = InputActions.GetMode() or "KeyboardMouse",
+        })
+        menuButtons.AnchorPoint = Vector2.new(0, 0)
+        menuButtons.Position = UDim2.fromOffset(res.menuColumn.x, res.menuColumn.y)
+        menuButtons.Size = UDim2.fromOffset(res.menuColumn.w, res.menuColumn.h)
+        -- Size both windows (hidden ones too) so they are fitted when opened.
+        placeFrame(shopFrame, res.windows.Shop)
+        placeFrame(inventoryFrame, res.windows.Inventory)
+    end
+
+    applyLayout()
+    if camera then
+        camera:GetPropertyChangedSignal("ViewportSize"):Connect(applyLayout)
+    end
+    HUDControls:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyLayout)
+    InputActions.ModeChanged:Connect(applyLayout)
+    WindowManager.Changed:Connect(applyLayout)
+
     -- US3 (FR-009): no game action depends on Esc — it belongs to the Roblox
     -- menu. Windows close via X, the dim backdrop, or gamepad B (bound by
     -- InputActions while a window is open).

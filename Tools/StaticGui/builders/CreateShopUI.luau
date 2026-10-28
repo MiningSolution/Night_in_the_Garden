@@ -254,7 +254,7 @@ ItemDescriptionLabel.Position = UDim2.new(0, 0, 0, 175)
 ItemDescriptionLabel.BackgroundTransparency = 1
 ItemDescriptionLabel.Text = "Choose a category to browse items"
 ItemDescriptionLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-ItemDescriptionLabel.TextSize = 15
+ItemDescriptionLabel.TextSize = 18 -- body >= 18 (FR-005)
 ItemDescriptionLabel.Font = Enum.Font.Gotham
 ItemDescriptionLabel.TextWrapped = true
 ItemDescriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -392,7 +392,10 @@ end)
 ]]
 local LoadingOverlay = Instance.new("Frame")
 LoadingOverlay.Name = "LoadingOverlay"
-LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
+-- Cover only the body below the 50px header so the CloseButton stays usable
+-- while loading (US2, contracts/gui-tree.md).
+LoadingOverlay.Size = UDim2.new(1, 0, 1, -50)
+LoadingOverlay.Position = UDim2.new(0, 0, 0, 50)
 LoadingOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 LoadingOverlay.BackgroundTransparency = 0.7
 LoadingOverlay.BorderSizePixel = 0

@@ -305,10 +305,11 @@ function InventoryController.CreateSlot(itemName, quantity)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = itemData.displayName
     nameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    nameLabel.TextSize = 12
+    nameLabel.TextSize = 18 -- body >= 18, no TextScaled in windows (FR-005)
     nameLabel.Font = Enum.Font.Gotham
-    nameLabel.TextScaled = true
-    nameLabel.TextWrapped = true
+    nameLabel.TextScaled = false
+    nameLabel.TextWrapped = false
+    nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
     nameLabel.Parent = slot
     
     -- Quantity badge (bottom-right corner)

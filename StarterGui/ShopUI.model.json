@@ -249,7 +249,7 @@
                 "Size": {"UDim2": [[1, 0], [0, 60]]},
                 "Text": "Choose a category to browse items",
                 "TextColor3": [0.705882, 0.705882, 0.705882],
-                "TextSize": 15,
+                "TextSize": 18,
                 "TextWrapped": true,
                 "TextYAlignment": "Top"
               }
@@ -393,7 +393,8 @@
             "BackgroundColor3": [0, 0, 0],
             "BackgroundTransparency": 0.7,
             "BorderSizePixel": 0,
-            "Size": {"UDim2": [[1, 0], [1, 0]]},
+            "Position": {"UDim2": [[0, 0], [0, 50]]},
+            "Size": {"UDim2": [[1, 0], [1, -50]]},
             "Visible": false,
             "ZIndex": 100
           },

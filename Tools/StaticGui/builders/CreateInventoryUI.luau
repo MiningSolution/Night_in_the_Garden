@@ -172,7 +172,7 @@ SeedsTab.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 SeedsTab.BorderSizePixel = 0
 SeedsTab.Text = "🌱 Seeds"
 SeedsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-SeedsTab.TextSize = 18
+SeedsTab.TextSize = 20 -- button label >= 20 (FR-005)
 SeedsTab.Font = Enum.Font.GothamBold
 SeedsTab.AutoButtonColor = false
 SeedsTab.Parent = TabContainer
@@ -190,7 +190,7 @@ ItemsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 ItemsTab.BorderSizePixel = 0
 ItemsTab.Text = "📦 Items"
 ItemsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
-ItemsTab.TextSize = 18
+ItemsTab.TextSize = 20 -- button label >= 20 (FR-005)
 ItemsTab.Font = Enum.Font.GothamBold
 ItemsTab.AutoButtonColor = false
 ItemsTab.Parent = TabContainer
@@ -299,7 +299,7 @@ TooltipTitle.Size = UDim2.new(1, 0, 0, 25)
 TooltipTitle.BackgroundTransparency = 1
 TooltipTitle.Text = "Item Name"
 TooltipTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-TooltipTitle.TextSize = 18
+TooltipTitle.TextSize = 20 -- title >= 20 (FR-005)
 TooltipTitle.Font = Enum.Font.GothamBold
 TooltipTitle.TextXAlignment = Enum.TextXAlignment.Left
 TooltipTitle.TextYAlignment = Enum.TextYAlignment.Top
@@ -313,7 +313,7 @@ TooltipDescription.Position = UDim2.new(0, 0, 0, 30)
 TooltipDescription.BackgroundTransparency = 1
 TooltipDescription.Text = "Item description goes here"
 TooltipDescription.TextColor3 = Color3.fromRGB(180, 180, 180)
-TooltipDescription.TextSize = 14
+TooltipDescription.TextSize = 18 -- body >= 18 (FR-005)
 TooltipDescription.Font = Enum.Font.Gotham
 TooltipDescription.TextXAlignment = Enum.TextXAlignment.Left
 TooltipDescription.TextYAlignment = Enum.TextYAlignment.Top
@@ -336,7 +336,7 @@ TooltipStats.Position = UDim2.new(0, 0, 0, 80)
 TooltipStats.BackgroundTransparency = 1
 TooltipStats.Text = "Quantity: 10\n💰 Sell Value: 15 coins\n🌱 Type: Seed"
 TooltipStats.TextColor3 = Color3.fromRGB(200, 200, 200)
-TooltipStats.TextSize = 13
+TooltipStats.TextSize = 18 -- body >= 18 (FR-005)
 TooltipStats.Font = Enum.Font.Gotham
 TooltipStats.TextXAlignment = Enum.TextXAlignment.Left
 TooltipStats.TextYAlignment = Enum.TextYAlignment.Top

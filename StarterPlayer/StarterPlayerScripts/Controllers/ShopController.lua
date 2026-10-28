@@ -239,7 +239,7 @@ function ShopController.PopulateCategoryList()
         button.BorderSizePixel = 0
         button.Text = category.display
         button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.TextSize = 18
+        button.TextSize = 20 -- button label >= 20 (FR-005)
         button.Font = Enum.Font.GothamBold
         button.AutoButtonColor = false
         button.Parent = leftPanel
