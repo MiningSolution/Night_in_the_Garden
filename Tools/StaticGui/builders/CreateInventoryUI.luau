@@ -27,13 +27,34 @@ end
 
 print("🎨 Creating InventoryUI...")
 
+-- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
+-- module is required directly.
+local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+
 -- Create main ScreenGui
 local InventoryUI = Instance.new("ScreenGui")
 InventoryUI.Name = "InventoryUI"
 InventoryUI.ResetOnSpawn = false
 InventoryUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+InventoryUI.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+InventoryUI.IgnoreGuiInset = false
 InventoryUI.Enabled = false -- Hidden by default, opened with 'I' key
 InventoryUI.Parent = playerGui
+
+-- Full-screen dim backdrop (US3): tapping it closes the window and the Active
+-- TextButton keeps the tap from reaching the game world (FR-008). Parented
+-- before InventoryFrame so it renders behind it.
+local Backdrop = Instance.new("TextButton")
+Backdrop.Name = "Backdrop"
+Backdrop.Size = UDim2.new(1, 0, 1, 0)
+Backdrop.Position = UDim2.new(0, 0, 0, 0)
+Backdrop.BackgroundColor3 = Theme.Backdrop
+Backdrop.BackgroundTransparency = Theme.BackdropTransparency
+Backdrop.BorderSizePixel = 0
+Backdrop.AutoButtonColor = false
+Backdrop.Text = ""
+Backdrop.ZIndex = 0
+Backdrop.Parent = InventoryUI
 
 --[[
     MAIN INVENTORY FRAME
@@ -106,8 +127,8 @@ TitleLabel.Parent = HeaderBar
 -- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 40, 0, 40)
-CloseButton.Position = UDim2.new(1, -50, 0.5, 0)
+CloseButton.Size = UDim2.new(0, 44, 0, 44) -- >= 44x44 (FR-007)
+CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
 CloseButton.BorderSizePixel = 0

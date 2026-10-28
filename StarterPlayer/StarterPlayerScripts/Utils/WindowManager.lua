@@ -52,6 +52,15 @@ function WindowManager.Register(name, spec)
 	assert(spec and spec.gui, "WindowManager.Register: spec.gui is required")
 	windows[name] = spec
 	spec.gui.Enabled = false
+
+	-- US3: tapping the dim backdrop closes the window (FR-008). The close (X)
+	-- button is already wired by the window's controller to UIController, which
+	-- delegates here. A window-scoped gamepad B close is bound by InputActions.
+	if spec.backdrop then
+		spec.backdrop.Activated:Connect(function()
+			WindowManager.Close()
+		end)
+	end
 end
 
 function WindowManager.GetOpen()

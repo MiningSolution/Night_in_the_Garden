@@ -82,11 +82,26 @@ function InputActions.GetMode()
 	return currentMode
 end
 
--- Window-scoped action binding is owned by WindowManager via these hooks; the
--- bodies are filled in by US3 (CloseWindow on gamepad B). Present now so other
--- modules can call them safely.
-function InputActions.BindWindowActions() end
-function InputActions.UnbindWindowActions() end
+-- Window-scoped actions: bound only while a window is open, so gamepad B keeps
+-- its default behaviour otherwise (US3, FR-009/FR-013a). Driven by the
+-- WindowManager.Changed subscription in Init.
+function InputActions.BindWindowActions()
+	ContextActionService:BindActionAtPriority(
+		"NightGarden_CloseWindow",
+		function(_, inputState)
+			if inputState == Enum.UserInputState.Begin then
+				WindowManager.Close()
+			end
+			return Enum.ContextActionResult.Sink
+		end,
+		false,
+		Enum.ContextActionPriority.High.Value,
+		Enum.KeyCode.ButtonB
+	)
+end
+function InputActions.UnbindWindowActions()
+	ContextActionService:UnbindAction("NightGarden_CloseWindow")
+end
 
 local function bindAlwaysActions()
 	ContextActionService:BindActionAtPriority(
@@ -143,6 +158,15 @@ function InputActions.Init()
 	end)
 
 	bindAlwaysActions()
+
+	-- Bind the window-scoped gamepad B close only while a window is open.
+	WindowManager.Changed:Connect(function(openName)
+		if openName then
+			InputActions.BindWindowActions()
+		else
+			InputActions.UnbindWindowActions()
+		end
+	end)
 
 	print("✅ InputActions ready (mode:", currentMode, ")")
 end

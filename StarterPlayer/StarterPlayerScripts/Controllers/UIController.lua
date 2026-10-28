@@ -370,6 +370,7 @@ function UIController.Initialize()
     WindowManager.Register("Shop", {
         gui = ShopUI,
         frame = findFrame(ShopUI, "ShopFrame", "MainFrame", "Frame"),
+        backdrop = ShopUI:FindFirstChild("Backdrop"),
         aspect = ResponsiveLayout.WINDOWS.Shop.aspect,
         maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Shop.maxW, ResponsiveLayout.WINDOWS.Shop.maxH),
         onOpen = function()
@@ -381,6 +382,7 @@ function UIController.Initialize()
     WindowManager.Register("Inventory", {
         gui = InventoryUI,
         frame = findFrame(InventoryUI, "InventoryFrame", "MainFrame", "Frame"),
+        backdrop = InventoryUI:FindFirstChild("Backdrop"),
         aspect = ResponsiveLayout.WINDOWS.Inventory.aspect,
         maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Inventory.maxW, ResponsiveLayout.WINDOWS.Inventory.maxH),
         onOpen = function()
@@ -399,14 +401,9 @@ function UIController.Initialize()
         UIController.ToggleInventory()
     end)
 
-    -- Esc still only closes the open window here; no game action depends on it.
-    -- The dedicated close controls (X / backdrop / gamepad B) arrive with US3.
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if input.KeyCode == Enum.KeyCode.Escape then
-            UIController.CloseAllUIs()
-        end
-    end)
+    -- US3 (FR-009): no game action depends on Esc — it belongs to the Roblox
+    -- menu. Windows close via X, the dim backdrop, or gamepad B (bound by
+    -- InputActions while a window is open).
 
     -- Set initial currency values from StateManager
     local coins = StateManager.getCurrency("Coins") or 0
@@ -417,10 +414,10 @@ function UIController.Initialize()
     local phase, progress = StateManager.getDayNight()
     UIController.UpdateDayNight(phase or "Day", progress or 0)
     
-    print("✅ Keyboard shortcuts registered:")
-    print("   [I] - Toggle Inventory")
-    print("   [B] - Toggle Shop")
-    print("   [ESC] - Close all UIs")
+    print("✅ Windows registered with WindowManager (actions via InputActions):")
+    print("   [I] / Y  - Toggle Inventory")
+    print("   [B] / X  - Toggle Shop")
+    print("   close: X button, backdrop tap, or gamepad B (Esc is Roblox menu only)")
     print("")
     print("✅ StateManager subscription active")
     print("✅ Initial values loaded from StateManager")
