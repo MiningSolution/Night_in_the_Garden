@@ -18,8 +18,13 @@
 
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 
 local WindowManager = require(script.Parent:WaitForChild("WindowManager"))
+
+local function hotbarController()
+	return require(script.Parent.Parent.Controllers:WaitForChild("HotbarController"))
+end
 
 local InputActions = {}
 
@@ -131,6 +136,78 @@ local function bindAlwaysActions()
 		Enum.KeyCode.I,
 		Enum.KeyCode.ButtonY
 	)
+
+	-- Gamepad hotbar cycling (L1/R1), wrapping at the ends (FR-013a).
+	ContextActionService:BindActionAtPriority(
+		"NightGarden_HotbarPrev",
+		function(_, inputState)
+			if inputState == Enum.UserInputState.Begin then
+				hotbarController().PreviousSlot()
+			end
+			return Enum.ContextActionResult.Sink
+		end,
+		false,
+		Enum.ContextActionPriority.High.Value,
+		Enum.KeyCode.ButtonL1
+	)
+	ContextActionService:BindActionAtPriority(
+		"NightGarden_HotbarNext",
+		function(_, inputState)
+			if inputState == Enum.UserInputState.Begin then
+				hotbarController().NextSlot()
+			end
+			return Enum.ContextActionResult.Sink
+		end,
+		false,
+		Enum.ContextActionPriority.High.Value,
+		Enum.KeyCode.ButtonR1
+	)
+end
+
+-- US5 (R9): show key labels in KeyboardMouse mode, gamepad glyphs in Gamepad
+-- mode (images from UserInputService:GetImageForKeyCode), neither on Touch.
+local function applyHints(mode)
+	local pg = Players.LocalPlayer:FindFirstChild("PlayerGui")
+	local hudc = pg and pg:FindFirstChild("HUDControls")
+	if not hudc then return end
+	local isKbd = mode == "KeyboardMouse"
+	local isPad = mode == "Gamepad"
+
+	local function setButton(btn, padKey)
+		if not btn then return end
+		local kh = btn:FindFirstChild("KeyHint")
+		local ph = btn:FindFirstChild("PadHint")
+		if kh then kh.Visible = isKbd end
+		if ph then
+			ph.Visible = isPad
+			if isPad then ph.Image = UserInputService:GetImageForKeyCode(padKey) end
+		end
+	end
+
+	local menu = hudc:FindFirstChild("MenuButtons")
+	if menu then
+		setButton(menu:FindFirstChild("ShopButton"), Enum.KeyCode.ButtonX)
+		setButton(menu:FindFirstChild("InventoryButton"), Enum.KeyCode.ButtonY)
+	end
+
+	local hotbar = hudc:FindFirstChild("Hotbar")
+	if hotbar then
+		for i = 1, 3 do
+			local slot = hotbar:FindFirstChild("Slot" .. i)
+			local kbh = slot and slot:FindFirstChild("KeybindHint")
+			if kbh then kbh.Visible = isKbd end
+		end
+		local pl = hotbar:FindFirstChild("PadHintLeft")
+		local pr = hotbar:FindFirstChild("PadHintRight")
+		if pl then
+			pl.Visible = isPad
+			if isPad then pl.Image = UserInputService:GetImageForKeyCode(Enum.KeyCode.ButtonL1) end
+		end
+		if pr then
+			pr.Visible = isPad
+			if isPad then pr.Image = UserInputService:GetImageForKeyCode(Enum.KeyCode.ButtonR1) end
+		end
+	end
 end
 
 local initialized = false
@@ -158,6 +235,10 @@ function InputActions.Init()
 	end)
 
 	bindAlwaysActions()
+
+	-- Hints follow the active input mode (US5, FR-015).
+	applyHints(currentMode)
+	InputActions.ModeChanged:Connect(applyHints)
 
 	-- Bind the window-scoped gamepad B close only while a window is open.
 	WindowManager.Changed:Connect(function(openName)

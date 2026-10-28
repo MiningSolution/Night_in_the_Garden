@@ -67,6 +67,12 @@ InventoryFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 InventoryFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 InventoryFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 InventoryFrame.BorderSizePixel = 0
+-- US5 (R8): keep gamepad selection navigation inside the open window.
+InventoryFrame.SelectionGroup = true
+InventoryFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
+InventoryFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
+InventoryFrame.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop
+InventoryFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 InventoryFrame.Parent = InventoryUI
 
 local frameCorner = Instance.new("UICorner")

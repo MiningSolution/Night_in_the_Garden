@@ -68,6 +68,12 @@ ShopFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 ShopFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 ShopFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 ShopFrame.BorderSizePixel = 0
+-- US5 (R8): keep gamepad selection navigation inside the open window.
+ShopFrame.SelectionGroup = true
+ShopFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
+ShopFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
+ShopFrame.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop
+ShopFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 ShopFrame.Parent = ShopUI
 
 local frameCorner = Instance.new("UICorner")

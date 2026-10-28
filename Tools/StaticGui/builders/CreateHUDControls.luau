@@ -197,4 +197,26 @@ for i = 1, 3 do
 	keybindCorner.Parent = keybindHint
 end
 
+-- Gamepad glyphs for hotbar prev/next (L1/R1). Images are filled and shown in
+-- Gamepad mode by InputActions; hidden otherwise (US5, R9).
+local padHintLeft = Instance.new("ImageLabel")
+padHintLeft.Name = "PadHintLeft"
+padHintLeft.AnchorPoint = Vector2.new(1, 0.5)
+padHintLeft.Position = UDim2.new(0, -6, 0.5, 0)
+padHintLeft.Size = UDim2.new(0, 28, 0, 28)
+padHintLeft.BackgroundTransparency = 1
+padHintLeft.Image = ""
+padHintLeft.Visible = false
+padHintLeft.Parent = Hotbar
+
+local padHintRight = Instance.new("ImageLabel")
+padHintRight.Name = "PadHintRight"
+padHintRight.AnchorPoint = Vector2.new(0, 0.5)
+padHintRight.Position = UDim2.new(1, 6, 0.5, 0)
+padHintRight.Size = UDim2.new(0, 28, 0, 28)
+padHintRight.BackgroundTransparency = 1
+padHintRight.Image = ""
+padHintRight.Visible = false
+padHintRight.Parent = Hotbar
+
 print("✅ HUDControls created (MenuButtons + Hotbar)")

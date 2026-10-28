@@ -42,10 +42,50 @@ local function newSignal()
 	}
 end
 
+local GuiService = game:GetService("GuiService")
+local UserInputService = game:GetService("UserInputService")
+
 local windows = {} -- [name] = spec
 local openWindow = nil -- nil | name
 
 WindowManager.Changed = newSignal() -- (openName?, previousName?)
+
+-- US5 (R8): gamepad selection handling, kept here (not in InputActions) to
+-- avoid a require cycle; the gamepad mode is read from UserInputService.
+local rememberedSelection = nil
+local selectionConn = nil
+
+local function isGamepad()
+	local t = UserInputService:GetLastInputType()
+	return string.sub(t.Name, 1, 7) == "Gamepad"
+end
+
+local function teardownSelection()
+	if selectionConn then
+		selectionConn:Disconnect()
+		selectionConn = nil
+	end
+	GuiService.SelectedObject = rememberedSelection
+	rememberedSelection = nil
+end
+
+local function setupSelection(spec)
+	if not isGamepad() then
+		return
+	end
+	rememberedSelection = GuiService.SelectedObject
+	local sel = spec.defaultSelection and spec.defaultSelection()
+	if sel then
+		GuiService.SelectedObject = sel
+	end
+	-- Fallback: if Roblox clears the selection while a window is open in gamepad
+	-- mode (e.g. its own B handling), close the window too.
+	selectionConn = GuiService:GetPropertyChangedSignal("SelectedObject"):Connect(function()
+		if openWindow and isGamepad() and GuiService.SelectedObject == nil then
+			WindowManager.Close()
+		end
+	end)
+end
 
 function WindowManager.Register(name, spec)
 	assert(type(name) == "string", "WindowManager.Register: name must be a string")
@@ -80,6 +120,7 @@ function WindowManager.Open(name)
 	local previous = openWindow
 	-- Close any other open window first (immediate).
 	if previous and windows[previous] then
+		teardownSelection()
 		windows[previous].gui.Enabled = false
 	end
 
@@ -91,6 +132,7 @@ function WindowManager.Open(name)
 			warn("⚠️ WindowManager onOpen for", name, "failed:", err)
 		end
 	end
+	setupSelection(spec)
 
 	WindowManager.Changed:Fire(openWindow, previous)
 end
@@ -100,6 +142,7 @@ function WindowManager.Close()
 		return
 	end
 	local previous = openWindow
+	teardownSelection()
 	local spec = windows[previous]
 	if spec then
 		spec.gui.Enabled = false

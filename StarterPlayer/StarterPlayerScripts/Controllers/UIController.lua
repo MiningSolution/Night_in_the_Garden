@@ -371,6 +371,11 @@ function UIController.Initialize()
         gui = ShopUI,
         frame = findFrame(ShopUI, "ShopFrame", "MainFrame", "Frame"),
         backdrop = ShopUI:FindFirstChild("Backdrop"),
+        -- Gamepad default selection (US5): the first shop category button.
+        defaultSelection = function()
+            local lp = ShopUI:FindFirstChild("LeftPanel", true)
+            return lp and lp:FindFirstChild("seedsCategoryBtn")
+        end,
         aspect = ResponsiveLayout.WINDOWS.Shop.aspect,
         maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Shop.maxW, ResponsiveLayout.WINDOWS.Shop.maxH),
         onOpen = function()
@@ -383,6 +388,10 @@ function UIController.Initialize()
         gui = InventoryUI,
         frame = findFrame(InventoryUI, "InventoryFrame", "MainFrame", "Frame"),
         backdrop = InventoryUI:FindFirstChild("Backdrop"),
+        -- Gamepad default selection (US5): the Seeds tab.
+        defaultSelection = function()
+            return InventoryUI:FindFirstChild("SeedsTab", true)
+        end,
         aspect = ResponsiveLayout.WINDOWS.Inventory.aspect,
         maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Inventory.maxW, ResponsiveLayout.WINDOWS.Inventory.maxH),
         onOpen = function()

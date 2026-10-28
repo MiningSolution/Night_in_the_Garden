@@ -30,6 +30,11 @@
         "BackgroundColor3": [0.137255, 0.137255, 0.176471],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "SelectionBehaviorDown": "Stop",
+        "SelectionBehaviorLeft": "Stop",
+        "SelectionBehaviorRight": "Stop",
+        "SelectionBehaviorUp": "Stop",
+        "SelectionGroup": true,
         "Size": {"UDim2": [[0, 600], [0, 500]]}
       },
       "children": [
