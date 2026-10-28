@@ -17,6 +17,9 @@
   glyph.
 - Q: Which gamepad buttons open the shop and inventory and select hotbar slots? → A: Y opens the
   shop, X opens the inventory, L1/R1 select the previous/next hotbar slot; B closes windows.
+- Q: While a window is open, do the menu column and hotbar stay usable above the dimmed
+  backdrop? → A: Yes, both stay above the backdrop and work; a tap anywhere else closes the
+  window.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -83,8 +86,8 @@ gamepad.
 **Acceptance Scenarios**:
 
 1. **Given** a window is open, **When** the player taps X, **Then** the window closes.
-2. **Given** a window is open, **When** the player taps the dimmed backdrop outside the window,
-   **Then** the window closes and the tap does not act on the game world.
+2. **Given** a window is open, **When** the player taps the dimmed backdrop (not the window,
+   menu column or hotbar), **Then** the window closes and the tap does not act on the game world.
 3. **Given** a window is open and a gamepad is in use, **When** the player presses the gamepad B
    button, **Then** the window closes.
 4. **Given** a window is open, **When** the player presses Esc, **Then** the Roblox menu behaves
@@ -164,6 +167,7 @@ broken layout. Lower priority because most players hold the phone in landscape a
   not Roblox's own controls).
 - Both a window and the shop's loading overlay are visible: the close controls still work.
 - The player presses a menu key while typing in chat: nothing opens.
+- A window is open and the player taps a hotbar slot: the slot is selected, the window stays open.
 - A gamepad is disconnected while a window is open: the window stays usable by touch or mouse.
 - Very small screens (older phones, ~667×375 landscape): windows still fit, text may hit its
   minimum size, and contents scroll instead of being cut off.
@@ -192,8 +196,10 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **FR-006**: When contents are longer than the window (e.g. many inventory items), the window MUST
   scroll instead of cutting content off.
 - **FR-007**: Every window MUST have a close (X) button of at least 44×44 points.
-- **FR-008**: While a window is open, a dimmed backdrop MUST cover the rest of the screen; tapping
-  or clicking the backdrop MUST close the window and MUST NOT act on the game world.
+- **FR-008**: While a window is open, a dimmed backdrop MUST cover the rest of the screen except
+  the menu-button column and the hotbar, which stay above it, undimmed and usable (switching
+  windows, selecting a slot). Tapping or clicking the backdrop MUST close the window and MUST NOT
+  act on the game world. The open window MUST NOT overlap the menu-button column or the hotbar.
 - **FR-009**: The gamepad B button MUST close the open window. No game function MUST depend on
   the Esc key.
 - **FR-010**: On touch devices the hotbar MUST NOT overlap the thumbstick area or the jump button;
