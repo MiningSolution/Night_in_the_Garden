@@ -146,7 +146,7 @@ All GUI changes go through `Tools/StaticGui/builders/*.luau` and are regenerated
 
 **Independent Test**: On the emulator (or a real phone), rotate to portrait and back — the game stays in landscape.
 
-- [ ] T036 [US6] Confirm `StarterGui.ScreenOrientation = LandscapeSensor` is applied from `default.project.json` (T001) and set the same in Studio, then playtest a portrait↔landscape rotation staying in landscape (FR-012, quickstart V7) — depends on T001
+- [X] T036 [US6] Confirm `StarterGui.ScreenOrientation = LandscapeSensor` is applied from `default.project.json` (T001) and set the same in Studio, then playtest a portrait↔landscape rotation staying in landscape (FR-012, quickstart V7) — depends on T001
 
 **Checkpoint**: orientation is locked to landscape on device.
 
@@ -156,11 +156,11 @@ All GUI changes go through `Tools/StaticGui/builders/*.luau` and are regenerated
 
 **Purpose**: Docs, offline + Studio verification, parity, and the constitution's no-data-change guarantee.
 
-- [ ] T037 [P] Update the controls section of `README.md`: touch menu buttons, PC keys (B shop, I inventory, 1–3 hotbar), gamepad (Y inventory, X shop, L1/R1 hotbar, B close, A confirm)
-- [ ] T038 Run quickstart V0 offline checks: `luau Tools/Tests/responsive_layout.spec.luau` (all specs pass), `python3 Tools/StaticGui/build_models.py "$(command -v luau)"` (one fingerprint per ScreenGui: HUD, HUDControls, InventoryUI, ShopUI), and `git status --short StarterGui/` (expected: no changes — models already regenerated) — depends on all builder/regenerate and T006 tasks
-- [ ] T039 Run quickstart V1 repo↔Studio parity through Studio MCP (normalized script-source hashes + `GuiRecorder` fingerprints); confirm every script and ScreenGui matches and `StarterGui.ScreenOrientation` is `LandscapeSensor`
+- [X] T037 [P] Update the controls section of `README.md`: touch menu buttons, PC keys (B shop, I inventory, 1–3 hotbar), gamepad (Y inventory, X shop, L1/R1 hotbar, B close, A confirm)
+- [X] T038 Run quickstart V0 offline checks: `luau Tools/Tests/responsive_layout.spec.luau` (all specs pass), `python3 Tools/StaticGui/build_models.py "$(command -v luau)"` (one fingerprint per ScreenGui: HUD, HUDControls, InventoryUI, ShopUI), and `git status --short StarterGui/` (expected: no changes — models already regenerated) — depends on all builder/regenerate and T006 tasks
+- [X] T039 Run quickstart V1 repo↔Studio parity through Studio MCP (normalized script-source hashes + `GuiRecorder` fingerprints); confirm every script and ScreenGui matches and `StarterGui.ScreenOrientation` is `LandscapeSensor`
 - [ ] T040 Run quickstart V2–V8 Studio playtests via Studio MCP with the device and controller emulators: V2 touch flow (SC-001), V3 five reference screens with 0 clipped/undersized/overlap issues (SC-002/SC-003), V4 touch controls clear — verify the R5 thumbstick-zone size (SC-004), V5 PC keyboard/mouse (FR-014), V6 gamepad — verify the R8 B-vs-selection order (SC-005), V7 orientation, V8 robustness and 0 new Output errors (SC-006, SC-007) — depends on all implementation tasks
-- [ ] T041 Review the branch diff to confirm FR-019: no change to remotes, handlers, prices, inventory contents or saved player data — UI reach and display only (constitution I)
+- [X] T041 Review the branch diff to confirm FR-019: no change to remotes, handlers, prices, inventory contents or saved player data — UI reach and display only (constitution I)
 
 ---
 
