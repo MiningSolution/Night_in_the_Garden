@@ -27,13 +27,34 @@ end
 
 print("🎨 Creating InventoryUI...")
 
+-- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
+-- module is required directly.
+local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+
 -- Create main ScreenGui
 local InventoryUI = Instance.new("ScreenGui")
 InventoryUI.Name = "InventoryUI"
 InventoryUI.ResetOnSpawn = false
 InventoryUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+InventoryUI.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+InventoryUI.IgnoreGuiInset = false
 InventoryUI.Enabled = false -- Hidden by default, opened with 'I' key
 InventoryUI.Parent = playerGui
+
+-- Full-screen dim backdrop (US3): tapping it closes the window and the Active
+-- TextButton keeps the tap from reaching the game world (FR-008). Parented
+-- before InventoryFrame so it renders behind it.
+local Backdrop = Instance.new("TextButton")
+Backdrop.Name = "Backdrop"
+Backdrop.Size = UDim2.new(1, 0, 1, 0)
+Backdrop.Position = UDim2.new(0, 0, 0, 0)
+Backdrop.BackgroundColor3 = Theme.Backdrop
+Backdrop.BackgroundTransparency = Theme.BackdropTransparency
+Backdrop.BorderSizePixel = 0
+Backdrop.AutoButtonColor = false
+Backdrop.Text = ""
+Backdrop.ZIndex = 0
+Backdrop.Parent = InventoryUI
 
 --[[
     MAIN INVENTORY FRAME
@@ -46,6 +67,12 @@ InventoryFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 InventoryFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 InventoryFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 InventoryFrame.BorderSizePixel = 0
+-- US5 (R8): keep gamepad selection navigation inside the open window.
+InventoryFrame.SelectionGroup = true
+InventoryFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
+InventoryFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
+InventoryFrame.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop
+InventoryFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 InventoryFrame.Parent = InventoryUI
 
 local frameCorner = Instance.new("UICorner")
@@ -106,8 +133,8 @@ TitleLabel.Parent = HeaderBar
 -- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 40, 0, 40)
-CloseButton.Position = UDim2.new(1, -50, 0.5, 0)
+CloseButton.Size = UDim2.new(0, 44, 0, 44) -- >= 44x44 (FR-007)
+CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
 CloseButton.BorderSizePixel = 0
@@ -151,7 +178,7 @@ SeedsTab.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
 SeedsTab.BorderSizePixel = 0
 SeedsTab.Text = "🌱 Seeds"
 SeedsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-SeedsTab.TextSize = 18
+SeedsTab.TextSize = 20 -- button label >= 20 (FR-005)
 SeedsTab.Font = Enum.Font.GothamBold
 SeedsTab.AutoButtonColor = false
 SeedsTab.Parent = TabContainer
@@ -169,7 +196,7 @@ ItemsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 ItemsTab.BorderSizePixel = 0
 ItemsTab.Text = "📦 Items"
 ItemsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
-ItemsTab.TextSize = 18
+ItemsTab.TextSize = 20 -- button label >= 20 (FR-005)
 ItemsTab.Font = Enum.Font.GothamBold
 ItemsTab.AutoButtonColor = false
 ItemsTab.Parent = TabContainer
@@ -278,7 +305,7 @@ TooltipTitle.Size = UDim2.new(1, 0, 0, 25)
 TooltipTitle.BackgroundTransparency = 1
 TooltipTitle.Text = "Item Name"
 TooltipTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-TooltipTitle.TextSize = 18
+TooltipTitle.TextSize = 20 -- title >= 20 (FR-005)
 TooltipTitle.Font = Enum.Font.GothamBold
 TooltipTitle.TextXAlignment = Enum.TextXAlignment.Left
 TooltipTitle.TextYAlignment = Enum.TextYAlignment.Top
@@ -292,7 +319,7 @@ TooltipDescription.Position = UDim2.new(0, 0, 0, 30)
 TooltipDescription.BackgroundTransparency = 1
 TooltipDescription.Text = "Item description goes here"
 TooltipDescription.TextColor3 = Color3.fromRGB(180, 180, 180)
-TooltipDescription.TextSize = 14
+TooltipDescription.TextSize = 18 -- body >= 18 (FR-005)
 TooltipDescription.Font = Enum.Font.Gotham
 TooltipDescription.TextXAlignment = Enum.TextXAlignment.Left
 TooltipDescription.TextYAlignment = Enum.TextYAlignment.Top
@@ -315,7 +342,7 @@ TooltipStats.Position = UDim2.new(0, 0, 0, 80)
 TooltipStats.BackgroundTransparency = 1
 TooltipStats.Text = "Quantity: 10\n💰 Sell Value: 15 coins\n🌱 Type: Seed"
 TooltipStats.TextColor3 = Color3.fromRGB(200, 200, 200)
-TooltipStats.TextSize = 13
+TooltipStats.TextSize = 18 -- body >= 18 (FR-005)
 TooltipStats.Font = Enum.Font.Gotham
 TooltipStats.TextXAlignment = Enum.TextXAlignment.Left
 TooltipStats.TextYAlignment = Enum.TextYAlignment.Top

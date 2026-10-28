@@ -1,18 +1,21 @@
 --[[
     CreateHUD.lua
     Location: StarterGui (as LocalScript)
-    
+
     PURPOSE:
     Programmatically creates the HUD GUI including:
     - Currency display (Coins and Dream Seeds)
     - Day/Night cycle indicator with progress bar
-    - Hotbar with 3 tool slots
-    
+
+    The hotbar and the menu buttons live in HUDControls (feature 001), a
+    separate ScreenGui that stays above the window backdrops; this HUD holds
+    only the always-background currency and day/night indicator.
+
     INSTALLATION:
     1. Place this script in StarterGui as a LocalScript
     2. Run the game once - HUD will be created automatically
     3. You can disable this script after creation if desired
-    
+
     NOTE: This script runs once per player when they join
 ]]
 
@@ -33,6 +36,8 @@ local HUD = Instance.new("ScreenGui")
 HUD.Name = "HUD"
 HUD.ResetOnSpawn = false
 HUD.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+HUD.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+HUD.IgnoreGuiInset = false
 HUD.Parent = playerGui
 
 --[[
@@ -130,119 +135,9 @@ local progressBarCorner = Instance.new("UICorner")
 progressBarCorner.CornerRadius = UDim.new(0, 6)
 progressBarCorner.Parent = ProgressBar
 
---[[
-    HOTBAR
-    Bottom-center with 3 tool slots
-]]
-local Hotbar = Instance.new("Frame")
-Hotbar.Name = "Hotbar"
-Hotbar.Size = UDim2.new(0, 340, 0, 110)
-Hotbar.Position = UDim2.new(0.5, -170, 1, -130)
-Hotbar.BackgroundTransparency = 1
-Hotbar.Parent = HUD
-
--- Create 3 hotbar slots
-for i = 1, 3 do
-    local slot = Instance.new("Frame")
-    slot.Name = "Slot" .. i
-    slot.Size = UDim2.new(0, 100, 0, 100)
-    slot.Position = UDim2.new(0, (i-1) * 110, 0, 0)
-    slot.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    slot.BorderSizePixel = 0
-    slot.Parent = Hotbar
-    
-    local slotCorner = Instance.new("UICorner")
-    slotCorner.CornerRadius = UDim.new(0, 10)
-    slotCorner.Parent = slot
-    
-    -- Slot button (for click detection)
-    local slotButton = Instance.new("TextButton")
-    slotButton.Name = "SlotButton"
-    slotButton.Size = UDim2.new(1, 0, 1, 0)
-    slotButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    slotButton.BackgroundTransparency = 0.3
-    slotButton.BorderSizePixel = 0
-    slotButton.Text = ""
-    slotButton.AutoButtonColor = false
-    slotButton.Parent = slot
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 10)
-    buttonCorner.Parent = slotButton
-    
-    -- Item icon
-    local itemIcon = Instance.new("ImageLabel")
-    itemIcon.Name = "ItemIcon"
-    itemIcon.Size = UDim2.new(0, 60, 0, 60)
-    itemIcon.Position = UDim2.new(0.5, 0, 0.4, 0)
-    itemIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-    itemIcon.BackgroundTransparency = 1
-    itemIcon.Image = "rbxassetid://0"
-    itemIcon.ScaleType = Enum.ScaleType.Fit
-    itemIcon.Parent = slot
-    
-    -- Emoji label (fallback when no icon)
-    local emojiLabel = Instance.new("TextLabel")
-    emojiLabel.Name = "EmojiLabel"
-    emojiLabel.Size = UDim2.new(1, 0, 1, 0)
-    emojiLabel.BackgroundTransparency = 1
-    emojiLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    emojiLabel.TextSize = 40
-    emojiLabel.Font = Enum.Font.GothamBold
-    emojiLabel.Parent = itemIcon
-    
-    -- Set default emojis
-    local defaultEmojis = {"💧", "🥕", "🏮"}
-    emojiLabel.Text = defaultEmojis[i]
-    
-    -- Selection border (hidden by default)
-    local selectionBorder = Instance.new("ImageLabel")
-    selectionBorder.Name = "SelectionBorder"
-    selectionBorder.Size = UDim2.new(1, 8, 1, 8)
-    selectionBorder.Position = UDim2.new(0.5, 0, 0.5, 0)
-    selectionBorder.AnchorPoint = Vector2.new(0.5, 0.5)
-    selectionBorder.BackgroundTransparency = 1
-    selectionBorder.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-    selectionBorder.ImageColor3 = Color3.fromRGB(80, 200, 120)
-    selectionBorder.ScaleType = Enum.ScaleType.Slice
-    selectionBorder.SliceCenter = Rect.new(8, 8, 8, 8)
-    selectionBorder.Visible = false
-    selectionBorder.ZIndex = 0
-    selectionBorder.Parent = slot
-    
-    -- Keybind hint (bottom of slot)
-    local keybindHint = Instance.new("TextLabel")
-    keybindHint.Name = "KeybindHint"
-    keybindHint.Size = UDim2.new(0, 30, 0, 25)
-    keybindHint.Position = UDim2.new(0.5, 0, 1, -5)
-    keybindHint.AnchorPoint = Vector2.new(0.5, 1)
-    keybindHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    keybindHint.BackgroundTransparency = 0.5
-    keybindHint.BorderSizePixel = 0
-    keybindHint.Text = tostring(i)
-    keybindHint.TextColor3 = Color3.fromRGB(255, 255, 255)
-    keybindHint.TextSize = 16
-    keybindHint.Font = Enum.Font.GothamBold
-    keybindHint.Parent = slot
-    
-    local keybindCorner = Instance.new("UICorner")
-    keybindCorner.CornerRadius = UDim.new(0, 6)
-    keybindCorner.Parent = keybindHint
-end
-
--- Show selection on first slot by default
-local firstSlot = Hotbar:FindFirstChild("Slot1")
-if firstSlot then
-    local selectionBorder = firstSlot:FindFirstChild("SelectionBorder")
-    if selectionBorder then
-        selectionBorder.Visible = true
-    end
-end
-
 print("✅ HUD created successfully!")
 print("   Components:")
 print("   - CurrencyDisplay (Coins, Dream Seeds)")
 print("   - DayNightIndicator (Phase, Progress)")
-print("   - Hotbar (3 slots with keybinds)")
 print("")
 print("🎮 HUD is ready for UIController!")

@@ -24,6 +24,11 @@ Enum = setmetatable({}, { __index = function(_, enumType)
 end })
 game = { GetService = function(_, name) return { Name = name } end }
 
+-- Theme tokens exposed to the builders as the global UI_THEME (research R10).
+-- build_models.py sets UITHEME_SRC to ReplicatedStorage/UITheme.lua's source;
+-- evaluate it now that the Color3 mock above exists.
+UI_THEME = (UITHEME_SRC and UITHEME_SRC ~= "") and assert(loadstring(UITHEME_SRC, "=UITheme"))() or nil
+
 -- JSON with a stable key order: name, className, properties (sorted), children
 local function encode(v, indent)
     indent = indent or ""

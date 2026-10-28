@@ -2,10 +2,26 @@
   "className": "ScreenGui",
   "properties": {
     "Enabled": false,
+    "IgnoreGuiInset": false,
     "ResetOnSpawn": false,
+    "ScreenInsets": "CoreUISafeInsets",
     "ZIndexBehavior": "Sibling"
   },
   "children": [
+    {
+      "name": "Backdrop",
+      "className": "TextButton",
+      "properties": {
+        "AutoButtonColor": false,
+        "BackgroundColor3": [0, 0, 0],
+        "BackgroundTransparency": 0.5,
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0, 0], [0, 0]]},
+        "Size": {"UDim2": [[1, 0], [1, 0]]},
+        "Text": "",
+        "ZIndex": 0
+      }
+    },
     {
       "name": "InventoryFrame",
       "className": "Frame",
@@ -14,6 +30,11 @@
         "BackgroundColor3": [0.137255, 0.137255, 0.176471],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "SelectionBehaviorDown": "Stop",
+        "SelectionBehaviorLeft": "Stop",
+        "SelectionBehaviorRight": "Stop",
+        "SelectionBehaviorUp": "Stop",
+        "SelectionGroup": true,
         "Size": {"UDim2": [[0, 600], [0, 500]]}
       },
       "children": [
@@ -89,8 +110,8 @@
                 "BackgroundColor3": [0.784314, 0.313725, 0.313725],
                 "BorderSizePixel": 0,
                 "Font": "GothamBold",
-                "Position": {"UDim2": [[1, -50], [0.5, 0]]},
-                "Size": {"UDim2": [[0, 40], [0, 40]]},
+                "Position": {"UDim2": [[1, -54], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 44], [0, 44]]},
                 "Text": "X",
                 "TextColor3": [1, 1, 1],
                 "TextSize": 24
@@ -128,7 +149,7 @@
                 "Size": {"UDim2": [[0, 140], [1, 0]]},
                 "Text": "🌱 Seeds",
                 "TextColor3": [1, 1, 1],
-                "TextSize": 18
+                "TextSize": 20
               },
               "children": [
                 {
@@ -152,7 +173,7 @@
                 "Size": {"UDim2": [[0, 140], [1, 0]]},
                 "Text": "📦 Items",
                 "TextColor3": [0.784314, 0.784314, 0.784314],
-                "TextSize": 18
+                "TextSize": 20
               },
               "children": [
                 {
@@ -266,7 +287,7 @@
             "Size": {"UDim2": [[1, 0], [0, 25]]},
             "Text": "Item Name",
             "TextColor3": [1, 1, 1],
-            "TextSize": 18,
+            "TextSize": 20,
             "TextXAlignment": "Left",
             "TextYAlignment": "Top"
           }
@@ -281,7 +302,7 @@
             "Size": {"UDim2": [[1, 0], [0, 40]]},
             "Text": "Item description goes here",
             "TextColor3": [0.705882, 0.705882, 0.705882],
-            "TextSize": 14,
+            "TextSize": 18,
             "TextWrapped": true,
             "TextXAlignment": "Left",
             "TextYAlignment": "Top"
@@ -307,7 +328,7 @@
             "Size": {"UDim2": [[1, 0], [1, -80]]},
             "Text": "Quantity: 10\n💰 Sell Value: 15 coins\n🌱 Type: Seed",
             "TextColor3": [0.784314, 0.784314, 0.784314],
-            "TextSize": 13,
+            "TextSize": 18,
             "TextXAlignment": "Left",
             "TextYAlignment": "Top"
           }

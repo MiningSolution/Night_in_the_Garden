@@ -239,7 +239,7 @@ function ShopController.PopulateCategoryList()
         button.BorderSizePixel = 0
         button.Text = category.display
         button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.TextSize = 18
+        button.TextSize = 20 -- button label >= 20 (FR-005)
         button.Font = Enum.Font.GothamBold
         button.AutoButtonColor = false
         button.Parent = leftPanel
@@ -348,11 +348,13 @@ function ShopController.DisplayItem(category, itemName)
     print(string.format("🛒 Displaying item: %s (Price: %d)", itemName, price))
     
     -- Update UI elements
-    local itemIconDisplay = rightPanel:FindFirstChild("ItemIconDisplay")
-    local itemNameLabel = rightPanel:FindFirstChild("ItemNameLabel")
-    local itemDescriptionLabel = rightPanel:FindFirstChild("ItemDescriptionLabel")
-    local priceLabel = rightPanel:FindFirstChild("PriceLabel")
-    local buyButton = rightPanel:FindFirstChild("BuyButton")
+    -- Elements now live under RightPanel.Details / RightPanel.Footer (US2), so
+    -- look them up recursively.
+    local itemIconDisplay = rightPanel:FindFirstChild("ItemIconDisplay", true)
+    local itemNameLabel = rightPanel:FindFirstChild("ItemNameLabel", true)
+    local itemDescriptionLabel = rightPanel:FindFirstChild("ItemDescriptionLabel", true)
+    local priceLabel = rightPanel:FindFirstChild("PriceLabel", true)
+    local buyButton = rightPanel:FindFirstChild("BuyButton", true)
     
     -- Item name
     if itemNameLabel then
@@ -398,7 +400,7 @@ function ShopController.DisplayItem(category, itemName)
     end
     
     -- Update quantity display
-    local quantityStepper = rightPanel:FindFirstChild("QuantityStepper")
+    local quantityStepper = rightPanel:FindFirstChild("QuantityStepper", true)
     if quantityStepper then
         local quantityDisplay = quantityStepper:FindFirstChild("QuantityDisplay")
         if quantityDisplay then
@@ -428,12 +430,12 @@ function ShopController.UpdateQuantity(delta)
     -- Update UI
     local rightPanel = shopFrame and shopFrame:FindFirstChild("RightPanel")
     if rightPanel then
-        local buyButton = rightPanel:FindFirstChild("BuyButton")
+        local buyButton = rightPanel:FindFirstChild("BuyButton", true)
         if buyButton then
             buyButton.Text = string.format("BUY FOR %d COINS", price * currentQuantity)
         end
         
-        local quantityStepper = rightPanel:FindFirstChild("QuantityStepper")
+        local quantityStepper = rightPanel:FindFirstChild("QuantityStepper", true)
         if quantityStepper then
             local quantityDisplay = quantityStepper:FindFirstChild("QuantityDisplay")
             if quantityDisplay then
@@ -608,7 +610,7 @@ function ShopController.Initialize()
     
     -- Setup quantity stepper buttons (P2-5: Throttled)
     if rightPanel then
-        local quantityStepper = rightPanel:FindFirstChild("QuantityStepper")
+        local quantityStepper = rightPanel:FindFirstChild("QuantityStepper", true)
         if quantityStepper then
             local minusBtn = quantityStepper:FindFirstChild("MinusBtn")
             local plusBtn = quantityStepper:FindFirstChild("PlusBtn")
@@ -638,7 +640,7 @@ function ShopController.Initialize()
         end
         
         -- Setup buy button (P2-5: Debounced)
-        local buyButton = rightPanel:FindFirstChild("BuyButton")
+        local buyButton = rightPanel:FindFirstChild("BuyButton", true)
         if buyButton then
             local debouncedBuy = Debounce.create(function()
                 ShopController.BuyItem()

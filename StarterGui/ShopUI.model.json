@@ -2,10 +2,26 @@
   "className": "ScreenGui",
   "properties": {
     "Enabled": false,
+    "IgnoreGuiInset": false,
     "ResetOnSpawn": false,
+    "ScreenInsets": "CoreUISafeInsets",
     "ZIndexBehavior": "Sibling"
   },
   "children": [
+    {
+      "name": "Backdrop",
+      "className": "TextButton",
+      "properties": {
+        "AutoButtonColor": false,
+        "BackgroundColor3": [0, 0, 0],
+        "BackgroundTransparency": 0.5,
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0, 0], [0, 0]]},
+        "Size": {"UDim2": [[1, 0], [1, 0]]},
+        "Text": "",
+        "ZIndex": 0
+      }
+    },
     {
       "name": "ShopFrame",
       "className": "Frame",
@@ -14,6 +30,11 @@
         "BackgroundColor3": [0.137255, 0.137255, 0.176471],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "SelectionBehaviorDown": "Stop",
+        "SelectionBehaviorLeft": "Stop",
+        "SelectionBehaviorRight": "Stop",
+        "SelectionBehaviorUp": "Stop",
+        "SelectionGroup": true,
         "Size": {"UDim2": [[0, 800], [0, 550]]}
       },
       "children": [
@@ -89,8 +110,8 @@
                 "BackgroundColor3": [0.784314, 0.313725, 0.313725],
                 "BorderSizePixel": 0,
                 "Font": "GothamBold",
-                "Position": {"UDim2": [[1, -50], [0.5, 0]]},
-                "Size": {"UDim2": [[0, 40], [0, 40]]},
+                "Position": {"UDim2": [[1, -54], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 44], [0, 44]]},
                 "Text": "X",
                 "TextColor3": [1, 1, 1],
                 "TextSize": 24
@@ -176,135 +197,107 @@
               }
             },
             {
-              "name": "ItemIconDisplay",
-              "className": "ImageLabel",
+              "name": "Footer",
+              "className": "Frame",
               "properties": {
-                "AnchorPoint": [0.5, 0],
-                "BackgroundColor3": [0.196078, 0.196078, 0.235294],
-                "BorderSizePixel": 0,
-                "Image": "rbxassetid://0",
-                "Position": {"UDim2": [[0.5, 0], [0, 0]]},
-                "ScaleType": "Fit",
-                "Size": {"UDim2": [[0, 120], [0, 120]]}
+                "BackgroundTransparency": 1,
+                "Position": {"UDim2": [[0, 0], [1, -120]]},
+                "Size": {"UDim2": [[1, 0], [0, 120]]}
               },
               "children": [
                 {
-                  "name": "UICorner",
-                  "className": "UICorner",
-                  "properties": {
-                    "CornerRadius": {"UDim": [0, 12]}
-                  }
-                },
-                {
-                  "name": "IconText",
-                  "className": "TextLabel",
+                  "name": "QuantityStepper",
+                  "className": "Frame",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamBold",
-                    "Size": {"UDim2": [[1, 0], [1, 0]]},
-                    "Text": "🌱",
-                    "TextColor3": [0.588235, 0.588235, 0.588235],
-                    "TextSize": 60
-                  }
-                }
-              ]
-            },
-            {
-              "name": "ItemNameLabel",
-              "className": "TextLabel",
-              "properties": {
-                "BackgroundTransparency": 1,
-                "Font": "GothamBold",
-                "Position": {"UDim2": [[0, 0], [0, 135]]},
-                "Size": {"UDim2": [[1, 0], [0, 35]]},
-                "Text": "SELECT AN ITEM",
-                "TextColor3": [1, 1, 1],
-                "TextSize": 22,
-                "TextWrapped": true
-              }
-            },
-            {
-              "name": "ItemDescriptionLabel",
-              "className": "TextLabel",
-              "properties": {
-                "BackgroundTransparency": 1,
-                "Font": "Gotham",
-                "Position": {"UDim2": [[0, 0], [0, 175]]},
-                "Size": {"UDim2": [[1, 0], [0, 60]]},
-                "Text": "Choose a category to browse items",
-                "TextColor3": [0.705882, 0.705882, 0.705882],
-                "TextSize": 15,
-                "TextWrapped": true,
-                "TextYAlignment": "Top"
-              }
-            },
-            {
-              "name": "Frame",
-              "className": "Frame",
-              "properties": {
-                "BackgroundColor3": [0.235294, 0.235294, 0.27451],
-                "BorderSizePixel": 0,
-                "Position": {"UDim2": [[0, 0], [0, 250]]},
-                "Size": {"UDim2": [[1, 0], [0, 2]]}
-              }
-            },
-            {
-              "name": "PriceLabel",
-              "className": "TextLabel",
-              "properties": {
-                "BackgroundTransparency": 1,
-                "Font": "GothamBold",
-                "Position": {"UDim2": [[0, 0], [0, 265]]},
-                "Size": {"UDim2": [[1, 0], [0, 30]]},
-                "Text": "💰 Price: 0 coins",
-                "TextColor3": [1, 0.862745, 0.392157],
-                "TextSize": 20,
-                "TextXAlignment": "Left"
-              }
-            },
-            {
-              "name": "QuantityStepper",
-              "className": "Frame",
-              "properties": {
-                "BackgroundTransparency": 1,
-                "Position": {"UDim2": [[0, 0], [0, 310]]},
-                "Size": {"UDim2": [[0, 180], [0, 50]]}
-              },
-              "children": [
-                {
-                  "name": "MinusBtn",
-                  "className": "TextButton",
-                  "properties": {
-                    "AutoButtonColor": false,
-                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
-                    "BorderSizePixel": 0,
-                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 0]]},
-                    "Size": {"UDim2": [[0, 50], [0, 50]]},
-                    "Text": "−",
-                    "TextColor3": [1, 1, 1],
-                    "TextSize": 28
+                    "Size": {"UDim2": [[0, 180], [0, 50]]}
                   },
                   "children": [
                     {
-                      "name": "UICorner",
-                      "className": "UICorner",
+                      "name": "MinusBtn",
+                      "className": "TextButton",
                       "properties": {
-                        "CornerRadius": {"UDim": [0, 8]}
-                      }
+                        "AutoButtonColor": false,
+                        "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                        "BorderSizePixel": 0,
+                        "Font": "GothamBold",
+                        "Position": {"UDim2": [[0, 0], [0, 0]]},
+                        "Size": {"UDim2": [[0, 50], [0, 50]]},
+                        "Text": "−",
+                        "TextColor3": [1, 1, 1],
+                        "TextSize": 28
+                      },
+                      "children": [
+                        {
+                          "name": "UICorner",
+                          "className": "UICorner",
+                          "properties": {
+                            "CornerRadius": {"UDim": [0, 8]}
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "QuantityDisplay",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                        "BorderSizePixel": 0,
+                        "Font": "GothamBold",
+                        "Position": {"UDim2": [[0, 55], [0, 0]]},
+                        "Size": {"UDim2": [[0, 70], [0, 50]]},
+                        "Text": "1",
+                        "TextColor3": [1, 1, 1],
+                        "TextSize": 24
+                      },
+                      "children": [
+                        {
+                          "name": "UICorner",
+                          "className": "UICorner",
+                          "properties": {
+                            "CornerRadius": {"UDim": [0, 8]}
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "PlusBtn",
+                      "className": "TextButton",
+                      "properties": {
+                        "AutoButtonColor": false,
+                        "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                        "BorderSizePixel": 0,
+                        "Font": "GothamBold",
+                        "Position": {"UDim2": [[0, 130], [0, 0]]},
+                        "Size": {"UDim2": [[0, 50], [0, 50]]},
+                        "Text": "+",
+                        "TextColor3": [1, 1, 1],
+                        "TextSize": 28
+                      },
+                      "children": [
+                        {
+                          "name": "UICorner",
+                          "className": "UICorner",
+                          "properties": {
+                            "CornerRadius": {"UDim": [0, 8]}
+                          }
+                        }
+                      ]
                     }
                   ]
                 },
                 {
-                  "name": "QuantityDisplay",
-                  "className": "TextLabel",
+                  "name": "BuyButton",
+                  "className": "TextButton",
                   "properties": {
-                    "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                    "AutoButtonColor": false,
+                    "BackgroundColor3": [0.313725, 0.784314, 0.470588],
                     "BorderSizePixel": 0,
                     "Font": "GothamBold",
-                    "Position": {"UDim2": [[0, 55], [0, 0]]},
-                    "Size": {"UDim2": [[0, 70], [0, 50]]},
-                    "Text": "1",
+                    "Position": {"UDim2": [[0, 0], [1, -60]]},
+                    "Size": {"UDim2": [[1, 0], [0, 60]]},
+                    "Text": "BUY",
                     "TextColor3": [1, 1, 1],
                     "TextSize": 24
                   },
@@ -313,31 +306,7 @@
                       "name": "UICorner",
                       "className": "UICorner",
                       "properties": {
-                        "CornerRadius": {"UDim": [0, 8]}
-                      }
-                    }
-                  ]
-                },
-                {
-                  "name": "PlusBtn",
-                  "className": "TextButton",
-                  "properties": {
-                    "AutoButtonColor": false,
-                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
-                    "BorderSizePixel": 0,
-                    "Font": "GothamBold",
-                    "Position": {"UDim2": [[0, 130], [0, 0]]},
-                    "Size": {"UDim2": [[0, 50], [0, 50]]},
-                    "Text": "+",
-                    "TextColor3": [1, 1, 1],
-                    "TextSize": 28
-                  },
-                  "children": [
-                    {
-                      "name": "UICorner",
-                      "className": "UICorner",
-                      "properties": {
-                        "CornerRadius": {"UDim": [0, 8]}
+                        "CornerRadius": {"UDim": [0, 10]}
                       }
                     }
                   ]
@@ -345,25 +314,104 @@
               ]
             },
             {
-              "name": "BuyButton",
-              "className": "TextButton",
+              "name": "Details",
+              "className": "ScrollingFrame",
               "properties": {
-                "AutoButtonColor": false,
-                "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+                "AutomaticCanvasSize": "Y",
+                "BackgroundTransparency": 1,
                 "BorderSizePixel": 0,
-                "Font": "GothamBold",
-                "Position": {"UDim2": [[0, 0], [1, -60]]},
-                "Size": {"UDim2": [[1, 0], [0, 60]]},
-                "Text": "BUY",
-                "TextColor3": [1, 1, 1],
-                "TextSize": 24
+                "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
+                "Position": {"UDim2": [[0, 0], [0, 0]]},
+                "ScrollBarImageColor3": [0.313725, 0.313725, 0.352941],
+                "ScrollBarThickness": 6,
+                "Size": {"UDim2": [[1, 0], [1, -130]]}
               },
               "children": [
                 {
-                  "name": "UICorner",
-                  "className": "UICorner",
+                  "name": "ItemIconDisplay",
+                  "className": "ImageLabel",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 10]}
+                    "AnchorPoint": [0.5, 0],
+                    "BackgroundColor3": [0.196078, 0.196078, 0.235294],
+                    "BorderSizePixel": 0,
+                    "Image": "rbxassetid://0",
+                    "Position": {"UDim2": [[0.5, 0], [0, 0]]},
+                    "ScaleType": "Fit",
+                    "Size": {"UDim2": [[0, 120], [0, 120]]}
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 12]}
+                      }
+                    },
+                    {
+                      "name": "IconText",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "🌱",
+                        "TextColor3": [0.588235, 0.588235, 0.588235],
+                        "TextSize": 60
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "ItemNameLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 0], [0, 135]]},
+                    "Size": {"UDim2": [[1, 0], [0, 35]]},
+                    "Text": "SELECT AN ITEM",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 22,
+                    "TextWrapped": true
+                  }
+                },
+                {
+                  "name": "ItemDescriptionLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "Gotham",
+                    "Position": {"UDim2": [[0, 0], [0, 175]]},
+                    "Size": {"UDim2": [[1, 0], [0, 60]]},
+                    "Text": "Choose a category to browse items",
+                    "TextColor3": [0.705882, 0.705882, 0.705882],
+                    "TextSize": 18,
+                    "TextWrapped": true,
+                    "TextYAlignment": "Top"
+                  }
+                },
+                {
+                  "name": "Frame",
+                  "className": "Frame",
+                  "properties": {
+                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                    "BorderSizePixel": 0,
+                    "Position": {"UDim2": [[0, 0], [0, 250]]},
+                    "Size": {"UDim2": [[1, 0], [0, 2]]}
+                  }
+                },
+                {
+                  "name": "PriceLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 0], [0, 265]]},
+                    "Size": {"UDim2": [[1, 0], [0, 30]]},
+                    "Text": "💰 Price: 0 coins",
+                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextSize": 20,
+                    "TextXAlignment": "Left"
                   }
                 }
               ]
@@ -377,7 +425,8 @@
             "BackgroundColor3": [0, 0, 0],
             "BackgroundTransparency": 0.7,
             "BorderSizePixel": 0,
-            "Size": {"UDim2": [[1, 0], [1, 0]]},
+            "Position": {"UDim2": [[0, 0], [0, 50]]},
+            "Size": {"UDim2": [[1, 0], [1, -50]]},
             "Visible": false,
             "ZIndex": 100
           },

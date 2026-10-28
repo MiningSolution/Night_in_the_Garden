@@ -19,6 +19,8 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local GuiService = game:GetService("GuiService")
+local WindowManager = require(script.Parent.Parent.Utils:WaitForChild("WindowManager"))
 
 local HotbarController = {}
 
@@ -29,11 +31,13 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Wait for UI elements
 -- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
 -- which can take longer than any fixed timeout on a slow join: wait for it.
-local HUD = playerGui:WaitForChild("HUD")
+-- Feature 001: the hotbar moved out of HUD into the always-on-top HUDControls
+-- ScreenGui (so it stays usable above a window backdrop). Read it from there.
+local HUDControls = playerGui:WaitForChild("HUDControls")
 local hotbar
 
-if HUD then
-    hotbar = HUD:WaitForChild("Hotbar", 5)
+if HUDControls then
+    hotbar = HUDControls:WaitForChild("Hotbar", 5)
 end
 
 -- RemoteEvents for plot interaction and tool syncing
@@ -411,9 +415,19 @@ local function SetupMouseClickDetection()
     local Mouse = player:GetMouse()
     
     Mouse.Button1Down:Connect(function()
+        -- R6/FR-008: never use a tool when a window is open or when the press
+        -- lands on an Active GUI element (backdrop, menu buttons, hotbar slots),
+        -- so taps on the UI do not also water/plant the world.
+        if WindowManager.GetOpen() ~= nil then return end
+        local inset = GuiService:GetGuiInset()
+        local mp = UserInputService:GetMouseLocation()
+        for _, obj in ipairs(playerGui:GetGuiObjectsAtPosition(mp.X - inset.X, mp.Y - inset.Y)) do
+            if obj.Active then return end
+        end
+
         -- Get what the mouse is pointing at
         local target = Mouse.Target
-        
+
         if not target then return end
         
         -- Check if target is a plot or valid interaction object

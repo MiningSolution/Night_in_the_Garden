@@ -28,13 +28,34 @@ end
 
 print("🎨 Creating ShopUI...")
 
+-- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
+-- module is required directly.
+local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+
 -- Create main ScreenGui
 local ShopUI = Instance.new("ScreenGui")
 ShopUI.Name = "ShopUI"
 ShopUI.ResetOnSpawn = false
 ShopUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ShopUI.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+ShopUI.IgnoreGuiInset = false
 ShopUI.Enabled = false -- Hidden by default, opened with 'B' key
 ShopUI.Parent = playerGui
+
+-- Full-screen dim backdrop (US3): tapping it closes the window and the Active
+-- TextButton keeps the tap from reaching the game world (FR-008). Parented
+-- before ShopFrame so it renders behind it.
+local Backdrop = Instance.new("TextButton")
+Backdrop.Name = "Backdrop"
+Backdrop.Size = UDim2.new(1, 0, 1, 0)
+Backdrop.Position = UDim2.new(0, 0, 0, 0)
+Backdrop.BackgroundColor3 = Theme.Backdrop
+Backdrop.BackgroundTransparency = Theme.BackdropTransparency
+Backdrop.BorderSizePixel = 0
+Backdrop.AutoButtonColor = false
+Backdrop.Text = ""
+Backdrop.ZIndex = 0
+Backdrop.Parent = ShopUI
 
 --[[
     MAIN SHOP FRAME
@@ -47,6 +68,12 @@ ShopFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 ShopFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 ShopFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 ShopFrame.BorderSizePixel = 0
+-- US5 (R8): keep gamepad selection navigation inside the open window.
+ShopFrame.SelectionGroup = true
+ShopFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
+ShopFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
+ShopFrame.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop
+ShopFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 ShopFrame.Parent = ShopUI
 
 local frameCorner = Instance.new("UICorner")
@@ -105,8 +132,8 @@ TitleLabel.Parent = HeaderBar
 -- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 40, 0, 40)
-CloseButton.Position = UDim2.new(1, -50, 0.5, 0)
+CloseButton.Size = UDim2.new(0, 44, 0, 44) -- >= 44x44 (FR-007)
+CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
 CloseButton.BorderSizePixel = 0
@@ -185,6 +212,27 @@ RightPadding.PaddingLeft = UDim.new(0, 20)
 RightPadding.PaddingRight = UDim.new(0, 20)
 RightPadding.Parent = RightPanel
 
+-- US2 (FR-006): item detail scrolls when taller than the panel; the quantity
+-- stepper and buy button stay pinned in a Footer that never scrolls.
+local Footer = Instance.new("Frame")
+Footer.Name = "Footer"
+Footer.Size = UDim2.new(1, 0, 0, 120)
+Footer.Position = UDim2.new(0, 0, 1, -120)
+Footer.BackgroundTransparency = 1
+Footer.Parent = RightPanel
+
+local Details = Instance.new("ScrollingFrame")
+Details.Name = "Details"
+Details.Size = UDim2.new(1, 0, 1, -130)
+Details.Position = UDim2.new(0, 0, 0, 0)
+Details.BackgroundTransparency = 1
+Details.BorderSizePixel = 0
+Details.ScrollBarThickness = 6
+Details.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90)
+Details.CanvasSize = UDim2.new(0, 0, 0, 0)
+Details.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Details.Parent = RightPanel
+
 -- Item icon display
 local ItemIconDisplay = Instance.new("ImageLabel")
 ItemIconDisplay.Name = "ItemIconDisplay"
@@ -195,7 +243,7 @@ ItemIconDisplay.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 ItemIconDisplay.BorderSizePixel = 0
 ItemIconDisplay.Image = "rbxassetid://0"
 ItemIconDisplay.ScaleType = Enum.ScaleType.Fit
-ItemIconDisplay.Parent = RightPanel
+ItemIconDisplay.Parent = Details
 
 local iconCorner = Instance.new("UICorner")
 iconCorner.CornerRadius = UDim.new(0, 12)
@@ -223,7 +271,7 @@ ItemNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 ItemNameLabel.TextSize = 22
 ItemNameLabel.Font = Enum.Font.GothamBold
 ItemNameLabel.TextWrapped = true
-ItemNameLabel.Parent = RightPanel
+ItemNameLabel.Parent = Details
 
 -- Item description
 local ItemDescriptionLabel = Instance.new("TextLabel")
@@ -233,11 +281,11 @@ ItemDescriptionLabel.Position = UDim2.new(0, 0, 0, 175)
 ItemDescriptionLabel.BackgroundTransparency = 1
 ItemDescriptionLabel.Text = "Choose a category to browse items"
 ItemDescriptionLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-ItemDescriptionLabel.TextSize = 15
+ItemDescriptionLabel.TextSize = 18 -- body >= 18 (FR-005)
 ItemDescriptionLabel.Font = Enum.Font.Gotham
 ItemDescriptionLabel.TextWrapped = true
 ItemDescriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
-ItemDescriptionLabel.Parent = RightPanel
+ItemDescriptionLabel.Parent = Details
 
 -- Separator line
 local Separator = Instance.new("Frame")
@@ -245,7 +293,7 @@ Separator.Size = UDim2.new(1, 0, 0, 2)
 Separator.Position = UDim2.new(0, 0, 0, 250)
 Separator.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 Separator.BorderSizePixel = 0
-Separator.Parent = RightPanel
+Separator.Parent = Details
 
 -- Price label
 local PriceLabel = Instance.new("TextLabel")
@@ -258,7 +306,7 @@ PriceLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
 PriceLabel.TextSize = 20
 PriceLabel.Font = Enum.Font.GothamBold
 PriceLabel.TextXAlignment = Enum.TextXAlignment.Left
-PriceLabel.Parent = RightPanel
+PriceLabel.Parent = Details
 
 --[[
     QUANTITY STEPPER
@@ -266,9 +314,9 @@ PriceLabel.Parent = RightPanel
 local QuantityStepper = Instance.new("Frame")
 QuantityStepper.Name = "QuantityStepper"
 QuantityStepper.Size = UDim2.new(0, 180, 0, 50)
-QuantityStepper.Position = UDim2.new(0, 0, 0, 310)
+QuantityStepper.Position = UDim2.new(0, 0, 0, 0)
 QuantityStepper.BackgroundTransparency = 1
-QuantityStepper.Parent = RightPanel
+QuantityStepper.Parent = Footer
 
 -- Minus button
 local MinusBtn = Instance.new("TextButton")
@@ -351,7 +399,7 @@ BuyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 BuyButton.TextSize = 24
 BuyButton.Font = Enum.Font.GothamBold
 BuyButton.AutoButtonColor = false
-BuyButton.Parent = RightPanel
+BuyButton.Parent = Footer
 
 local buyCorner = Instance.new("UICorner")
 buyCorner.CornerRadius = UDim.new(0, 10)
@@ -371,7 +419,10 @@ end)
 ]]
 local LoadingOverlay = Instance.new("Frame")
 LoadingOverlay.Name = "LoadingOverlay"
-LoadingOverlay.Size = UDim2.new(1, 0, 1, 0)
+-- Cover only the body below the 50px header so the CloseButton stays usable
+-- while loading (US2, contracts/gui-tree.md).
+LoadingOverlay.Size = UDim2.new(1, 0, 1, -50)
+LoadingOverlay.Position = UDim2.new(0, 0, 0, 50)
 LoadingOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 LoadingOverlay.BackgroundTransparency = 0.7
 LoadingOverlay.BorderSizePixel = 0

@@ -17,6 +17,14 @@ local StarterPlayerScripts = script.Parent
 local Utils = StarterPlayerScripts:WaitForChild("Utils")
 local Controllers = StarterPlayerScripts:WaitForChild("Controllers")
 
+-- Feature 001: turn off the default Roblox backpack so the game's own hotbar is
+-- the only tool bar and L1/R1 can be bound through ContextActionService (R1).
+-- The game uses no Roblox Tool instances, so nothing is lost by hiding it.
+local StarterGui = game:GetService("StarterGui")
+pcall(function()
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+end)
+
 local function boot(folder, name)
     local module = folder:WaitForChild(name, 10)
     if not module then
@@ -40,5 +48,12 @@ boot(Controllers, "UIController")
 boot(Controllers, "HotbarController")
 boot(Controllers, "InventoryController")
 boot(Controllers, "ShopController")
+
+-- Feature 001: the shared action layer (keyboard/touch/gamepad). Init after the
+-- controllers so the windows are registered before any action can toggle them.
+local InputActions = boot(Utils, "InputActions")
+if InputActions then
+    InputActions.Init()
+end
 
 print("✅ ClientMain: client controllers loaded")

@@ -35,8 +35,14 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
 -- which can take longer than any fixed timeout on a slow join: wait for it.
 local HUD = playerGui:WaitForChild("HUD")
+local HUDControls = playerGui:WaitForChild("HUDControls")
 local InventoryUI = playerGui:WaitForChild("InventoryUI")
 local ShopUI = playerGui:WaitForChild("ShopUI")
+
+-- Feature 001: single-window state and layout constants.
+local Utils = script.Parent.Parent:WaitForChild("Utils")
+local WindowManager = require(Utils:WaitForChild("WindowManager"))
+local ResponsiveLayout = require(Utils:WaitForChild("ResponsiveLayout"))
 
 -- Currency Display elements
 local currencyDisplay, coinsLabel, dreamSeedsLabel
@@ -60,9 +66,7 @@ if HUD then
     end
 end
 
--- UI State
-local inventoryOpen = false
-local shopOpen = false
+-- UI open/close state now lives in WindowManager (one window at a time, FR-003).
 
 -- Cache for smooth animations
 local lastCoins = 0
@@ -210,35 +214,9 @@ end
     Opens inventory and closes shop if open
 ]]
 function UIController.ToggleInventory()
-    if not InventoryUI then
-        warn("⚠️ InventoryUI not found")
-        return
-    end
-    
-    inventoryOpen = not inventoryOpen
-    InventoryUI.Enabled = inventoryOpen
-    
-    if inventoryOpen then
-        -- Close shop if open
-        if shopOpen then
-            UIController.ToggleShop()
-        end
-        
-        -- Refresh inventory display
-        local success, inventoryController = pcall(function()
-            return require(script.Parent.InventoryController)
-        end)
-        
-        if success and inventoryController then
-            inventoryController.RefreshGrid()
-        else
-            warn("⚠️ Could not load InventoryController:", inventoryController)
-        end
-        
-        print("📦 Inventory opened")
-    else
-        print("📦 Inventory closed")
-    end
+    -- Delegates to WindowManager; opening closes any other window and runs the
+    -- registered onOpen (InventoryController.RefreshGrid).
+    WindowManager.Toggle("Inventory")
 end
 
 --[[
@@ -246,35 +224,9 @@ end
     Opens shop and closes inventory if open
 ]]
 function UIController.ToggleShop()
-    if not ShopUI then
-        warn("⚠️ ShopUI not found")
-        return
-    end
-    
-    shopOpen = not shopOpen
-    ShopUI.Enabled = shopOpen
-    
-    if shopOpen then
-        -- Close inventory if open
-        if inventoryOpen then
-            UIController.ToggleInventory()
-        end
-        
-        -- Load shop data
-        local success, shopController = pcall(function()
-            return require(script.Parent.ShopController)
-        end)
-        
-        if success and shopController then
-            shopController.LoadShopData()
-        else
-            warn("⚠️ Could not load ShopController:", shopController)
-        end
-        
-        print("🏪 Shop opened")
-    else
-        print("🏪 Shop closed")
-    end
+    -- Delegates to WindowManager; opening closes any other window and runs the
+    -- registered onOpen (ShopController.LoadShopData).
+    WindowManager.Toggle("Shop")
 end
 
 --[[
@@ -364,12 +316,7 @@ end
     Close all open UIs
 ]]
 function UIController.CloseAllUIs()
-    if inventoryOpen then
-        UIController.ToggleInventory()
-    end
-    if shopOpen then
-        UIController.ToggleShop()
-    end
+    WindowManager.Close()
 end
 
 --[[
@@ -377,9 +324,10 @@ end
     @return table with inventoryOpen and shopOpen booleans
 ]]
 function UIController.GetUIState()
+    local open = WindowManager.GetOpen()
     return {
-        inventoryOpen = inventoryOpen,
-        shopOpen = shopOpen
+        inventoryOpen = open == "Inventory",
+        shopOpen = open == "Shop"
     }
 end
 
@@ -407,37 +355,139 @@ function UIController.Initialize()
         end
     end)
     
-    -- Bind keyboard shortcuts
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        -- Don't process input if player is typing in chat
-        if gameProcessed then return end
-        
-        -- I (inventory) is bound through ContextActionService below
-        if input.KeyCode == Enum.KeyCode.B then
-            UIController.ToggleShop()
-            
-        elseif input.KeyCode == Enum.KeyCode.Escape then
-            -- Close all UIs
-            UIController.CloseAllUIs()
+    -- Feature 001: register the two windows with WindowManager (one open at a
+    -- time, FR-003). Window aspect/maxSize come from ResponsiveLayout.WINDOWS
+    -- (single source, constitution II). The keyboard/gamepad open actions are
+    -- owned by InputActions; the menu buttons are wired below (touch path).
+    local function findFrame(gui, ...)
+        for _, n in ipairs({...}) do
+            local f = gui:FindFirstChild(n)
+            if f then return f end
         end
-    end)
-    
-    -- "I" is also Roblox's camera zoom-in key: UserInputService reports it as
-    -- gameProcessed, so the handler above never saw it and the inventory never
-    -- opened. Bind it above the camera instead (Sink also stops the zoom).
-    -- ContextActionService does not fire while the player is typing in a TextBox.
-    game:GetService("ContextActionService"):BindActionAtPriority(
-        "NightGarden_ToggleInventory",
-        function(_, inputState)
-            if inputState == Enum.UserInputState.Begin then
-                UIController.ToggleInventory()
-            end
-            return Enum.ContextActionResult.Sink
+        return nil
+    end
+
+    WindowManager.Register("Shop", {
+        gui = ShopUI,
+        frame = findFrame(ShopUI, "ShopFrame", "MainFrame", "Frame"),
+        backdrop = ShopUI:FindFirstChild("Backdrop"),
+        -- Gamepad default selection (US5): the first shop category button.
+        defaultSelection = function()
+            local lp = ShopUI:FindFirstChild("LeftPanel", true)
+            return lp and lp:FindFirstChild("seedsCategoryBtn")
         end,
-        false,
-        Enum.ContextActionPriority.High.Value,
-        Enum.KeyCode.I
-    )
+        aspect = ResponsiveLayout.WINDOWS.Shop.aspect,
+        maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Shop.maxW, ResponsiveLayout.WINDOWS.Shop.maxH),
+        onOpen = function()
+            local ok, shop = pcall(require, script.Parent.ShopController)
+            if ok and shop then shop.LoadShopData() else warn("⚠️ Could not load ShopController:", shop) end
+        end,
+    })
+
+    WindowManager.Register("Inventory", {
+        gui = InventoryUI,
+        frame = findFrame(InventoryUI, "InventoryFrame", "MainFrame", "Frame"),
+        backdrop = InventoryUI:FindFirstChild("Backdrop"),
+        -- Gamepad default selection (US5): the Seeds tab.
+        defaultSelection = function()
+            return InventoryUI:FindFirstChild("SeedsTab", true)
+        end,
+        aspect = ResponsiveLayout.WINDOWS.Inventory.aspect,
+        maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Inventory.maxW, ResponsiveLayout.WINDOWS.Inventory.maxH),
+        onOpen = function()
+            local ok, inv = pcall(require, script.Parent.InventoryController)
+            if ok and inv then inv.RefreshGrid() else warn("⚠️ Could not load InventoryController:", inv) end
+        end,
+    })
+
+    -- Wire the always-visible menu buttons so touch players can open/switch the
+    -- windows without a keyboard (US1, FR-001/FR-003).
+    local menuButtons = HUDControls:WaitForChild("MenuButtons")
+    menuButtons:WaitForChild("ShopButton").Activated:Connect(function()
+        UIController.ToggleShop()
+    end)
+    menuButtons:WaitForChild("InventoryButton").Activated:Connect(function()
+        UIController.ToggleInventory()
+    end)
+
+    -- US2 (FR-004): size and position the menu column and the windows from
+    -- ResponsiveLayout so they fit every screen inside the safe area. Recompute
+    -- only on viewport-size or input-mode changes, never per frame (R2, SC-006).
+    -- The touch hotbar geometry (slot resize) is applied in US4.
+    local InputActions = require(Utils:WaitForChild("InputActions"))
+    local camera = workspace.CurrentCamera
+    local shopFrame = ShopUI:WaitForChild("ShopFrame")
+    local inventoryFrame = InventoryUI:WaitForChild("InventoryFrame")
+    local hotbarFrame = HUDControls:WaitForChild("Hotbar")
+
+    -- Live jump-button rect (US4): read Roblox's touch JumpButton so the hotbar
+    -- is placed clear of it; nil falls back to the formula inside ResponsiveLayout.
+    local function jumpRect()
+        local touchGui = playerGui:FindFirstChild("TouchGui")
+        local tcf = touchGui and touchGui:FindFirstChild("TouchControlFrame")
+        local jb = tcf and tcf:FindFirstChild("JumpButton")
+        if jb and jb.Visible and jb.AbsoluteSize.X > 0 then
+            local origin = HUDControls.AbsolutePosition
+            return {
+                x = jb.AbsolutePosition.X - origin.X,
+                y = jb.AbsolutePosition.Y - origin.Y,
+                w = jb.AbsoluteSize.X,
+                h = jb.AbsoluteSize.Y,
+            }
+        end
+        return nil
+    end
+
+    local function placeFrame(frame, r)
+        if frame and r then
+            frame.AnchorPoint = Vector2.new(0, 0)
+            frame.Position = UDim2.fromOffset(r.x, r.y)
+            frame.Size = UDim2.fromOffset(r.w, r.h)
+        end
+    end
+
+    local function applyLayout()
+        local absSize = HUDControls.AbsoluteSize
+        if absSize.X < 1 or absSize.Y < 1 then return end
+        local vp = camera and camera.ViewportSize or absSize
+        local res = ResponsiveLayout.compute({
+            viewport = { w = vp.X, h = vp.Y },
+            gui = { x = 0, y = 0, w = absSize.X, h = absSize.Y },
+            mode = InputActions.GetMode() or "KeyboardMouse",
+            jump = jumpRect(),
+        })
+        menuButtons.AnchorPoint = Vector2.new(0, 0)
+        menuButtons.Position = UDim2.fromOffset(res.menuColumn.x, res.menuColumn.y)
+        menuButtons.Size = UDim2.fromOffset(res.menuColumn.w, res.menuColumn.h)
+        -- Size both windows (hidden ones too) so they are fitted when opened.
+        placeFrame(shopFrame, res.windows.Shop)
+        placeFrame(inventoryFrame, res.windows.Inventory)
+        -- Hotbar (US4): position the frame and resize the 3 slots to the mode's
+        -- slot size (64 touch / 100 otherwise), clear of the thumbstick and jump.
+        hotbarFrame.AnchorPoint = Vector2.new(0, 0)
+        hotbarFrame.Position = UDim2.fromOffset(res.hotbar.x, res.hotbar.y)
+        hotbarFrame.Size = UDim2.fromOffset(res.hotbar.w, res.hotbar.h)
+        local slotSize, gap = res.hotbar.slotSize, res.hotbar.gap
+        for i = 1, 3 do
+            local slot = hotbarFrame:FindFirstChild("Slot" .. i)
+            if slot then
+                slot.Size = UDim2.fromOffset(slotSize, slotSize)
+                slot.Position = UDim2.fromOffset((i - 1) * (slotSize + gap), 0)
+            end
+        end
+    end
+
+    applyLayout()
+    if camera then
+        camera:GetPropertyChangedSignal("ViewportSize"):Connect(applyLayout)
+    end
+    HUDControls:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyLayout)
+    InputActions.ModeChanged:Connect(applyLayout)
+    WindowManager.Changed:Connect(applyLayout)
+
+    -- US3 (FR-009): no game action depends on Esc — it belongs to the Roblox
+    -- menu. Windows close via X, the dim backdrop, or gamepad B (bound by
+    -- InputActions while a window is open).
 
     -- Set initial currency values from StateManager
     local coins = StateManager.getCurrency("Coins") or 0
@@ -448,10 +498,10 @@ function UIController.Initialize()
     local phase, progress = StateManager.getDayNight()
     UIController.UpdateDayNight(phase or "Day", progress or 0)
     
-    print("✅ Keyboard shortcuts registered:")
-    print("   [I] - Toggle Inventory")
-    print("   [B] - Toggle Shop")
-    print("   [ESC] - Close all UIs")
+    print("✅ Windows registered with WindowManager (actions via InputActions):")
+    print("   [I] / Y  - Toggle Inventory")
+    print("   [B] / X  - Toggle Shop")
+    print("   close: X button, backdrop tap, or gamepad B (Esc is Roblox menu only)")
     print("")
     print("✅ StateManager subscription active")
     print("✅ Initial values loaded from StateManager")
