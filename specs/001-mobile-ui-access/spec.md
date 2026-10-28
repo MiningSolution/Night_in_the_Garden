@@ -16,15 +16,19 @@
   every platform; on PC each button carries a small key label (B, I), on gamepad a gamepad-button
   glyph.
 - Q: Which gamepad buttons open the shop and inventory and select hotbar slots? → A: Y opens the
-  shop, X opens the inventory, L1/R1 select the previous/next hotbar slot; B closes windows.
+  inventory, X opens the shop, L1/R1 select the previous/next hotbar slot; B closes windows.
 - Q: While a window is open, do the menu column and hotbar stay usable above the dimmed
   backdrop? → A: Yes, both stay above the backdrop and work; a tap anywhere else closes the
   window.
 - Q: How much of the phone screen should an open shop/inventory window take? → A: Phone: up to
   ~85% of the safe-area height above the hotbar, centred between the menu column and the right edge; tablet/PC: same
   proportions, at most ~60% of screen height.
-- Q: What minimum text size counts as readable on a phone? → A: Body text at least 14 px; titles
-  and buttons at least 16 px (at the 844×390 reference).
+- Q: What minimum text size counts as readable on a phone? → A: Body text at least 18; titles
+  and buttons at least 20 (Roblox text-size units, which are density-normalised, so the same on
+  every device).
+- Revision after comparing with Grow a Garden and Roblox guidance (2026-10-28): gamepad Y/X swapped
+  so Y opens the inventory as in Grow a Garden; minimum text raised from 14/16 to 18/20 because
+  Roblox treats about 20 as the floor for a good experience on phones.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -74,7 +78,7 @@ that every element is visible and readable.
 2. **Given** a PC monitor or tablet, **When** a window is open, **Then** it is no taller than
    about 60% of the screen height and keeps the same proportions as on the phone.
 3. **Given** any supported screen, **When** a window is open, **Then** body text is at least
-   14 px and titles and button labels at least 16 px (at phone scale), and no text overflows.
+   size 18 and titles and button labels at least size 20, and no text overflows.
 
 ---
 
@@ -140,7 +144,7 @@ highlight to a buy button, press it, close the shop, open the inventory and sele
    is highlighted and the D-pad/thumbstick moves the highlight between buttons in a predictable
    order.
 2. **Given** a gamepad is the active input and no window is open, **When** the player presses Y
-   or X, **Then** the shop or the inventory opens; **When** they press L1 or R1, **Then** the
+   or X, **Then** the inventory or the shop opens; **When** they press L1 or R1, **Then** the
    previous or next hotbar slot is selected (wrapping around at the ends).
 3. **Given** the player switches from touch to keyboard (or back) during a session, **When** the
    switch happens, **Then** the key labels or gamepad glyphs on the controls update to the new
@@ -201,7 +205,8 @@ broken layout. Lower priority because most players hold the phone in landscape a
   shrinking below its minimum size.
 - **FR-005**: Text in the windows, menu buttons and hotbar MUST scale with the screen while staying
   between a minimum and a maximum size; text MUST NOT overflow its element. At the phone reference
-  screen (844×390) body text MUST be at least 14 px and titles and button labels at least 16 px.
+  screen (844×390) body text MUST be at least size 18 and titles and button labels at least size
+  20, in Roblox's density-normalised text-size units.
 - **FR-006**: When contents are longer than the window (e.g. many inventory items), the window MUST
   scroll instead of cutting content off.
 - **FR-007**: Every window MUST have a close (X) button of at least 44×44 points.
@@ -219,7 +224,7 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **FR-013**: Each Phase 1 action (open shop, open inventory, close window, select hotbar slot 1–3,
   move between and press buttons in a window) MUST be defined once and be triggerable from
   keyboard/mouse, touch and gamepad.
-- **FR-013a**: Gamepad bindings MUST be: Y — toggle shop, X — toggle inventory, L1/R1 — previous/
+- **FR-013a**: Gamepad bindings MUST be: Y — toggle inventory, X — toggle shop, L1/R1 — previous/
   next hotbar slot (wrapping), B — close the open window, D-pad/left stick — move the highlight
   inside a window, A — press the highlighted button. Buttons Roblox reserves (Start, Select, and
   A/thumbsticks/R2 outside windows) MUST keep their default behaviour.
@@ -259,7 +264,7 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **SC-002**: At each reference screen — phone landscape 844×390, small phone landscape 667×375,
   tablet landscape 1024×768, PC 1920×1080, ultrawide 2560×1080 — every element of the HUD, shop
   and inventory is fully visible inside the safe area, no text is clipped, and on phone screens no
-  body text is under 14 px and no title or button label under 16 px (0 issues).
+  body text is under size 18 and no title or button label under size 20 (0 issues).
 - **SC-003**: Every tap target added or changed in this phase is at least 44×44 points at the
   phone reference resolution.
 - **SC-004**: On a touch device, 0 hotbar slots overlap the thumbstick or jump button.
