@@ -27,7 +27,9 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Wait for UI elements
-local HUD = playerGui:WaitForChild("HUD", 10)
+-- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
+-- which can take longer than any fixed timeout on a slow join: wait for it.
+local HUD = playerGui:WaitForChild("HUD")
 local hotbar
 
 if HUD then

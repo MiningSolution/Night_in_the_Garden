@@ -1,0 +1,457 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "ResetOnSpawn": false,
+    "ZIndexBehavior": "Sibling"
+  },
+  "children": [
+    {
+      "name": "CurrencyDisplay",
+      "className": "Frame",
+      "properties": {
+        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0, 20], [0, 20]]},
+        "Size": {"UDim2": [[0, 250], [0, 80]]}
+      },
+      "children": [
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 12]}
+          }
+        },
+        {
+          "name": "CoinsLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[0, 10], [0, 10]]},
+            "Size": {"UDim2": [[1, -20], [0, 30]]},
+            "Text": "💰 Coins: 50",
+            "TextColor3": [1, 0.862745, 0.392157],
+            "TextSize": 20,
+            "TextXAlignment": "Left"
+          }
+        },
+        {
+          "name": "DreamSeedsLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[0, 10], [0, 40]]},
+            "Size": {"UDim2": [[1, -20], [0, 30]]},
+            "Text": "🌙 Dreams: 0",
+            "TextColor3": [0.588235, 0.705882, 1],
+            "TextSize": 18,
+            "TextXAlignment": "Left"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DayNightIndicator",
+      "className": "Frame",
+      "properties": {
+        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0.5, -100], [0, 20]]},
+        "Size": {"UDim2": [[0, 200], [0, 60]]}
+      },
+      "children": [
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 12]}
+          }
+        },
+        {
+          "name": "PhaseLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[0, 10], [0, 5]]},
+            "Size": {"UDim2": [[1, -20], [0, 30]]},
+            "Text": "☀️ Day",
+            "TextColor3": [1, 0.784314, 0.196078],
+            "TextSize": 18
+          }
+        },
+        {
+          "name": "ProgressBarContainer",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.078431, 0.078431, 0.117647],
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0, 10], [1, -17]]},
+            "Size": {"UDim2": [[1, -20], [0, 12]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 6]}
+              }
+            },
+            {
+              "name": "ProgressBar",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [1, 0.784314, 0.196078],
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[0, 0], [1, 0]]}
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 6]}
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hotbar",
+      "className": "Frame",
+      "properties": {
+        "BackgroundTransparency": 1,
+        "Position": {"UDim2": [[0.5, -170], [1, -130]]},
+        "Size": {"UDim2": [[0, 340], [0, 110]]}
+      },
+      "children": [
+        {
+          "name": "Slot1",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0, 0], [0, 0]]},
+            "Size": {"UDim2": [[0, 100], [0, 100]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 10]}
+              }
+            },
+            {
+              "name": "SlotButton",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                "BackgroundTransparency": 0.3,
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[1, 0], [1, 0]]},
+                "Text": ""
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ItemIcon",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundTransparency": 1,
+                "Image": "rbxassetid://0",
+                "Position": {"UDim2": [[0.5, 0], [0.4, 0]]},
+                "ScaleType": "Fit",
+                "Size": {"UDim2": [[0, 60], [0, 60]]}
+              },
+              "children": [
+                {
+                  "name": "EmojiLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Size": {"UDim2": [[1, 0], [1, 0]]},
+                    "Text": "💧",
+                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextSize": 40
+                  }
+                }
+              ]
+            },
+            {
+              "name": "SelectionBorder",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundTransparency": 1,
+                "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
+                "ImageColor3": [0.313725, 0.784314, 0.470588],
+                "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+                "ScaleType": "Slice",
+                "Size": {"UDim2": [[1, 8], [1, 8]]},
+                "SliceCenter": {"Rect": [[8, 8], [8, 8]]},
+                "Visible": true,
+                "ZIndex": 0
+              }
+            },
+            {
+              "name": "KeybindHint",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 1],
+                "BackgroundColor3": [0, 0, 0],
+                "BackgroundTransparency": 0.5,
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.5, 0], [1, -5]]},
+                "Size": {"UDim2": [[0, 30], [0, 25]]},
+                "Text": "1",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 16
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 6]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Slot2",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0, 110], [0, 0]]},
+            "Size": {"UDim2": [[0, 100], [0, 100]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 10]}
+              }
+            },
+            {
+              "name": "SlotButton",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                "BackgroundTransparency": 0.3,
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[1, 0], [1, 0]]},
+                "Text": ""
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ItemIcon",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundTransparency": 1,
+                "Image": "rbxassetid://0",
+                "Position": {"UDim2": [[0.5, 0], [0.4, 0]]},
+                "ScaleType": "Fit",
+                "Size": {"UDim2": [[0, 60], [0, 60]]}
+              },
+              "children": [
+                {
+                  "name": "EmojiLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Size": {"UDim2": [[1, 0], [1, 0]]},
+                    "Text": "🥕",
+                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextSize": 40
+                  }
+                }
+              ]
+            },
+            {
+              "name": "SelectionBorder",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundTransparency": 1,
+                "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
+                "ImageColor3": [0.313725, 0.784314, 0.470588],
+                "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+                "ScaleType": "Slice",
+                "Size": {"UDim2": [[1, 8], [1, 8]]},
+                "SliceCenter": {"Rect": [[8, 8], [8, 8]]},
+                "Visible": false,
+                "ZIndex": 0
+              }
+            },
+            {
+              "name": "KeybindHint",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 1],
+                "BackgroundColor3": [0, 0, 0],
+                "BackgroundTransparency": 0.5,
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.5, 0], [1, -5]]},
+                "Size": {"UDim2": [[0, 30], [0, 25]]},
+                "Text": "2",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 16
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 6]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Slot3",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0, 220], [0, 0]]},
+            "Size": {"UDim2": [[0, 100], [0, 100]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 10]}
+              }
+            },
+            {
+              "name": "SlotButton",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                "BackgroundTransparency": 0.3,
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[1, 0], [1, 0]]},
+                "Text": ""
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ItemIcon",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundTransparency": 1,
+                "Image": "rbxassetid://0",
+                "Position": {"UDim2": [[0.5, 0], [0.4, 0]]},
+                "ScaleType": "Fit",
+                "Size": {"UDim2": [[0, 60], [0, 60]]}
+              },
+              "children": [
+                {
+                  "name": "EmojiLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Size": {"UDim2": [[1, 0], [1, 0]]},
+                    "Text": "🏮",
+                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextSize": 40
+                  }
+                }
+              ]
+            },
+            {
+              "name": "SelectionBorder",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundTransparency": 1,
+                "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
+                "ImageColor3": [0.313725, 0.784314, 0.470588],
+                "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+                "ScaleType": "Slice",
+                "Size": {"UDim2": [[1, 8], [1, 8]]},
+                "SliceCenter": {"Rect": [[8, 8], [8, 8]]},
+                "Visible": false,
+                "ZIndex": 0
+              }
+            },
+            {
+              "name": "KeybindHint",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 1],
+                "BackgroundColor3": [0, 0, 0],
+                "BackgroundTransparency": 0.5,
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.5, 0], [1, -5]]},
+                "Size": {"UDim2": [[0, 30], [0, 25]]},
+                "Text": "3",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 16
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 6]}
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

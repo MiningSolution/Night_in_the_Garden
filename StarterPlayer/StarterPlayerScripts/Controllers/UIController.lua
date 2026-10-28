@@ -32,9 +32,11 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Main UI references (with error handling)
-local HUD = playerGui:WaitForChild("HUD", 10)
-local InventoryUI = playerGui:WaitForChild("InventoryUI", 10)
-local ShopUI = playerGui:WaitForChild("ShopUI", 10)
+-- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
+-- which can take longer than any fixed timeout on a slow join: wait for it.
+local HUD = playerGui:WaitForChild("HUD")
+local InventoryUI = playerGui:WaitForChild("InventoryUI")
+local ShopUI = playerGui:WaitForChild("ShopUI")
 
 -- Currency Display elements
 local currencyDisplay, coinsLabel, dreamSeedsLabel
@@ -52,7 +54,7 @@ if HUD then
     dayNightIndicator = HUD:WaitForChild("DayNightIndicator", 5)
     if dayNightIndicator then
         phaseLabel = dayNightIndicator:WaitForChild("PhaseLabel", 5)
-        -- CreateHUD nests the bar: DayNightIndicator > ProgressBarContainer > ProgressBar
+        -- The HUD nests the bar: DayNightIndicator > ProgressBarContainer > ProgressBar
         local barContainer = dayNightIndicator:WaitForChild("ProgressBarContainer", 5)
         progressBar = barContainer and barContainer:WaitForChild("ProgressBar", 5)
     end
@@ -410,10 +412,8 @@ function UIController.Initialize()
         -- Don't process input if player is typing in chat
         if gameProcessed then return end
         
-        if input.KeyCode == Enum.KeyCode.I then
-            UIController.ToggleInventory()
-            
-        elseif input.KeyCode == Enum.KeyCode.B then
+        -- I (inventory) is bound through ContextActionService below
+        if input.KeyCode == Enum.KeyCode.B then
             UIController.ToggleShop()
             
         elseif input.KeyCode == Enum.KeyCode.Escape then
@@ -422,6 +422,23 @@ function UIController.Initialize()
         end
     end)
     
+    -- "I" is also Roblox's camera zoom-in key: UserInputService reports it as
+    -- gameProcessed, so the handler above never saw it and the inventory never
+    -- opened. Bind it above the camera instead (Sink also stops the zoom).
+    -- ContextActionService does not fire while the player is typing in a TextBox.
+    game:GetService("ContextActionService"):BindActionAtPriority(
+        "NightGarden_ToggleInventory",
+        function(_, inputState)
+            if inputState == Enum.UserInputState.Begin then
+                UIController.ToggleInventory()
+            end
+            return Enum.ContextActionResult.Sink
+        end,
+        false,
+        Enum.ContextActionPriority.High.Value,
+        Enum.KeyCode.I
+    )
+
     -- Set initial currency values from StateManager
     local coins = StateManager.getCurrency("Coins") or 0
     local dreamSeeds = StateManager.getCurrency("DreamSeeds") or 0

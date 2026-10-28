@@ -22,6 +22,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Debounce = require(script.Parent.Parent.Utils.Debounce)
+local GuiEffects = require(script.Parent.Parent.Utils:WaitForChild("GuiEffects"))
 local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 
 local ShopController = {}
@@ -31,7 +32,9 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Wait for UI elements with timeout
-local shopUI = playerGui:WaitForChild("ShopUI", 10)
+-- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
+-- which can take longer than any fixed timeout on a slow join: wait for it.
+local shopUI = playerGui:WaitForChild("ShopUI")
 local shopFrame, leftPanel, rightPanel, loadingOverlay
 
 if shopUI then
@@ -598,6 +601,7 @@ function ShopController.Initialize()
             end, Constants.ANIMATION.FAST_TWEEN_DURATION)
             
             closeButton.MouseButton1Click:Connect(debouncedClose)
+            GuiEffects.hoverColor(closeButton, Color3.fromRGB(200, 80, 80), Color3.fromRGB(220, 100, 100))
             print("✅ Close button configured (debounced)")
         end
     end
@@ -626,6 +630,10 @@ function ShopController.Initialize()
                 end)
             end
             
+            -- Hover colors (moved here from CreateShopUI in P2-3)
+            for _, btn in ipairs({ minusBtn, plusBtn }) do
+                GuiEffects.hoverColor(btn, Color3.fromRGB(60, 60, 70), Color3.fromRGB(70, 70, 80))
+            end
             print("✅ Quantity stepper configured (throttled)")
         end
         
@@ -637,11 +645,20 @@ function ShopController.Initialize()
             end, 1.0) -- 1 second cooldown for purchases
             
             buyButton.MouseButton1Click:Connect(debouncedBuy)
+            GuiEffects.hoverColor(buyButton, Color3.fromRGB(80, 200, 120), Color3.fromRGB(90, 220, 140))
             print("✅ Buy button configured (debounced)")
         end
     end
     
     print("========================================")
+    -- Loading spinner (moved here from CreateShopUI in P2-3)
+    if loadingOverlay then
+        local spinner = loadingOverlay:FindFirstChild("Spinner", true)
+        if spinner then
+            GuiEffects.spinWhileVisible(spinner, loadingOverlay, 180)
+        end
+    end
+
     print("✨ ShopController ready!")
     print("========================================")
 end

@@ -1,0 +1,443 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "Enabled": false,
+    "ResetOnSpawn": false,
+    "ZIndexBehavior": "Sibling"
+  },
+  "children": [
+    {
+      "name": "ShopFrame",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [0.5, 0.5],
+        "BackgroundColor3": [0.137255, 0.137255, 0.176471],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "Size": {"UDim2": [[0, 800], [0, 550]]}
+      },
+      "children": [
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 12]}
+          }
+        },
+        {
+          "name": "Shadow",
+          "className": "ImageLabel",
+          "properties": {
+            "AnchorPoint": [0.5, 0.5],
+            "BackgroundTransparency": 1,
+            "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
+            "ImageColor3": [0, 0, 0],
+            "ImageTransparency": 0.7,
+            "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+            "ScaleType": "Slice",
+            "Size": {"UDim2": [[1, 30], [1, 30]]},
+            "SliceCenter": {"Rect": [[8, 8], [8, 8]]},
+            "ZIndex": -1
+          }
+        },
+        {
+          "name": "HeaderBar",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.176471, 0.176471, 0.215686],
+            "BorderSizePixel": 0,
+            "Size": {"UDim2": [[1, 0], [0, 50]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            },
+            {
+              "name": "Frame",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.176471, 0.176471, 0.215686],
+                "BorderSizePixel": 0,
+                "Position": {"UDim2": [[0, 0], [1, -12]]},
+                "Size": {"UDim2": [[1, 0], [0, 12]]}
+              }
+            },
+            {
+              "name": "TitleLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 20], [0, 0]]},
+                "Size": {"UDim2": [[1, -100], [1, 0]]},
+                "Text": "🏪 SHOP",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24,
+                "TextXAlignment": "Left"
+              }
+            },
+            {
+              "name": "CloseButton",
+              "className": "TextButton",
+              "properties": {
+                "AnchorPoint": [0, 0.5],
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.784314, 0.313725, 0.313725],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[1, -50], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 40], [0, 40]]},
+                "Text": "X",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 8]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LeftPanel",
+          "className": "ScrollingFrame",
+          "properties": {
+            "AutomaticCanvasSize": "Y",
+            "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+            "BorderSizePixel": 0,
+            "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
+            "Position": {"UDim2": [[0, 15], [0, 60]]},
+            "ScrollBarImageColor3": [0.313725, 0.313725, 0.352941],
+            "ScrollBarThickness": 6,
+            "Size": {"UDim2": [[0, 200], [1, -70]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "UIListLayout",
+              "className": "UIListLayout",
+              "properties": {
+                "Padding": {"UDim": [0, 5]},
+                "SortOrder": "LayoutOrder"
+              }
+            },
+            {
+              "name": "UIPadding",
+              "className": "UIPadding",
+              "properties": {
+                "PaddingBottom": {"UDim": [0, 10]},
+                "PaddingLeft": {"UDim": [0, 5]},
+                "PaddingRight": {"UDim": [0, 5]},
+                "PaddingTop": {"UDim": [0, 10]}
+              }
+            }
+          ]
+        },
+        {
+          "name": "RightPanel",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0, 225], [0, 60]]},
+            "Size": {"UDim2": [[1, -235], [1, -70]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "UIPadding",
+              "className": "UIPadding",
+              "properties": {
+                "PaddingBottom": {"UDim": [0, 20]},
+                "PaddingLeft": {"UDim": [0, 20]},
+                "PaddingRight": {"UDim": [0, 20]},
+                "PaddingTop": {"UDim": [0, 20]}
+              }
+            },
+            {
+              "name": "ItemIconDisplay",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0],
+                "BackgroundColor3": [0.196078, 0.196078, 0.235294],
+                "BorderSizePixel": 0,
+                "Image": "rbxassetid://0",
+                "Position": {"UDim2": [[0.5, 0], [0, 0]]},
+                "ScaleType": "Fit",
+                "Size": {"UDim2": [[0, 120], [0, 120]]}
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 12]}
+                  }
+                },
+                {
+                  "name": "IconText",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Size": {"UDim2": [[1, 0], [1, 0]]},
+                    "Text": "🌱",
+                    "TextColor3": [0.588235, 0.588235, 0.588235],
+                    "TextSize": 60
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ItemNameLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 0], [0, 135]]},
+                "Size": {"UDim2": [[1, 0], [0, 35]]},
+                "Text": "SELECT AN ITEM",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 22,
+                "TextWrapped": true
+              }
+            },
+            {
+              "name": "ItemDescriptionLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "Gotham",
+                "Position": {"UDim2": [[0, 0], [0, 175]]},
+                "Size": {"UDim2": [[1, 0], [0, 60]]},
+                "Text": "Choose a category to browse items",
+                "TextColor3": [0.705882, 0.705882, 0.705882],
+                "TextSize": 15,
+                "TextWrapped": true,
+                "TextYAlignment": "Top"
+              }
+            },
+            {
+              "name": "Frame",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                "BorderSizePixel": 0,
+                "Position": {"UDim2": [[0, 0], [0, 250]]},
+                "Size": {"UDim2": [[1, 0], [0, 2]]}
+              }
+            },
+            {
+              "name": "PriceLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 0], [0, 265]]},
+                "Size": {"UDim2": [[1, 0], [0, 30]]},
+                "Text": "💰 Price: 0 coins",
+                "TextColor3": [1, 0.862745, 0.392157],
+                "TextSize": 20,
+                "TextXAlignment": "Left"
+              }
+            },
+            {
+              "name": "QuantityStepper",
+              "className": "Frame",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Position": {"UDim2": [[0, 0], [0, 310]]},
+                "Size": {"UDim2": [[0, 180], [0, 50]]}
+              },
+              "children": [
+                {
+                  "name": "MinusBtn",
+                  "className": "TextButton",
+                  "properties": {
+                    "AutoButtonColor": false,
+                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                    "BorderSizePixel": 0,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 0], [0, 0]]},
+                    "Size": {"UDim2": [[0, 50], [0, 50]]},
+                    "Text": "−",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 28
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "QuantityDisplay",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                    "BorderSizePixel": 0,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 55], [0, 0]]},
+                    "Size": {"UDim2": [[0, 70], [0, 50]]},
+                    "Text": "1",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 24
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "PlusBtn",
+                  "className": "TextButton",
+                  "properties": {
+                    "AutoButtonColor": false,
+                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                    "BorderSizePixel": 0,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 130], [0, 0]]},
+                    "Size": {"UDim2": [[0, 50], [0, 50]]},
+                    "Text": "+",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 28
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "BuyButton",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 0], [1, -60]]},
+                "Size": {"UDim2": [[1, 0], [0, 60]]},
+                "Text": "BUY",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LoadingOverlay",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0, 0, 0],
+            "BackgroundTransparency": 0.7,
+            "BorderSizePixel": 0,
+            "Size": {"UDim2": [[1, 0], [1, 0]]},
+            "Visible": false,
+            "ZIndex": 100
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            },
+            {
+              "name": "Frame",
+              "className": "Frame",
+              "properties": {
+                "AnchorPoint": [0.5, 0.5],
+                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BorderSizePixel": 0,
+                "Position": {"UDim2": [[0.5, 0], [0.5, -30]]},
+                "Size": {"UDim2": [[0, 100], [0, 100]]}
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 12]}
+                  }
+                },
+                {
+                  "name": "Spinner",
+                  "className": "ImageLabel",
+                  "properties": {
+                    "AnchorPoint": [0.5, 0.5],
+                    "BackgroundTransparency": 1,
+                    "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
+                    "ImageColor3": [0.313725, 0.784314, 0.470588],
+                    "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+                    "Size": {"UDim2": [[0, 60], [0, 60]]}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "LoadingText",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0],
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.5, 0], [0.5, 60]]},
+                "Size": {"UDim2": [[1, 0], [0, 30]]},
+                "Text": "Processing...",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 18
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,7 +8,7 @@
     This script boots them in dependency order.
 
     Other client entry points (LocalScripts) that run on their own:
-      - StarterGui/CreateHUD, CreateInventoryUI, CreateShopUI  (build the GUI)
+      (the GUI itself is static: StarterGui/HUD, InventoryUI, ShopUI)
       - Utils/EventHandlers   (server → client events; requires ClientDataCache, PlotVisualizer)
       - Utils/PlotInteraction (hover effects on plots)
 ]]
