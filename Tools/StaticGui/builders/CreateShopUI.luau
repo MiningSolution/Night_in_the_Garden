@@ -206,6 +206,27 @@ RightPadding.PaddingLeft = UDim.new(0, 20)
 RightPadding.PaddingRight = UDim.new(0, 20)
 RightPadding.Parent = RightPanel
 
+-- US2 (FR-006): item detail scrolls when taller than the panel; the quantity
+-- stepper and buy button stay pinned in a Footer that never scrolls.
+local Footer = Instance.new("Frame")
+Footer.Name = "Footer"
+Footer.Size = UDim2.new(1, 0, 0, 120)
+Footer.Position = UDim2.new(0, 0, 1, -120)
+Footer.BackgroundTransparency = 1
+Footer.Parent = RightPanel
+
+local Details = Instance.new("ScrollingFrame")
+Details.Name = "Details"
+Details.Size = UDim2.new(1, 0, 1, -130)
+Details.Position = UDim2.new(0, 0, 0, 0)
+Details.BackgroundTransparency = 1
+Details.BorderSizePixel = 0
+Details.ScrollBarThickness = 6
+Details.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90)
+Details.CanvasSize = UDim2.new(0, 0, 0, 0)
+Details.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Details.Parent = RightPanel
+
 -- Item icon display
 local ItemIconDisplay = Instance.new("ImageLabel")
 ItemIconDisplay.Name = "ItemIconDisplay"
@@ -216,7 +237,7 @@ ItemIconDisplay.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 ItemIconDisplay.BorderSizePixel = 0
 ItemIconDisplay.Image = "rbxassetid://0"
 ItemIconDisplay.ScaleType = Enum.ScaleType.Fit
-ItemIconDisplay.Parent = RightPanel
+ItemIconDisplay.Parent = Details
 
 local iconCorner = Instance.new("UICorner")
 iconCorner.CornerRadius = UDim.new(0, 12)
@@ -244,7 +265,7 @@ ItemNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 ItemNameLabel.TextSize = 22
 ItemNameLabel.Font = Enum.Font.GothamBold
 ItemNameLabel.TextWrapped = true
-ItemNameLabel.Parent = RightPanel
+ItemNameLabel.Parent = Details
 
 -- Item description
 local ItemDescriptionLabel = Instance.new("TextLabel")
@@ -258,7 +279,7 @@ ItemDescriptionLabel.TextSize = 18 -- body >= 18 (FR-005)
 ItemDescriptionLabel.Font = Enum.Font.Gotham
 ItemDescriptionLabel.TextWrapped = true
 ItemDescriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
-ItemDescriptionLabel.Parent = RightPanel
+ItemDescriptionLabel.Parent = Details
 
 -- Separator line
 local Separator = Instance.new("Frame")
@@ -266,7 +287,7 @@ Separator.Size = UDim2.new(1, 0, 0, 2)
 Separator.Position = UDim2.new(0, 0, 0, 250)
 Separator.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 Separator.BorderSizePixel = 0
-Separator.Parent = RightPanel
+Separator.Parent = Details
 
 -- Price label
 local PriceLabel = Instance.new("TextLabel")
@@ -279,7 +300,7 @@ PriceLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
 PriceLabel.TextSize = 20
 PriceLabel.Font = Enum.Font.GothamBold
 PriceLabel.TextXAlignment = Enum.TextXAlignment.Left
-PriceLabel.Parent = RightPanel
+PriceLabel.Parent = Details
 
 --[[
     QUANTITY STEPPER
@@ -287,9 +308,9 @@ PriceLabel.Parent = RightPanel
 local QuantityStepper = Instance.new("Frame")
 QuantityStepper.Name = "QuantityStepper"
 QuantityStepper.Size = UDim2.new(0, 180, 0, 50)
-QuantityStepper.Position = UDim2.new(0, 0, 0, 310)
+QuantityStepper.Position = UDim2.new(0, 0, 0, 0)
 QuantityStepper.BackgroundTransparency = 1
-QuantityStepper.Parent = RightPanel
+QuantityStepper.Parent = Footer
 
 -- Minus button
 local MinusBtn = Instance.new("TextButton")
@@ -372,7 +393,7 @@ BuyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 BuyButton.TextSize = 24
 BuyButton.Font = Enum.Font.GothamBold
 BuyButton.AutoButtonColor = false
-BuyButton.Parent = RightPanel
+BuyButton.Parent = Footer
 
 local buyCorner = Instance.new("UICorner")
 buyCorner.CornerRadius = UDim.new(0, 10)
