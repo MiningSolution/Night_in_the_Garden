@@ -20,6 +20,9 @@
 - Q: While a window is open, do the menu column and hotbar stay usable above the dimmed
   backdrop? → A: Yes, both stay above the backdrop and work; a tap anywhere else closes the
   window.
+- Q: How much of the phone screen should an open shop/inventory window take? → A: Phone: up to
+  ~85% of the safe-area height above the hotbar, centred between the menu column and the right edge; tablet/PC: same
+  proportions, at most ~60% of screen height.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -66,8 +69,8 @@ that every element is visible and readable.
 
 1. **Given** a landscape phone screen about 844×390, **When** the shop or inventory is open,
    **Then** the whole window, including its close button, is visible inside the safe area.
-2. **Given** a large PC monitor, **When** a window is open, **Then** it does not grow beyond a
-   comfortable maximum size and keeps its proportions.
+2. **Given** a PC monitor or tablet, **When** a window is open, **Then** it is no taller than
+   about 60% of the screen height and keeps the same proportions as on the phone.
 3. **Given** any supported screen, **When** a window is open, **Then** all text is at least the
    minimum readable size and does not overflow its box.
 
@@ -189,8 +192,11 @@ broken layout. Lower priority because most players hold the phone in landscape a
 - **FR-003**: Tapping or clicking a menu button MUST toggle its window; opening one window MUST
   close any other open window (only one window open at a time).
 - **FR-004**: The shop and inventory windows MUST scale with the screen, keep their proportions,
-  stay between a minimum and maximum size, and fit fully inside the safe area at every reference
-  resolution in SC-002.
+  and fit fully inside the safe area at every reference resolution in SC-002. On phones a window
+  MUST take up to about 85% of the free height between the top of the safe area and the hotbar,
+  centred in the area between the menu-button column and the right edge; on tablets and PC it MUST keep the same proportions but be no taller
+  than about 60% of the screen height. On small screens contents scroll (FR-006) rather than text
+  shrinking below its minimum size.
 - **FR-005**: Text in the windows, menu buttons and hotbar MUST scale with the screen while staying
   between a minimum readable size and a maximum size; text MUST NOT overflow its element.
 - **FR-006**: When contents are longer than the window (e.g. many inventory items), the window MUST
