@@ -409,6 +409,25 @@ function UIController.Initialize()
     local camera = workspace.CurrentCamera
     local shopFrame = ShopUI:WaitForChild("ShopFrame")
     local inventoryFrame = InventoryUI:WaitForChild("InventoryFrame")
+    local hotbarFrame = HUDControls:WaitForChild("Hotbar")
+
+    -- Live jump-button rect (US4): read Roblox's touch JumpButton so the hotbar
+    -- is placed clear of it; nil falls back to the formula inside ResponsiveLayout.
+    local function jumpRect()
+        local touchGui = playerGui:FindFirstChild("TouchGui")
+        local tcf = touchGui and touchGui:FindFirstChild("TouchControlFrame")
+        local jb = tcf and tcf:FindFirstChild("JumpButton")
+        if jb and jb.Visible and jb.AbsoluteSize.X > 0 then
+            local origin = HUDControls.AbsolutePosition
+            return {
+                x = jb.AbsolutePosition.X - origin.X,
+                y = jb.AbsolutePosition.Y - origin.Y,
+                w = jb.AbsoluteSize.X,
+                h = jb.AbsoluteSize.Y,
+            }
+        end
+        return nil
+    end
 
     local function placeFrame(frame, r)
         if frame and r then
@@ -426,6 +445,7 @@ function UIController.Initialize()
             viewport = { w = vp.X, h = vp.Y },
             gui = { x = 0, y = 0, w = absSize.X, h = absSize.Y },
             mode = InputActions.GetMode() or "KeyboardMouse",
+            jump = jumpRect(),
         })
         menuButtons.AnchorPoint = Vector2.new(0, 0)
         menuButtons.Position = UDim2.fromOffset(res.menuColumn.x, res.menuColumn.y)
@@ -433,6 +453,19 @@ function UIController.Initialize()
         -- Size both windows (hidden ones too) so they are fitted when opened.
         placeFrame(shopFrame, res.windows.Shop)
         placeFrame(inventoryFrame, res.windows.Inventory)
+        -- Hotbar (US4): position the frame and resize the 3 slots to the mode's
+        -- slot size (64 touch / 100 otherwise), clear of the thumbstick and jump.
+        hotbarFrame.AnchorPoint = Vector2.new(0, 0)
+        hotbarFrame.Position = UDim2.fromOffset(res.hotbar.x, res.hotbar.y)
+        hotbarFrame.Size = UDim2.fromOffset(res.hotbar.w, res.hotbar.h)
+        local slotSize, gap = res.hotbar.slotSize, res.hotbar.gap
+        for i = 1, 3 do
+            local slot = hotbarFrame:FindFirstChild("Slot" .. i)
+            if slot then
+                slot.Size = UDim2.fromOffset(slotSize, slotSize)
+                slot.Position = UDim2.fromOffset((i - 1) * (slotSize + gap), 0)
+            end
+        end
     end
 
     applyLayout()
