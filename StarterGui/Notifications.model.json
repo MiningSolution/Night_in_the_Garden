@@ -1,0 +1,105 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "DisplayOrder": 100,
+    "Enabled": true,
+    "IgnoreGuiInset": false,
+    "ResetOnSpawn": false,
+    "ScreenInsets": "CoreUISafeInsets",
+    "ZIndexBehavior": "Sibling"
+  },
+  "children": [
+    {
+      "name": "ToastContainer",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [0.5, 0],
+        "BackgroundTransparency": 1,
+        "Position": {"UDim2": [[0.5, 0], [0, 12]]},
+        "Size": {"UDim2": [[0, 360], [1, -24]]}
+      },
+      "children": [
+        {
+          "name": "UIListLayout",
+          "className": "UIListLayout",
+          "properties": {
+            "FillDirection": "Vertical",
+            "HorizontalAlignment": "Center",
+            "Padding": {"UDim": [0, 8]},
+            "SortOrder": "LayoutOrder",
+            "VerticalAlignment": "Top"
+          }
+        },
+        {
+          "name": "ToastTemplate",
+          "className": "Frame",
+          "properties": {
+            "AutomaticSize": "Y",
+            "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+            "BackgroundTransparency": 0.05,
+            "BorderSizePixel": 0,
+            "Size": {"UDim2": [[1, 0], [0, 52]]},
+            "Visible": false
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "Bar",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+                "BorderSizePixel": 0,
+                "Position": {"UDim2": [[0, 6], [0, 6]]},
+                "Size": {"UDim2": [[0, 6], [1, -12]]}
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 3]}
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Icon",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [0, 0.5],
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 18], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 32], [0, 32]]},
+                "Text": "ℹ️",
+                "TextSize": 22
+              }
+            },
+            {
+              "name": "MessageLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamMedium",
+                "Position": {"UDim2": [[0, 58], [0, 6]]},
+                "Size": {"UDim2": [[1, -70], [1, -12]]},
+                "Text": "Notification",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 18,
+                "TextWrapped": true,
+                "TextXAlignment": "Left",
+                "TextYAlignment": "Center"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

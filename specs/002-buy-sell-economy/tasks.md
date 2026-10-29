@@ -101,10 +101,10 @@ Seeds/Tools/Items.
 **Independent Test**: open the shop on a phone, switch categories, see cards with price + rarity
 colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimmed and unbuyable.
 
-- [ ] T020 [P] [US3] Builder `Tools/StaticGui/builders/CreateShopUI.luau`: replace the detail pane with `CardsScroll` (`ScrollingFrame` + `UIGridLayout`) and a hidden `CardTemplate` (Icon/FallbackLetter, Name, Price, `RarityStrip`, `QtyX1`/`QtyX5`/`QtyX10` selection group, `BuyButton`); keep the Seeds/Tools/Items tabs (contracts/gui-tree.md)
-- [ ] T021 [US3] `StarterPlayer/StarterPlayerScripts/Controllers/ShopController.lua`: clone `CardTemplate` per `GetShopData` item; set rarity colour from `UITheme`; wire ×1/×5/×10; dim + disable buy when `price × qty > coins`; rebind on quantity/coin change; populate Tools and Items (FR-008/009/010)
-- [ ] T022 [US3] Regenerate models and commit `ShopUI.model.json`
-- [ ] T023 [US3] Studio playtest V3
+- [x] T020 [P] [US3] Builder `Tools/StaticGui/builders/CreateShopUI.luau`: replace the detail pane with `CardsScroll` (`ScrollingFrame` + `UIGridLayout`) and a hidden `CardTemplate` (Icon/FallbackLetter, Name, Price, `RarityStrip`, `QtyX1`/`QtyX5`/`QtyX10` selection group, `BuyButton`); keep the Seeds/Tools/Items tabs (contracts/gui-tree.md)
+- [x] T021 [US3] `StarterPlayer/StarterPlayerScripts/Controllers/ShopController.lua`: clone `CardTemplate` per `GetShopData` item; set rarity colour from `UITheme`; wire ×1/×5/×10; dim + disable buy when `price × qty > coins`; rebind on quantity/coin change; populate Tools and Items (FR-008/009/010)
+- [x] T022 [US3] Regenerate models and commit `ShopUI.model.json`
+- [x] T023 [US3] Studio playtest V3
 
 **Checkpoint**: full browsable/buyable shop.
 
@@ -117,11 +117,11 @@ colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimme
 **Independent Test**: buy → success toast; unaffordable → error toast; crop ready → toast; several in
 2s stack without overlapping; each readable on a phone and auto-clears.
 
-- [ ] T024 [P] [US4] Builder `Tools/StaticGui/builders/CreateNotifications.luau`: `Notifications` ScreenGui (high `DisplayOrder`, `ScreenInsets = CoreUISafeInsets`, `ResetOnSpawn=false`), `ToastContainer` (+`UIListLayout`), hidden `ToastTemplate` (Bar/Background by type, Icon, MessageLabel) (contracts/gui-tree.md)
-- [ ] T025 [US4] `StarterPlayer/StarterPlayerScripts/Utils/ToastQueue.lua` (new): pooled FIFO queue — clone `ToastTemplate`, colour by type (`UITheme`/`Constants.COLORS`), auto-expire after `Constants.UI.NOTIFICATION_DURATION`, no overlap, stay in safe area / above windows / clear of menu column + hotbar (FR-011)
-- [ ] T026 [US4] `StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`: re-point `ShowNotification` to `ToastQueue`; raise toasts on buy/sell results, `PlotStateChanged → ReadyToHarvest`, and `SpiritCollected`
-- [ ] T027 [US4] Regenerate models and commit `Notifications.model.json`
-- [ ] T028 [US4] Studio playtest V4
+- [x] T024 [P] [US4] Builder `Tools/StaticGui/builders/CreateNotifications.luau`: `Notifications` ScreenGui (high `DisplayOrder`, `ScreenInsets = CoreUISafeInsets`, `ResetOnSpawn=false`), `ToastContainer` (+`UIListLayout`), hidden `ToastTemplate` (Bar/Background by type, Icon, MessageLabel) (contracts/gui-tree.md)
+- [x] T025 [US4] `StarterPlayer/StarterPlayerScripts/Utils/ToastQueue.lua` (new): pooled FIFO queue — clone `ToastTemplate`, colour by type (`UITheme`/`Constants.COLORS`), auto-expire after `Constants.UI.NOTIFICATION_DURATION`, no overlap, stay in safe area / above windows / clear of menu column + hotbar (FR-011)
+- [x] T026 [US4] `StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`: re-point `ShowNotification` to `ToastQueue`; raise toasts on buy/sell results, `PlotStateChanged → ReadyToHarvest`, and `SpiritCollected`
+- [x] T027 [US4] Regenerate models and commit `Notifications.model.json`
+- [x] T028 [US4] Studio playtest V4
 
 **Checkpoint**: player-visible feedback.
 
@@ -133,8 +133,8 @@ colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimme
 
 **Independent Test**: buy a new seed type → it appears in a free slot and can be selected and planted.
 
-- [ ] T029 [US5] `StarterPlayer/StarterPlayerScripts/Controllers/HotbarController.lua`: derive slot contents from the inventory snapshot (owned tools then owned seeds, stable order) on `UpdateInventory`/`GetPlayerData`; a newly bought seed fills the first free slot; overflow via the existing Prev/Next paging; hotbar full → seed stays in inventory (FR-012, R7, edge case)
-- [ ] T030 [US5] Studio playtest V5
+- [x] T029 [US5] `StarterPlayer/StarterPlayerScripts/Controllers/HotbarController.lua`: derive slot contents from the inventory snapshot (owned tools then owned seeds, stable order) on `UpdateInventory`/`GetPlayerData`; a newly bought seed fills the first free slot; overflow via the existing Prev/Next paging; hotbar full → seed stays in inventory (FR-012, R7, edge case)
+- [x] T030 [US5] Studio playtest V5
 
 **Checkpoint**: bought seeds are plantable from the hotbar.
 

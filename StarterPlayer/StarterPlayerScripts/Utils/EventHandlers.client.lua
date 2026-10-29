@@ -93,6 +93,19 @@ PlotStateChanged.OnClientEvent:Connect(function(plotId, plotData)
         if PlotVisualizer.UpdatePlot then
             PlotVisualizer.UpdatePlot(plotId, plotData)
         end
+
+        -- US4 (FR-011): toast when a crop becomes ready to harvest. This state
+        -- fires once per plot (the growth service stops touching a ready plot).
+        if plotData.State == "ReadyToHarvest" then
+            local ok, UIController = pcall(function()
+                return require(script.Parent.Parent.Controllers.UIController)
+            end)
+            if ok and UIController and UIController.ShowNotification then
+                local name = tostring(plotData.PlantId or "A crop")
+                name = name:sub(1, 1):upper() .. name:sub(2)
+                UIController.ShowNotification(name .. " is ready to harvest!", "info")
+            end
+        end
     end)
     
     if not success then

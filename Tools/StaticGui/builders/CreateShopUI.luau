@@ -1,54 +1,41 @@
 --[[
     CreateShopUI.lua
-    Location: StarterGui (as LocalScript)
-    
-    PURPOSE:
-    Programmatically creates the Shop UI including:
-    - Header bar with title and close button
-    - Left panel for category selection
-    - Right panel for item details and purchase
-    - Quantity stepper
-    - Loading overlay
-    
-    INSTALLATION:
-    1. Place this script in StarterGui as a LocalScript
-    2. Run the game once - ShopUI will be created automatically
-    3. You can disable this script after creation if desired
+    Location: StarterGui (as LocalScript) — reworked for feature 002, User Story 3.
+
+    The shop is a scrolling grid of cards. Each card (cloned by ShopController from
+    the hidden CardTemplate) shows an icon, name, price, a rarity colour strip and
+    x1/x5/x10 quantity buttons; unaffordable cards are dimmed. Seeds / Tools / Items
+    are chosen with the tab row. The ShopFrame is sized responsively by
+    UIController.applyLayout (ResponsiveLayout.WINDOWS.Shop), so inner elements use
+    relative sizing. Static GUI only (constitution III); colours from UITheme (V);
+    tap targets >= 44, text >= 18/20 (IV).
 ]]
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Check if ShopUI already exists
 if playerGui:FindFirstChild("ShopUI") then
     print("⚠️ ShopUI already exists, skipping creation")
     return
 end
 
-print("🎨 Creating ShopUI...")
+print("🎨 Creating ShopUI (card grid)...")
 
--- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
--- module is required directly.
 local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
 
--- Create main ScreenGui
 local ShopUI = Instance.new("ScreenGui")
 ShopUI.Name = "ShopUI"
 ShopUI.ResetOnSpawn = false
 ShopUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ShopUI.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
 ShopUI.IgnoreGuiInset = false
-ShopUI.Enabled = false -- Hidden by default, opened with 'B' key
+ShopUI.Enabled = false
 ShopUI.Parent = playerGui
 
--- Full-screen dim backdrop (US3): tapping it closes the window and the Active
--- TextButton keeps the tap from reaching the game world (FR-008). Parented
--- before ShopFrame so it renders behind it.
 local Backdrop = Instance.new("TextButton")
 Backdrop.Name = "Backdrop"
 Backdrop.Size = UDim2.new(1, 0, 1, 0)
-Backdrop.Position = UDim2.new(0, 0, 0, 0)
 Backdrop.BackgroundColor3 = Theme.Backdrop
 Backdrop.BackgroundTransparency = Theme.BackdropTransparency
 Backdrop.BorderSizePixel = 0
@@ -57,18 +44,13 @@ Backdrop.Text = ""
 Backdrop.ZIndex = 0
 Backdrop.Parent = ShopUI
 
---[[
-    MAIN SHOP FRAME
-    Centered modal window (larger than inventory)
-]]
 local ShopFrame = Instance.new("Frame")
 ShopFrame.Name = "ShopFrame"
-ShopFrame.Size = UDim2.new(0, 800, 0, 550)
+ShopFrame.Size = UDim2.new(0, 800, 0, 520) -- replaced at runtime by ResponsiveLayout
 ShopFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 ShopFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-ShopFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+ShopFrame.BackgroundColor3 = Theme.Surface
 ShopFrame.BorderSizePixel = 0
--- US5 (R8): keep gamepad selection navigation inside the open window.
 ShopFrame.SelectionGroup = true
 ShopFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
 ShopFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
@@ -80,28 +62,11 @@ local frameCorner = Instance.new("UICorner")
 frameCorner.CornerRadius = UDim.new(0, 12)
 frameCorner.Parent = ShopFrame
 
--- Drop shadow
-local frameShadow = Instance.new("ImageLabel")
-frameShadow.Name = "Shadow"
-frameShadow.Size = UDim2.new(1, 30, 1, 30)
-frameShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-frameShadow.AnchorPoint = Vector2.new(0.5, 0.5)
-frameShadow.BackgroundTransparency = 1
-frameShadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-frameShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-frameShadow.ImageTransparency = 0.7
-frameShadow.ScaleType = Enum.ScaleType.Slice
-frameShadow.SliceCenter = Rect.new(8, 8, 8, 8)
-frameShadow.ZIndex = -1
-frameShadow.Parent = ShopFrame
-
---[[
-    HEADER BAR
-]]
+-- Header
 local HeaderBar = Instance.new("Frame")
 HeaderBar.Name = "HeaderBar"
 HeaderBar.Size = UDim2.new(1, 0, 0, 50)
-HeaderBar.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+HeaderBar.BackgroundColor3 = Theme.Header
 HeaderBar.BorderSizePixel = 0
 HeaderBar.Parent = ShopFrame
 
@@ -109,36 +74,27 @@ local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0, 12)
 headerCorner.Parent = HeaderBar
 
-local headerCover = Instance.new("Frame")
-headerCover.Size = UDim2.new(1, 0, 0, 12)
-headerCover.Position = UDim2.new(0, 0, 1, -12)
-headerCover.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-headerCover.BorderSizePixel = 0
-headerCover.Parent = HeaderBar
-
--- Title
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "TitleLabel"
-TitleLabel.Size = UDim2.new(1, -100, 1, 0)
+TitleLabel.Size = UDim2.new(1, -110, 1, 0)
 TitleLabel.Position = UDim2.new(0, 20, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "🏪 SHOP"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextColor3 = Theme.TextPrimary
 TitleLabel.TextSize = 24
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = HeaderBar
 
--- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 44, 0, 44) -- >= 44x44 (FR-007)
+CloseButton.Size = UDim2.new(0, 44, 0, 44)
 CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+CloseButton.BackgroundColor3 = Theme.Danger
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextColor3 = Theme.TextPrimary
 CloseButton.TextSize = 24
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.AutoButtonColor = false
@@ -148,279 +104,181 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 8)
 closeCorner.Parent = CloseButton
 
-CloseButton.MouseEnter:Connect(function()
-    CloseButton.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-end)
+-- Category tabs (Seeds / Tools / Items)
+local TabContainer = Instance.new("Frame")
+TabContainer.Name = "TabContainer"
+TabContainer.Size = UDim2.new(1, -30, 0, 44)
+TabContainer.Position = UDim2.new(0, 15, 0, 58)
+TabContainer.BackgroundTransparency = 1
+TabContainer.Parent = ShopFrame
 
-CloseButton.MouseLeave:Connect(function()
-    CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
-end)
+local function makeTab(name, text, order)
+    local tab = Instance.new("TextButton")
+    tab.Name = name
+    tab.Size = UDim2.new(0.32, 0, 1, 0)
+    tab.Position = UDim2.new(order * 0.34, 0, 0, 0)
+    tab.BackgroundColor3 = Theme.Control
+    tab.BorderSizePixel = 0
+    tab.Text = text
+    tab.TextColor3 = Theme.TextPrimary
+    tab.TextSize = 20
+    tab.Font = Enum.Font.GothamBold
+    tab.AutoButtonColor = false
+    tab.Parent = TabContainer
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 8)
+    c.Parent = tab
+    return tab
+end
+makeTab("seedsTab", "🌱 Seeds", 0)
+makeTab("toolsTab", "🔧 Tools", 1)
+makeTab("itemsTab", "📦 Items", 2)
 
---[[
-    LEFT PANEL
-    Category list (Seeds, Tools, Items)
-]]
-local LeftPanel = Instance.new("ScrollingFrame")
-LeftPanel.Name = "LeftPanel"
-LeftPanel.Size = UDim2.new(0, 200, 1, -70)
-LeftPanel.Position = UDim2.new(0, 15, 0, 60)
-LeftPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-LeftPanel.BorderSizePixel = 0
-LeftPanel.ScrollBarThickness = 6
-LeftPanel.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90)
-LeftPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
-LeftPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
-LeftPanel.Parent = ShopFrame
+-- Scrolling card grid
+local CardsScroll = Instance.new("ScrollingFrame")
+CardsScroll.Name = "CardsScroll"
+CardsScroll.Size = UDim2.new(1, -30, 1, -116)
+CardsScroll.Position = UDim2.new(0, 15, 0, 108)
+CardsScroll.BackgroundColor3 = Theme.SurfaceRaised
+CardsScroll.BackgroundTransparency = 0.5
+CardsScroll.BorderSizePixel = 0
+CardsScroll.ScrollBarThickness = 8
+CardsScroll.ScrollBarImageColor3 = Theme.Control
+CardsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+CardsScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+CardsScroll.Parent = ShopFrame
 
-local leftCorner = Instance.new("UICorner")
-leftCorner.CornerRadius = UDim.new(0, 8)
-leftCorner.Parent = LeftPanel
+local scrollCorner = Instance.new("UICorner")
+scrollCorner.CornerRadius = UDim.new(0, 8)
+scrollCorner.Parent = CardsScroll
 
--- List layout for categories
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ListLayout.Padding = UDim.new(0, 5)
-ListLayout.Parent = LeftPanel
+local grid = Instance.new("UIGridLayout")
+grid.CellSize = UDim2.new(0, 160, 0, 216)
+grid.CellPadding = UDim2.new(0, 12, 0, 12)
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
+grid.Parent = CardsScroll
 
-local LeftPadding = Instance.new("UIPadding")
-LeftPadding.PaddingTop = UDim.new(0, 10)
-LeftPadding.PaddingBottom = UDim.new(0, 10)
-LeftPadding.PaddingLeft = UDim.new(0, 5)
-LeftPadding.PaddingRight = UDim.new(0, 5)
-LeftPadding.Parent = LeftPanel
+local gridPad = Instance.new("UIPadding")
+gridPad.PaddingTop = UDim.new(0, 12)
+gridPad.PaddingBottom = UDim.new(0, 12)
+gridPad.PaddingLeft = UDim.new(0, 12)
+gridPad.PaddingRight = UDim.new(0, 12)
+gridPad.Parent = CardsScroll
 
---[[
-    RIGHT PANEL
-    Item details and purchase interface
-]]
-local RightPanel = Instance.new("Frame")
-RightPanel.Name = "RightPanel"
-RightPanel.Size = UDim2.new(1, -235, 1, -70)
-RightPanel.Position = UDim2.new(0, 225, 0, 60)
-RightPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-RightPanel.BorderSizePixel = 0
-RightPanel.Parent = ShopFrame
+--[[ Card template (hidden; ShopController clones it per item) ]]
+local Card = Instance.new("Frame")
+Card.Name = "CardTemplate"
+Card.Size = UDim2.new(0, 160, 0, 216)
+Card.BackgroundColor3 = Theme.SurfaceRaised
+Card.BorderSizePixel = 0
+Card.Visible = false
+Card.Parent = CardsScroll
 
-local rightCorner = Instance.new("UICorner")
-rightCorner.CornerRadius = UDim.new(0, 8)
-rightCorner.Parent = RightPanel
+local cardCorner = Instance.new("UICorner")
+cardCorner.CornerRadius = UDim.new(0, 8)
+cardCorner.Parent = Card
 
-local RightPadding = Instance.new("UIPadding")
-RightPadding.PaddingTop = UDim.new(0, 20)
-RightPadding.PaddingBottom = UDim.new(0, 20)
-RightPadding.PaddingLeft = UDim.new(0, 20)
-RightPadding.PaddingRight = UDim.new(0, 20)
-RightPadding.Parent = RightPanel
+local RarityStrip = Instance.new("Frame")
+RarityStrip.Name = "RarityStrip"
+RarityStrip.Size = UDim2.new(1, 0, 0, 6)
+RarityStrip.BackgroundColor3 = Theme.RarityCommon
+RarityStrip.BorderSizePixel = 0
+RarityStrip.Parent = Card
 
--- US2 (FR-006): item detail scrolls when taller than the panel; the quantity
--- stepper and buy button stay pinned in a Footer that never scrolls.
-local Footer = Instance.new("Frame")
-Footer.Name = "Footer"
-Footer.Size = UDim2.new(1, 0, 0, 120)
-Footer.Position = UDim2.new(0, 0, 1, -120)
-Footer.BackgroundTransparency = 1
-Footer.Parent = RightPanel
+local Icon = Instance.new("ImageLabel")
+Icon.Name = "Icon"
+Icon.Size = UDim2.new(0, 48, 0, 48)
+Icon.Position = UDim2.new(0.5, 0, 0, 12)
+Icon.AnchorPoint = Vector2.new(0.5, 0)
+Icon.BackgroundTransparency = 1
+Icon.Image = ""
+Icon.ScaleType = Enum.ScaleType.Fit
+Icon.Parent = Card
 
-local Details = Instance.new("ScrollingFrame")
-Details.Name = "Details"
-Details.Size = UDim2.new(1, 0, 1, -130)
-Details.Position = UDim2.new(0, 0, 0, 0)
-Details.BackgroundTransparency = 1
-Details.BorderSizePixel = 0
-Details.ScrollBarThickness = 6
-Details.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90)
-Details.CanvasSize = UDim2.new(0, 0, 0, 0)
-Details.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Details.Parent = RightPanel
+local FallbackLetter = Instance.new("TextLabel")
+FallbackLetter.Name = "FallbackLetter"
+FallbackLetter.Size = UDim2.new(1, 0, 1, 0)
+FallbackLetter.BackgroundTransparency = 1
+FallbackLetter.Text = "?"
+FallbackLetter.TextColor3 = Theme.TextMuted
+FallbackLetter.TextSize = 32
+FallbackLetter.Font = Enum.Font.GothamBold
+FallbackLetter.Parent = Icon
 
--- Item icon display
-local ItemIconDisplay = Instance.new("ImageLabel")
-ItemIconDisplay.Name = "ItemIconDisplay"
-ItemIconDisplay.Size = UDim2.new(0, 120, 0, 120)
-ItemIconDisplay.Position = UDim2.new(0.5, 0, 0, 0)
-ItemIconDisplay.AnchorPoint = Vector2.new(0.5, 0)
-ItemIconDisplay.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-ItemIconDisplay.BorderSizePixel = 0
-ItemIconDisplay.Image = "rbxassetid://0"
-ItemIconDisplay.ScaleType = Enum.ScaleType.Fit
-ItemIconDisplay.Parent = Details
+local NameLabel = Instance.new("TextLabel")
+NameLabel.Name = "NameLabel"
+NameLabel.Size = UDim2.new(1, -12, 0, 32)
+NameLabel.Position = UDim2.new(0, 6, 0, 62)
+NameLabel.BackgroundTransparency = 1
+NameLabel.Text = "Item"
+NameLabel.TextColor3 = Theme.TextPrimary
+NameLabel.TextSize = 18
+NameLabel.Font = Enum.Font.GothamBold
+NameLabel.TextWrapped = true
+NameLabel.Parent = Card
 
-local iconCorner = Instance.new("UICorner")
-iconCorner.CornerRadius = UDim.new(0, 12)
-iconCorner.Parent = ItemIconDisplay
-
--- Icon text (emoji fallback)
-local IconText = Instance.new("TextLabel")
-IconText.Name = "IconText"
-IconText.Size = UDim2.new(1, 0, 1, 0)
-IconText.BackgroundTransparency = 1
-IconText.Text = "🌱"
-IconText.TextColor3 = Color3.fromRGB(150, 150, 150)
-IconText.TextSize = 60
-IconText.Font = Enum.Font.GothamBold
-IconText.Parent = ItemIconDisplay
-
--- Item name
-local ItemNameLabel = Instance.new("TextLabel")
-ItemNameLabel.Name = "ItemNameLabel"
-ItemNameLabel.Size = UDim2.new(1, 0, 0, 35)
-ItemNameLabel.Position = UDim2.new(0, 0, 0, 135)
-ItemNameLabel.BackgroundTransparency = 1
-ItemNameLabel.Text = "SELECT AN ITEM"
-ItemNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-ItemNameLabel.TextSize = 22
-ItemNameLabel.Font = Enum.Font.GothamBold
-ItemNameLabel.TextWrapped = true
-ItemNameLabel.Parent = Details
-
--- Item description
-local ItemDescriptionLabel = Instance.new("TextLabel")
-ItemDescriptionLabel.Name = "ItemDescriptionLabel"
-ItemDescriptionLabel.Size = UDim2.new(1, 0, 0, 60)
-ItemDescriptionLabel.Position = UDim2.new(0, 0, 0, 175)
-ItemDescriptionLabel.BackgroundTransparency = 1
-ItemDescriptionLabel.Text = "Choose a category to browse items"
-ItemDescriptionLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-ItemDescriptionLabel.TextSize = 18 -- body >= 18 (FR-005)
-ItemDescriptionLabel.Font = Enum.Font.Gotham
-ItemDescriptionLabel.TextWrapped = true
-ItemDescriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
-ItemDescriptionLabel.Parent = Details
-
--- Separator line
-local Separator = Instance.new("Frame")
-Separator.Size = UDim2.new(1, 0, 0, 2)
-Separator.Position = UDim2.new(0, 0, 0, 250)
-Separator.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-Separator.BorderSizePixel = 0
-Separator.Parent = Details
-
--- Price label
 local PriceLabel = Instance.new("TextLabel")
 PriceLabel.Name = "PriceLabel"
-PriceLabel.Size = UDim2.new(1, 0, 0, 30)
-PriceLabel.Position = UDim2.new(0, 0, 0, 265)
+PriceLabel.Size = UDim2.new(1, -12, 0, 22)
+PriceLabel.Position = UDim2.new(0, 6, 0, 94)
 PriceLabel.BackgroundTransparency = 1
-PriceLabel.Text = "💰 Price: 0 coins"
+PriceLabel.Text = "💰 0"
 PriceLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
-PriceLabel.TextSize = 20
+PriceLabel.TextSize = 18
 PriceLabel.Font = Enum.Font.GothamBold
-PriceLabel.TextXAlignment = Enum.TextXAlignment.Left
-PriceLabel.Parent = Details
+PriceLabel.Parent = Card
 
---[[
-    QUANTITY STEPPER
-]]
-local QuantityStepper = Instance.new("Frame")
-QuantityStepper.Name = "QuantityStepper"
-QuantityStepper.Size = UDim2.new(0, 180, 0, 50)
-QuantityStepper.Position = UDim2.new(0, 0, 0, 0)
-QuantityStepper.BackgroundTransparency = 1
-QuantityStepper.Parent = Footer
+-- Quantity row: x1 / x5 / x10 (each >= 44 tall for a touch target)
+local QtyRow = Instance.new("Frame")
+QtyRow.Name = "QtyRow"
+QtyRow.Size = UDim2.new(1, -12, 0, 44)
+QtyRow.Position = UDim2.new(0, 6, 0, 120)
+QtyRow.BackgroundTransparency = 1
+QtyRow.Parent = Card
 
--- Minus button
-local MinusBtn = Instance.new("TextButton")
-MinusBtn.Name = "MinusBtn"
-MinusBtn.Size = UDim2.new(0, 50, 0, 50)
-MinusBtn.Position = UDim2.new(0, 0, 0, 0)
-MinusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-MinusBtn.BorderSizePixel = 0
-MinusBtn.Text = "−"
-MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinusBtn.TextSize = 28
-MinusBtn.Font = Enum.Font.GothamBold
-MinusBtn.AutoButtonColor = false
-MinusBtn.Parent = QuantityStepper
+local function makeQty(name, text, order)
+    local b = Instance.new("TextButton")
+    b.Name = name
+    b.Size = UDim2.new(0.32, 0, 1, 0)
+    b.Position = UDim2.new(order * 0.34, 0, 0, 0)
+    b.BackgroundColor3 = Theme.Control
+    b.BorderSizePixel = 0
+    b.Text = text
+    b.TextColor3 = Theme.TextPrimary
+    b.TextSize = 18
+    b.Font = Enum.Font.GothamBold
+    b.AutoButtonColor = false
+    b.Parent = QtyRow
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 6)
+    c.Parent = b
+    return b
+end
+makeQty("QtyX1", "x1", 0)
+makeQty("QtyX5", "x5", 1)
+makeQty("QtyX10", "x10", 2)
 
-local minusCorner = Instance.new("UICorner")
-minusCorner.CornerRadius = UDim.new(0, 8)
-minusCorner.Parent = MinusBtn
-
-MinusBtn.MouseEnter:Connect(function()
-    MinusBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 80)
-end)
-
-MinusBtn.MouseLeave:Connect(function()
-    MinusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-end)
-
--- Quantity display
-local QuantityDisplay = Instance.new("TextLabel")
-QuantityDisplay.Name = "QuantityDisplay"
-QuantityDisplay.Size = UDim2.new(0, 70, 0, 50)
-QuantityDisplay.Position = UDim2.new(0, 55, 0, 0)
-QuantityDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-QuantityDisplay.BorderSizePixel = 0
-QuantityDisplay.Text = "1"
-QuantityDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
-QuantityDisplay.TextSize = 24
-QuantityDisplay.Font = Enum.Font.GothamBold
-QuantityDisplay.Parent = QuantityStepper
-
-local qtyCorner = Instance.new("UICorner")
-qtyCorner.CornerRadius = UDim.new(0, 8)
-qtyCorner.Parent = QuantityDisplay
-
--- Plus button
-local PlusBtn = Instance.new("TextButton")
-PlusBtn.Name = "PlusBtn"
-PlusBtn.Size = UDim2.new(0, 50, 0, 50)
-PlusBtn.Position = UDim2.new(0, 130, 0, 0)
-PlusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-PlusBtn.BorderSizePixel = 0
-PlusBtn.Text = "+"
-PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-PlusBtn.TextSize = 28
-PlusBtn.Font = Enum.Font.GothamBold
-PlusBtn.AutoButtonColor = false
-PlusBtn.Parent = QuantityStepper
-
-local plusCorner = Instance.new("UICorner")
-plusCorner.CornerRadius = UDim.new(0, 8)
-plusCorner.Parent = PlusBtn
-
-PlusBtn.MouseEnter:Connect(function()
-    PlusBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 80)
-end)
-
-PlusBtn.MouseLeave:Connect(function()
-    PlusBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-end)
-
--- Buy button
 local BuyButton = Instance.new("TextButton")
 BuyButton.Name = "BuyButton"
-BuyButton.Size = UDim2.new(1, 0, 0, 60)
-BuyButton.Position = UDim2.new(0, 0, 1, -60)
-BuyButton.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+BuyButton.Size = UDim2.new(1, -12, 0, 44)
+BuyButton.Position = UDim2.new(0, 6, 0, 168)
+BuyButton.BackgroundColor3 = Theme.Accent
 BuyButton.BorderSizePixel = 0
 BuyButton.Text = "BUY"
-BuyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-BuyButton.TextSize = 24
+BuyButton.TextColor3 = Theme.TextPrimary
+BuyButton.TextSize = 20
 BuyButton.Font = Enum.Font.GothamBold
 BuyButton.AutoButtonColor = false
-BuyButton.Parent = Footer
+BuyButton.Parent = Card
 
 local buyCorner = Instance.new("UICorner")
-buyCorner.CornerRadius = UDim.new(0, 10)
+buyCorner.CornerRadius = UDim.new(0, 8)
 buyCorner.Parent = BuyButton
 
-BuyButton.MouseEnter:Connect(function()
-    BuyButton.BackgroundColor3 = Color3.fromRGB(90, 220, 140)
-end)
-
-BuyButton.MouseLeave:Connect(function()
-    BuyButton.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-end)
-
---[[
-    LOADING OVERLAY
-    Shown during network requests
-]]
+-- Loading overlay (shown during a purchase request)
 local LoadingOverlay = Instance.new("Frame")
 LoadingOverlay.Name = "LoadingOverlay"
--- Cover only the body below the 50px header so the CloseButton stays usable
--- while loading (US2, contracts/gui-tree.md).
 LoadingOverlay.Size = UDim2.new(1, 0, 1, -50)
 LoadingOverlay.Position = UDim2.new(0, 0, 0, 50)
 LoadingOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -434,60 +292,17 @@ local loadingCorner = Instance.new("UICorner")
 loadingCorner.CornerRadius = UDim.new(0, 12)
 loadingCorner.Parent = LoadingOverlay
 
--- Loading spinner container
-local SpinnerContainer = Instance.new("Frame")
-SpinnerContainer.Size = UDim2.new(0, 100, 0, 100)
-SpinnerContainer.Position = UDim2.new(0.5, 0, 0.5, -30)
-SpinnerContainer.AnchorPoint = Vector2.new(0.5, 0.5)
-SpinnerContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-SpinnerContainer.BorderSizePixel = 0
-SpinnerContainer.Parent = LoadingOverlay
-
-local spinnerCorner = Instance.new("UICorner")
-spinnerCorner.CornerRadius = UDim.new(0, 12)
-spinnerCorner.Parent = SpinnerContainer
-
--- Spinner (rotating circle)
-local Spinner = Instance.new("ImageLabel")
-Spinner.Name = "Spinner"
-Spinner.Size = UDim2.new(0, 60, 0, 60)
-Spinner.Position = UDim2.new(0.5, 0, 0.5, 0)
-Spinner.AnchorPoint = Vector2.new(0.5, 0.5)
-Spinner.BackgroundTransparency = 1
-Spinner.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-Spinner.ImageColor3 = Color3.fromRGB(80, 200, 120)
-Spinner.Parent = SpinnerContainer
-
--- Rotate spinner continuously
-local RunService = game:GetService("RunService")
-RunService.RenderStepped:Connect(function(dt)
-    if LoadingOverlay.Visible then
-        Spinner.Rotation = Spinner.Rotation + (dt * 180)
-    end
-end)
-
--- Loading text
 local LoadingText = Instance.new("TextLabel")
 LoadingText.Name = "LoadingText"
 LoadingText.Size = UDim2.new(1, 0, 0, 30)
-LoadingText.Position = UDim2.new(0.5, 0, 0.5, 60)
-LoadingText.AnchorPoint = Vector2.new(0.5, 0)
+LoadingText.Position = UDim2.new(0.5, 0, 0.5, 0)
+LoadingText.AnchorPoint = Vector2.new(0.5, 0.5)
 LoadingText.BackgroundTransparency = 1
 LoadingText.Text = "Processing..."
-LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadingText.TextSize = 18
+LoadingText.TextColor3 = Theme.TextPrimary
+LoadingText.TextSize = 20
 LoadingText.Font = Enum.Font.GothamBold
+LoadingText.ZIndex = 101
 LoadingText.Parent = LoadingOverlay
 
-print("✅ ShopUI created successfully!")
-print("   Components:")
-print("   - ShopFrame (main window)")
-print("   - HeaderBar (title, close button)")
-print("   - LeftPanel (category list)")
-print("   - RightPanel (item details)")
-print("   - QuantityStepper (-, qty, +)")
-print("   - BuyButton")
-print("   - LoadingOverlay (spinner)")
-print("")
-print("🎮 ShopUI is ready for ShopController!")
-print("   Press 'B' to toggle shop")
+print("✅ ShopUI (card grid) created successfully!")

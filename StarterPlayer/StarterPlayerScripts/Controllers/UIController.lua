@@ -236,80 +236,29 @@ end
     @param messageType (string) - "success", "error", "info", or "warning"
     @param duration (number) - How long to show notification (default: 3 seconds)
 ]]
+-- Feature 002, US4: toasts now render in the Notifications ScreenGui through the
+-- pooled ToastQueue instead of only printing. Required lazily and cached so
+-- UIController has no hard load-order dependency on ToastQueue.
+local _toastQueue = nil
+local function getToastQueue()
+    if _toastQueue == nil then
+        local ok, mod = pcall(require, Utils:WaitForChild("ToastQueue", 5))
+        _toastQueue = (ok and mod) or false
+    end
+    return _toastQueue or nil
+end
+
 function UIController.ShowNotification(message, messageType, duration)
     messageType = messageType or "info"
     duration = duration or 3
-    
-    -- Color coding for message types
-    local colors = {
-        success = Color3.fromRGB(80, 200, 120),
-        error = Color3.fromRGB(220, 80, 80),
-        info = Color3.fromRGB(100, 150, 255),
-        warning = Color3.fromRGB(255, 180, 50),
-        spirit = Color3.fromRGB(180, 120, 255)  -- Фиолетовый для духов
-    }
-    
-    local icons = {
-        success = "✅",
-        error = "❌",
-        info = "ℹ️",
-        warning = "⚠️",
-        spirit = "👻"  -- Призрак для духов
-    }
-    
-    local color = colors[messageType] or colors.info
-    local icon = icons[messageType] or icons.info
-    
-    -- For now, print to console
-    -- TODO: Create notification frame UI element
-    local fullMessage = string.format("%s [%s] %s", icon, messageType:upper(), message)
-    print(fullMessage)
-    
-    -- Placeholder for future notification UI
-    --[[
-    local notificationFrame = Instance.new("Frame")
-    notificationFrame.Size = UDim2.new(0, 300, 0, 60)
-    notificationFrame.Position = UDim2.new(0.5, 0, 0, -70)
-    notificationFrame.AnchorPoint = Vector2.new(0.5, 0)
-    notificationFrame.BackgroundColor3 = color
-    notificationFrame.BorderSizePixel = 0
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = notificationFrame
-    
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, -20, 1, 0)
-    textLabel.Position = UDim2.new(0, 10, 0, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = icon .. " " .. message
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.TextSize = 16
-    textLabel.Font = Enum.Font.GothamBold
-    textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.Parent = notificationFrame
-    
-    notificationFrame.Parent = playerGui:WaitForChild("HUD")
-    
-    -- Animate in
-    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(notificationFrame, tweenInfo, {
-        Position = UDim2.new(0.5, 0, 0, 20)
-    })
-    tween:Play()
-    
-    -- Remove after duration
-    task.delay(duration, function()
-        local fadeInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-        local fadeTween = TweenService:Create(notificationFrame, fadeInfo, {
-            Position = UDim2.new(0.5, 0, 0, -70)
-        })
-        fadeTween:Play()
-        fadeTween.Completed:Connect(function()
-            notificationFrame:Destroy()
-        end)
-    end)
-    ]]
+
+    local tq = getToastQueue()
+    if tq then
+        tq.Show(message, messageType, duration)
+    else
+        -- fallback if the toast layer is unavailable
+        print(string.format("[%s] %s", messageType:upper(), tostring(message)))
+    end
 end
 
 --[[
@@ -371,10 +320,9 @@ function UIController.Initialize()
         gui = ShopUI,
         frame = findFrame(ShopUI, "ShopFrame", "MainFrame", "Frame"),
         backdrop = ShopUI:FindFirstChild("Backdrop"),
-        -- Gamepad default selection (US5): the first shop category button.
+        -- Gamepad default selection: the Seeds tab (feature 002 card-grid shop).
         defaultSelection = function()
-            local lp = ShopUI:FindFirstChild("LeftPanel", true)
-            return lp and lp:FindFirstChild("seedsCategoryBtn")
+            return ShopUI:FindFirstChild("seedsTab", true)
         end,
         aspect = ResponsiveLayout.WINDOWS.Shop.aspect,
         maxSize = Vector2.new(ResponsiveLayout.WINDOWS.Shop.maxW, ResponsiveLayout.WINDOWS.Shop.maxH),
