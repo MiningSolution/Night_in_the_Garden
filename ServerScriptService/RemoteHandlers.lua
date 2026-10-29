@@ -11,6 +11,7 @@ local SpiritManager = require(SpiritFolder:WaitForChild("SpiritManager"))
 local SpiritSpawner = require(SpiritFolder:WaitForChild("SpiritSpawner"))
 local SpiritCollector = require(SpiritFolder:WaitForChild("SpiritCollector"))
 local DailyRewardService = require(Services:WaitForChild("DailyRewardService"))
+local QuestService = require(Services:WaitForChild("QuestService"))
 
 -- Remotes
 local InteractWithPlot = RS:WaitForChild("InteractWithPlot")
@@ -25,6 +26,8 @@ local GetPlayerData = RS:WaitForChild("GetPlayerData")
 local CollectSpirit = RS:WaitForChild("CollectSpirit")
 local GetDailyReward = RS:WaitForChild("GetDailyReward")
 local ClaimDailyReward = RS:WaitForChild("ClaimDailyReward")
+local GetQuests = RS:WaitForChild("GetQuests")
+local ClaimQuest = RS:WaitForChild("ClaimQuest")
 local UpdateCurrency = RS:WaitForChild("UpdateCurrency")
 
 -- Simple per-player rate limit (RFs)
@@ -233,10 +236,11 @@ SellItem.OnServerInvoke = function(player, itemId, quantity)
             return fail("Item cannot be sold")
         end
 
-        if not PlayerData.TryConsumeItem(player, itemId, quantity) then 
-            return fail("Failed to remove") 
+        if not PlayerData.TryConsumeItem(player, itemId, quantity) then
+            return fail("Failed to remove")
         end
         PlayerData.AddCoins(player, price*quantity)
+        QuestService.Track(player, "sell", quantity) -- feature 003 (US2)
 
         local snap = PlayerData.Snapshot(player)
         return ok({ ItemName=itemId, Quantity=quantity, TotalEarned=price*quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory })
@@ -282,6 +286,9 @@ SellAll.OnServerInvoke = function(player)
 
         if totalEarned > 0 then
             PlayerData.AddCoins(player, totalEarned)
+        end
+        if soldCount > 0 then
+            QuestService.Track(player, "sell", soldCount) -- feature 003 (US2)
         end
 
         local out = PlayerData.Snapshot(player)
@@ -518,6 +525,45 @@ ClaimDailyReward.OnServerInvoke = function(player)
     end)
     if not success then
         warn("[RemoteHandlers] ClaimDailyReward error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    return result
+end
+
+-- Feature 003 (US2, FR-003/004/005/013): daily quests. Progress is tracked only by
+-- QuestService.Track at the authoritative event sites; these only read and claim.
+GetQuests.OnServerInvoke = function(player)
+    local success, result = pcall(function()
+        if not rate_ok(player, "GetQuests") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        local data = QuestService.GetQuests(player)
+        if not data then return fail("Data not loaded") end
+        return ok(data)
+    end)
+    if not success then
+        warn("[RemoteHandlers] GetQuests error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    return result
+end
+
+ClaimQuest.OnServerInvoke = function(player, questId)
+    local success, result = pcall(function()
+        if not rate_ok(player, "ClaimQuest") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        if type(questId) ~= "string" then return fail("Bad args") end
+        local res, reason = QuestService.Claim(player, questId)
+        if not res then return fail(reason or "Cannot claim") end
+        if UpdateCurrency then
+            UpdateCurrency:FireClient(player, "Coins", res.NewBalance)
+            UpdateCurrency:FireClient(player, "DreamSeeds", res.NewSeeds)
+        end
+        return ok(res)
+    end)
+    if not success then
+        warn("[RemoteHandlers] ClaimQuest error for", player.Name, ":", result)
         return fail("Internal server error")
     end
     return result

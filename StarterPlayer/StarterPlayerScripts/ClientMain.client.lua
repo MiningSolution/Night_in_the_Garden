@@ -50,6 +50,7 @@ boot(Controllers, "InventoryController")
 boot(Controllers, "ShopController")
 boot(Controllers, "SellController") -- feature 002: sell window at the seller stall
 boot(Controllers, "DailyRewardController") -- feature 003: daily login reward (US1)
+boot(Controllers, "QuestController") -- feature 003: daily quests (US2)
 
 -- Feature 001: the shared action layer (keyboard/touch/gamepad). Init after the
 -- controllers so the windows are registered before any action can toggle them.

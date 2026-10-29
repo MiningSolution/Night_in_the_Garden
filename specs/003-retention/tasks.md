@@ -83,17 +83,17 @@ rewards are claimable once, resetting each day.
 **Independent Test**: open the Quests window, perform a tracked action, watch progress rise, claim a
 completed quest once; confirm the set resets on the day boundary (quickstart V4/V5/V6).
 
-- [ ] T016 [US2] `ServerScriptService/Services/QuestService.lua`: `EnsureDay(player)` (rebuild the set via `PickDailyQuests(DayIndex(now))` and reset `Progress`/`Claimed` when `Quests.Day` ≠ today), `GetQuests(player)`, `Track(player, kind, amount)` (increment matching-kind quests, clamp at target, fire `QuestUpdated`), `Claim(player, questId)` (grant once iff complete & unclaimed; `UpdateCurrency`) (data-model.md kind→event table; contracts/remotes.md)
-- [ ] T017 [US2] `ServerScriptService/CreateRemotes.lua`: add `GetQuests`, `ClaimQuest` (RemoteFunctions) and `QuestUpdated` (RemoteEvent)
-- [ ] T018 [US2] `ServerScriptService/RemoteHandlers.lua`: bind `GetQuests`/`ClaimQuest` (standard pattern, fail closed on out-of-set/incomplete/already-claimed); add `QuestService.Track(player, "sell", <crop count>)` after a successful `SellItem` and `SellAll`
-- [ ] T019 [US2] `ServerScriptService/Services/PlotManager.lua`: call `QuestService.Track(player, "plant", 1)` on a successful plant and `QuestService.Track(player, "harvest", 1)` on a successful harvest (authoritative plot flow — R6)
-- [ ] T020 [US2] `ServerScriptService/Services/Spirit/SpiritCollector.lua`: call `QuestService.Track(player, "catch_spirit", 1)` after a successful collect in `tryCollect`
-- [ ] T021 [P] [US2] `Tools/StaticGui/builders/CreateQuestsUI.luau`: build `QuestsUI` per contracts/gui-tree.md (`Header`, `QuestScroll` + hidden `QuestRowTemplate` with objective/`ProgressLabel`/`ProgressBar`/`RewardLabel`/`ClaimButton`, `CloseButton`, backdrop); tokens; text/size/safe-area rules
-- [ ] T022 [US2] `Tools/StaticGui/builders/CreateHUDControls.luau`: add `QuestsButton` to the menu column (≥ 44×44, selection group, hints)
-- [ ] T023 [US2] Regenerate models and confirm only `QuestsUI.model.json` + `HUDControls.model.json` changed
-- [ ] T024 [US2] `StarterPlayer/StarterPlayerScripts/Controllers/QuestController.lua`: render from `GetQuests`, update rows incrementally on `QuestUpdated`, wire `ClaimButton` → `ClaimQuest` (+ completion toast via `ToastQueue`/`UIController.ShowNotification`); register with `WindowManager`; bind via `InputActions`
-- [ ] T025 [US2] `StarterPlayer/StarterPlayerScripts/ClientMain.client.lua`: boot `QuestController`; wire `QuestsButton` to open the window
-- [ ] T026 [US2] Studio playtest V4+V5+V6 (phone/PC/gamepad): progress rises on plant/harvest/sell/spirit (window open and closed); claim once, second claim refused; day rollover resets the set; Output clean
+- [x] T016 [US2] `ServerScriptService/Services/QuestService.lua`: `EnsureDay(player)` (rebuild the set via `PickDailyQuests(DayIndex(now))` and reset `Progress`/`Claimed` when `Quests.Day` ≠ today), `GetQuests(player)`, `Track(player, kind, amount)` (increment matching-kind quests, clamp at target, fire `QuestUpdated`), `Claim(player, questId)` (grant once iff complete & unclaimed; `UpdateCurrency`) (data-model.md kind→event table; contracts/remotes.md)
+- [x] T017 [US2] `ServerScriptService/CreateRemotes.lua`: add `GetQuests`, `ClaimQuest` (RemoteFunctions) and `QuestUpdated` (RemoteEvent)
+- [x] T018 [US2] `ServerScriptService/RemoteHandlers.lua`: bind `GetQuests`/`ClaimQuest` (standard pattern, fail closed on out-of-set/incomplete/already-claimed); add `QuestService.Track(player, "sell", <crop count>)` after a successful `SellItem` and `SellAll`
+- [x] T019 [US2] `ServerScriptService/Services/PlotManager.lua`: call `QuestService.Track(player, "plant", 1)` on a successful plant and `QuestService.Track(player, "harvest", 1)` on a successful harvest (authoritative plot flow — R6)
+- [x] T020 [US2] `ServerScriptService/Services/Spirit/SpiritCollector.lua`: call `QuestService.Track(player, "catch_spirit", 1)` after a successful collect in `tryCollect`
+- [x] T021 [P] [US2] `Tools/StaticGui/builders/CreateQuestsUI.luau`: build `QuestsUI` per contracts/gui-tree.md (`Header`, `QuestScroll` + hidden `QuestRowTemplate` with objective/`ProgressLabel`/`ProgressBar`/`RewardLabel`/`ClaimButton`, `CloseButton`, backdrop); tokens; text/size/safe-area rules
+- [x] T022 [US2] `Tools/StaticGui/builders/CreateHUDControls.luau`: add `QuestsButton` to the menu column (≥ 44×44, selection group, hints)
+- [x] T023 [US2] Regenerate models and confirm only `QuestsUI.model.json` + `HUDControls.model.json` changed
+- [x] T024 [US2] `StarterPlayer/StarterPlayerScripts/Controllers/QuestController.lua`: render from `GetQuests`, update rows incrementally on `QuestUpdated`, wire `ClaimButton` → `ClaimQuest` (+ completion toast via `ToastQueue`/`UIController.ShowNotification`); register with `WindowManager`; bind via `InputActions`
+- [x] T025 [US2] `StarterPlayer/StarterPlayerScripts/ClientMain.client.lua`: boot `QuestController`; wire `QuestsButton` to open the window
+- [x] T026 [US2] Studio playtest V4+V5+V6 (phone/PC/gamepad): progress rises on plant/harvest/sell/spirit (window open and closed); claim once, second claim refused; day rollover resets the set; Output clean
 
 **Checkpoint**: daily quests functional and independently testable.
 

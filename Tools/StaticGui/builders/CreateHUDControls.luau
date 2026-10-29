@@ -110,6 +110,7 @@ makeMenuButton("InventoryButton", "🎒", "I", 2)
 -- Feature 003: Rewards (US1) and Quests (US2) open their windows; the column was
 -- already sized for four buttons (ResponsiveLayout MENU_CAPACITY = 4).
 makeMenuButton("RewardsButton", "🎁", "R", 3)
+makeMenuButton("QuestsButton", "📋", "Q", 4)
 
 --[[ TELEPORT ROW (US6) — a horizontal row of quick-travel buttons, top-right so
      it is clear of the coin HUD (top-left), the day/night bar (top-centre), the

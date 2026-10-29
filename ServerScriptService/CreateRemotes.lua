@@ -37,6 +37,9 @@ ensureEvent("CollectSpirit", "RemoteFunction")
 -- Retention system (feature 003)
 ensureEvent("GetDailyReward", "RemoteFunction")   -- read streak state + reward table
 ensureEvent("ClaimDailyReward", "RemoteFunction")  -- claim today's reward (server-decided)
+ensureEvent("GetQuests", "RemoteFunction")        -- read today's quests + progress
+ensureEvent("ClaimQuest", "RemoteFunction")       -- claim a completed quest's reward
+ensureEvent("QuestUpdated", "RemoteEvent")        -- server → client progress/claim push
 
 -- Data updates (server → client)
 ensureEvent("UpdateCurrency", "RemoteEvent")
