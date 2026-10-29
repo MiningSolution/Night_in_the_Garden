@@ -120,7 +120,7 @@ actions unchanged. Independent of US1–US3; each window is its own small PR. (q
 - [x] T031 [P] [US4] Redesign `Tools/StaticGui/builders/CreateDailyRewardUI.luau` → `DailyRewardUI` (7-day streak as cosy reward cards); regenerate; confirm `DailyRewardController` unchanged.
 - [x] T032 [P] [US4] Redesign `Tools/StaticGui/builders/CreateNotifications.luau` → `Notifications` (themed toast/banner styling); regenerate; confirm `ToastQueue`/notification behaviour unchanged.
 - [x] T033 [US4] Run all specs + static-GUI parity after the four regenerations; commit the four model.json files.
-- [ ] T034 [US4] Studio playtest (both palettes, phone-landscape): open each of the four windows, exercise its actions (sell one / sell all / toggle favourite; claim daily; claim a quest; see a notification), ≥44×44 + safe area; no new Output errors.
+- [x] T034 [US4] Studio playtest (both palettes, phone-landscape): open each of the four windows, exercise its actions (sell one / sell all / toggle favourite; claim daily; claim a quest; see a notification), ≥44×44 + safe area; no new Output errors.
 
 **Checkpoint**: US4 shippable (one PR per window or one small PR for the set).
 
