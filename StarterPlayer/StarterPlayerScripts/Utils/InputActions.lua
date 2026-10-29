@@ -137,6 +137,21 @@ local function bindAlwaysActions()
 		Enum.KeyCode.ButtonY
 	)
 
+	-- Feature 003: Rewards (US1) window toggle — R on PC, D-pad up on gamepad.
+	ContextActionService:BindActionAtPriority(
+		"NightGarden_ToggleRewards",
+		function(_, inputState)
+			if inputState == Enum.UserInputState.Begin then
+				WindowManager.Toggle("Rewards")
+			end
+			return Enum.ContextActionResult.Sink
+		end,
+		false,
+		Enum.ContextActionPriority.High.Value,
+		Enum.KeyCode.R,
+		Enum.KeyCode.DPadUp
+	)
+
 	-- Gamepad hotbar cycling (L1/R1), wrapping at the ends (FR-013a).
 	ContextActionService:BindActionAtPriority(
 		"NightGarden_HotbarPrev",
@@ -188,6 +203,7 @@ local function applyHints(mode)
 	if menu then
 		setButton(menu:FindFirstChild("ShopButton"), Enum.KeyCode.ButtonX)
 		setButton(menu:FindFirstChild("InventoryButton"), Enum.KeyCode.ButtonY)
+		setButton(menu:FindFirstChild("RewardsButton"), Enum.KeyCode.DPadUp)
 	end
 
 	local hotbar = hudc:FindFirstChild("Hotbar")

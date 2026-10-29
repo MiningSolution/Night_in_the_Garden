@@ -10,6 +10,7 @@ local SpiritFolder = Services:WaitForChild("Spirit")
 local SpiritManager = require(SpiritFolder:WaitForChild("SpiritManager"))
 local SpiritSpawner = require(SpiritFolder:WaitForChild("SpiritSpawner"))
 local SpiritCollector = require(SpiritFolder:WaitForChild("SpiritCollector"))
+local DailyRewardService = require(Services:WaitForChild("DailyRewardService"))
 
 -- Remotes
 local InteractWithPlot = RS:WaitForChild("InteractWithPlot")
@@ -22,6 +23,9 @@ local ToggleFavourite = RS:WaitForChild("ToggleFavourite")
 local RequestTeleport = RS:WaitForChild("RequestTeleport")
 local GetPlayerData = RS:WaitForChild("GetPlayerData")
 local CollectSpirit = RS:WaitForChild("CollectSpirit")
+local GetDailyReward = RS:WaitForChild("GetDailyReward")
+local ClaimDailyReward = RS:WaitForChild("ClaimDailyReward")
+local UpdateCurrency = RS:WaitForChild("UpdateCurrency")
 
 -- Simple per-player rate limit (RFs)
 local _rl = {}
@@ -475,6 +479,47 @@ CollectSpirit.OnServerInvoke = function(player, spiritId)
         return fail("Internal server error")
     end
     
+    return result
+end
+
+-- Feature 003 (US1, FR-001/002/013): daily login reward. The server decides
+-- claimability and the streak from its own clock; the client only reads and claims.
+GetDailyReward.OnServerInvoke = function(player)
+    local success, result = pcall(function()
+        if not rate_ok(player, "GetDailyReward") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        local state = DailyRewardService.GetState(player)
+        if not state then return fail("Data not loaded") end
+        return ok(state)
+    end)
+    if not success then
+        warn("[RemoteHandlers] GetDailyReward error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    return result
+end
+
+ClaimDailyReward.OnServerInvoke = function(player)
+    local success, result = pcall(function()
+        if not rate_ok(player, "ClaimDailyReward") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        local res, reason = DailyRewardService.Claim(player)
+        if not res then
+            return fail(reason or "Cannot claim")
+        end
+        -- Push the new balances so the HUD counter animates (US1 feedback).
+        if UpdateCurrency then
+            UpdateCurrency:FireClient(player, "Coins", res.NewBalance)
+            UpdateCurrency:FireClient(player, "DreamSeeds", res.NewSeeds)
+        end
+        return ok(res)
+    end)
+    if not success then
+        warn("[RemoteHandlers] ClaimDailyReward error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
     return result
 end
 

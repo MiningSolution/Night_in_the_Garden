@@ -34,6 +34,10 @@ ensureEvent("GetPlayerData", "RemoteFunction")
 -- Spirit system
 ensureEvent("CollectSpirit", "RemoteFunction")
 
+-- Retention system (feature 003)
+ensureEvent("GetDailyReward", "RemoteFunction")   -- read streak state + reward table
+ensureEvent("ClaimDailyReward", "RemoteFunction")  -- claim today's reward (server-decided)
+
 -- Data updates (server → client)
 ensureEvent("UpdateCurrency", "RemoteEvent")
 ensureEvent("UpdateInventory", "RemoteEvent")
