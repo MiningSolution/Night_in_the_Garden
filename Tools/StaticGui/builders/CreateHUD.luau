@@ -253,6 +253,57 @@ questReward.TextSize = 14
 questReward.Font = Style.DisplayFont
 questReward.Parent = QuestCard
 
+--[[
+    HARVEST HINT (feature 005, FR-007)
+    A contextual day-time hint shown bottom-centre, above the tool strip. It appears
+    only when the player is near a ready-to-harvest plant by day (driven by
+    HarvestHintController) and is actionable by an on-screen tap, not only the E key.
+    A primary (Accent) button so it reads as the one thing to do; hidden by default.
+    The anchored bottom-centre position clears the hotbar in every input mode, so it
+    needs no per-mode ResponsiveLayout math.
+]]
+local HarvestHint = Instance.new("TextButton")
+HarvestHint.Name = "HarvestHint"
+HarvestHint.AnchorPoint = Vector2.new(0.5, 1)
+HarvestHint.Size = UDim2.new(0, 190, 0, 52)
+HarvestHint.Position = UDim2.new(0.5, 0, 1, -150)
+bind(HarvestHint, "BackgroundColor3", "Accent")
+HarvestHint.BorderSizePixel = 0
+HarvestHint.AutoButtonColor = true
+HarvestHint.Text = "🧺 Harvest"
+bind(HarvestHint, "TextColor3", "TextOnAccent")
+HarvestHint.TextSize = 22
+HarvestHint.Font = Style.DisplayFont
+HarvestHint.Visible = false
+HarvestHint.Parent = HUD
+
+local harvestCorner = Instance.new("UICorner")
+harvestCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
+harvestCorner.Parent = HarvestHint
+
+strokeOf(HarvestHint, "OutlineDeep")
+
+-- Key chip (PC): the E shortcut. Shown in KeyboardMouse mode by HarvestHintController;
+-- a neutral dark chip with white text, matching the hotbar keybind chips (not themed).
+local HarvestKeyHint = Instance.new("TextLabel")
+HarvestKeyHint.Name = "KeyHint"
+HarvestKeyHint.AnchorPoint = Vector2.new(1, 0.5)
+HarvestKeyHint.Position = UDim2.new(1, -8, 0.5, 0)
+HarvestKeyHint.Size = UDim2.new(0, 24, 0, 24)
+HarvestKeyHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+HarvestKeyHint.BackgroundTransparency = 0.4
+HarvestKeyHint.BorderSizePixel = 0
+HarvestKeyHint.Text = "E"
+HarvestKeyHint.TextColor3 = Color3.fromRGB(255, 255, 255)
+HarvestKeyHint.TextSize = 16
+HarvestKeyHint.Font = Enum.Font.GothamBold
+HarvestKeyHint.Visible = false
+HarvestKeyHint.Parent = HarvestHint
+
+local harvestKeyCorner = Instance.new("UICorner")
+harvestKeyCorner.CornerRadius = UDim.new(0, 6)
+harvestKeyCorner.Parent = HarvestKeyHint
+
 print("✅ HUD created successfully!")
 print("   Components:")
 print("   - CurrencyDisplay (Coins, Dream Seeds)")
