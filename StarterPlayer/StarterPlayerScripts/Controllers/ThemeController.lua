@@ -29,6 +29,7 @@ local ThemeController = {}
 local SCREEN_GUIS = {
     "HUD", "HUDControls", "ShopUI", "InventoryUI",
     "SellUI", "Notifications", "DailyRewardUI", "QuestsUI",
+    "SpiritJournalUI", -- feature 006 (US3)
 }
 local TWEEN_INFO = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local PREFIX = "Theme_"

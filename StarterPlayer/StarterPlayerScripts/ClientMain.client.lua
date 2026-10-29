@@ -50,6 +50,7 @@ boot(Controllers, "HarvestHintController") -- feature 005 (FR-007): contextual d
 boot(Controllers, "InventoryController")
 boot(Controllers, "ShopController")
 boot(Controllers, "SellController") -- feature 002: sell window at the seller stall
+boot(Controllers, "SpiritJournalController") -- feature 006 (US3): spirit journal window
 boot(Controllers, "DailyRewardController") -- feature 003: daily login reward (US1)
 boot(Controllers, "QuestController") -- feature 003: daily quests (US2)
 boot(Controllers, "TutorialController") -- feature 003: first-session onboarding (US5)
