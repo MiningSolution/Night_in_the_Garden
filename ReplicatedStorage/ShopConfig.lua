@@ -20,6 +20,10 @@ ShopConfig.buy = {
     tools = {
         basic_watering_can    = { price = 0,  rarity = "Common", displayName = "Basic Watering Can",    icon = "" },
         improved_watering_can = { price = 50, rarity = "Rare",   displayName = "Improved Watering Can", icon = "" },
+        -- feature 006 (Stage 2, US1): real slot 3–5 tools. Prices from specs/006-redesign-stage2/balance.md.
+        shovel  = { price = 60,  rarity = "Common",   displayName = "Shovel",  icon = "" },
+        lantern = { price = 120, rarity = "Uncommon", displayName = "Lantern", icon = "" },
+        net     = { price = 200, rarity = "Rare",     displayName = "Net",     icon = "" },
     },
     items = {
         fertilizer = { price = 15, rarity = "Uncommon", displayName = "Fertilizer", icon = "" },

@@ -165,6 +165,24 @@ function M.HandleInteraction(player, plotModel, clientToolName)
         return ok({Action="Harvested", PlotId=plotId})
     end
 
+    -- Shovel (feature 006, US1): clear a NON-ready plant from the plot. Protects a ripe
+    -- crop (harvest it instead) and rejects an empty plot. No yield is granted.
+    if toolName == "shovel" then
+        if plot.State == "Empty" then return fail("Nothing to clear") end
+        if plot.State == "ReadyToHarvest" then return fail("Harvest it first") end
+
+        plot.State = "Empty"
+        plot.PlantId = nil
+        plot.GrowthProgress = 0
+        plot.GrowthSeconds = 0
+        plot.IsWatered = false
+
+        PlotStateChanged:FireClient(player, plotId, plot)
+        local snap = PlayerData.Snapshot(player)
+        PlotStateUpdated:FireClient(player, {PlotId=plotId, Success=true, Snapshot=snap})
+        return ok({Action="Cleared", PlotId=plotId})
+    end
+
     return fail("Invalid action")
 end
 

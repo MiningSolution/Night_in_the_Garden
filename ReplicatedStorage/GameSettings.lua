@@ -15,6 +15,11 @@ local M = {
         SpawnIntervalSec = 6,             -- интервал спавна духов
         DespawnAfterSec = 90,             -- время жизни духа (в секундах)
         SpawnRadius = 60,                 -- радиус спавна вокруг игрока
+        -- feature 006 (US1): фонарь приманивает духов — игрок с фонарём чаще выбирается
+        -- якорем спавна (LanternAnchorWeight), и духи спавнятся в меньшем радиусе вокруг
+        -- него (LanternSpawnRadius). Значения из specs/006-redesign-stage2/balance.md.
+        LanternSpawnRadius = 20,          -- радиус спавна вокруг игрока с фонарём (< SpawnRadius)
+        LanternAnchorWeight = 3,          -- во сколько раз игрок с фонарём вероятнее как якорь
         MinY = -5,                        -- минимальная высота спавна
         MaxY = 50,                        -- максимальная высота спавна
         PlayerCollectCooldownSec = 1.0,   -- задержка между сборами у игрока

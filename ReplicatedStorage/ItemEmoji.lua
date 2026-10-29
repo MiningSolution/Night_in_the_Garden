@@ -21,6 +21,12 @@ local BY_ID = {
 	fertilizer = "🌿",
 	dream_dust = "✨",
 	Harvest = "🧺",
+	-- feature 006 (Stage 2): the real slot 3–5 tools + the new night creatures.
+	lantern = "🏮",
+	net = "🥅",
+	shovel = "⛏️",
+	moonmoth = "🦋",
+	moth_spirit = "🌙",
 }
 
 -- Base-plant glyphs: apply to "<base>", "<base>_seed" and "<base>_crop".
