@@ -3,7 +3,7 @@
     Location: StarterGui (as LocalScript) — reworked for feature 002, User Story 3.
 
     The shop is a scrolling grid of cards. Each card (cloned by ShopController from
-    the hidden CardTemplate) shows an icon, name, price, a rarity colour strip and
+    the hidden CardTemplate) shows an icon, name, price, a rarity badge and
     x1/x5/x10 quantity buttons; unaffordable cards are dimmed. Seeds / Tools / Items
     are chosen with the tab row. The ShopFrame is sized responsively by
     UIController.applyLayout (ResponsiveLayout.WINDOWS.Shop), so inner elements use
@@ -154,7 +154,7 @@ RestockLabel.Font = Style.BodyFont
 RestockLabel.TextXAlignment = Enum.TextXAlignment.Right
 RestockLabel.Parent = HeaderBar
 
--- Category tabs (Seeds / Tools / Items)
+-- Category tabs (Seeds / Tools / Special)
 local TabContainer = Instance.new("Frame")
 TabContainer.Name = "TabContainer"
 TabContainer.Size = UDim2.new(1, -30, 0, 44)
@@ -183,7 +183,7 @@ local function makeTab(name, text, order)
 end
 makeTab("seedsTab", "🌱 Seeds", 0)
 makeTab("toolsTab", "🔧 Tools", 1)
-makeTab("itemsTab", "📦 Items", 2)
+makeTab("itemsTab", "✨ Special", 2) -- id/category stays "items"
 
 -- Scrolling card grid
 local CardsScroll = Instance.new("ScrollingFrame")
@@ -204,7 +204,7 @@ scrollCorner.CornerRadius = UDim.new(0, 8)
 scrollCorner.Parent = CardsScroll
 
 local grid = Instance.new("UIGridLayout")
-grid.CellSize = UDim2.new(0, 160, 0, 216)
+grid.CellSize = UDim2.new(0, 176, 0, 312)
 grid.CellPadding = UDim2.new(0, 12, 0, 12)
 grid.SortOrder = Enum.SortOrder.LayoutOrder
 grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
@@ -218,9 +218,11 @@ gridPad.PaddingRight = UDim.new(0, 12)
 gridPad.Parent = CardsScroll
 
 --[[ Card template (hidden; ShopController clones it per item) ]]
+-- Big image card (feature 005, US2): a large square Icon dominates the top, with the
+-- rarity badge + stock chip overlaid on it; name / price below; then qty row + Buy.
 local Card = Instance.new("Frame")
 Card.Name = "CardTemplate"
-Card.Size = UDim2.new(0, 160, 0, 216)
+Card.Size = UDim2.new(0, 176, 0, 312)
 bind(Card, "BackgroundColor3", "SurfaceRaised")
 Card.BorderSizePixel = 0
 Card.Visible = false
@@ -232,40 +234,21 @@ cardCorner.Parent = Card
 
 strokeOf(Card, "Outline")
 
--- Rarity strip: ShopController sets its colour per item (via ThemeController), so it
--- carries NO static Theme_ tag — the per-item rarity must win over a palette repaint.
-local RarityStrip = Instance.new("Frame")
-RarityStrip.Name = "RarityStrip"
-RarityStrip.Size = UDim2.new(1, 0, 0, 6)
-RarityStrip.BackgroundColor3 = Theme.RarityCommon
-RarityStrip.BorderSizePixel = 0
-RarityStrip.Parent = Card
-
--- Stock badge (feature 003, US3): top-right "xN" / "Out". ShopController fills it;
--- hidden for unlimited items.
-local StockLabel = Instance.new("TextLabel")
-StockLabel.Name = "StockLabel"
-StockLabel.Size = UDim2.new(0, 60, 0, 20)
-StockLabel.Position = UDim2.new(1, -6, 0, 12)
-StockLabel.AnchorPoint = Vector2.new(1, 0)
-StockLabel.BackgroundTransparency = 1
-StockLabel.Text = ""
-bind(StockLabel, "TextColor3", "TextMuted")
-StockLabel.TextSize = 16
-StockLabel.Font = Style.BodyFont
-StockLabel.TextXAlignment = Enum.TextXAlignment.Right
-StockLabel.Visible = false
-StockLabel.Parent = Card
-
+-- Large square image area (dominant element)
 local Icon = Instance.new("ImageLabel")
 Icon.Name = "Icon"
-Icon.Size = UDim2.new(0, 48, 0, 48)
-Icon.Position = UDim2.new(0.5, 0, 0, 12)
+Icon.Size = UDim2.new(0, 152, 0, 152)
+Icon.Position = UDim2.new(0.5, 0, 0, 8)
 Icon.AnchorPoint = Vector2.new(0.5, 0)
-Icon.BackgroundTransparency = 1
+bind(Icon, "BackgroundColor3", "Surface")
+Icon.BorderSizePixel = 0
 Icon.Image = ""
 Icon.ScaleType = Enum.ScaleType.Fit
 Icon.Parent = Card
+
+local iconCorner = Instance.new("UICorner")
+iconCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
+iconCorner.Parent = Icon
 
 local FallbackLetter = Instance.new("TextLabel")
 FallbackLetter.Name = "FallbackLetter"
@@ -273,14 +256,52 @@ FallbackLetter.Size = UDim2.new(1, 0, 1, 0)
 FallbackLetter.BackgroundTransparency = 1
 FallbackLetter.Text = "?"
 bind(FallbackLetter, "TextColor3", "TextMuted")
-FallbackLetter.TextSize = 32
+FallbackLetter.TextSize = 64
 FallbackLetter.Font = Style.DisplayFont
 FallbackLetter.Parent = Icon
 
+-- rarity badge: tier text + rarity colour (controller overrides token+text per item)
+local badge = Instance.new("Frame")
+badge.Name = "RarityBadge"
+badge.Size = UDim2.new(0, 92, 0, 22)
+bind(badge, "BackgroundColor3", "RarityCommon") -- controller sets the real tier token per card
+badge.BorderSizePixel = 0
+badge.Position = UDim2.new(0, 14, 0, 14) -- top-left, over the icon
+badge.Parent = Card
+local badgeCorner = Instance.new("UICorner")
+badgeCorner.CornerRadius = UDim.new(0, 8)
+badgeCorner.Parent = badge
+strokeOf(badge, "OutlineDeep", 2)
+local badgeText = Instance.new("TextLabel")
+badgeText.Name = "BadgeText"
+badgeText.Size = UDim2.new(1, 0, 1, 0)
+badgeText.BackgroundTransparency = 1
+badgeText.Text = "COMMON"
+bind(badgeText, "TextColor3", "TextOnAccent")
+badgeText.TextSize = 13
+badgeText.Font = Style.DisplayFont
+badgeText.Parent = badge
+
+-- Stock badge (feature 003, US3): top-right "xN" / "Out" over the icon. ShopController
+-- fills it; hidden for unlimited items.
+local StockLabel = Instance.new("TextLabel")
+StockLabel.Name = "StockLabel"
+StockLabel.Size = UDim2.new(0, 48, 0, 22)
+StockLabel.Position = UDim2.new(1, -14, 0, 14)
+StockLabel.AnchorPoint = Vector2.new(1, 0)
+StockLabel.BackgroundTransparency = 1
+StockLabel.Text = ""
+bind(StockLabel, "TextColor3", "TextMuted")
+StockLabel.TextSize = 16
+StockLabel.Font = Style.DisplayFont
+StockLabel.TextXAlignment = Enum.TextXAlignment.Right
+StockLabel.Visible = false
+StockLabel.Parent = Card
+
 local NameLabel = Instance.new("TextLabel")
 NameLabel.Name = "NameLabel"
-NameLabel.Size = UDim2.new(1, -12, 0, 32)
-NameLabel.Position = UDim2.new(0, 6, 0, 62)
+NameLabel.Size = UDim2.new(1, -12, 0, 24)
+NameLabel.Position = UDim2.new(0, 6, 0, 164)
 NameLabel.BackgroundTransparency = 1
 NameLabel.Text = "Item"
 bind(NameLabel, "TextColor3", "TextPrimary")
@@ -292,7 +313,7 @@ NameLabel.Parent = Card
 local PriceLabel = Instance.new("TextLabel")
 PriceLabel.Name = "PriceLabel"
 PriceLabel.Size = UDim2.new(1, -12, 0, 22)
-PriceLabel.Position = UDim2.new(0, 6, 0, 94)
+PriceLabel.Position = UDim2.new(0, 6, 0, 188)
 PriceLabel.BackgroundTransparency = 1
 PriceLabel.Text = "💰 0"
 bind(PriceLabel, "TextColor3", "Coins")
@@ -304,7 +325,7 @@ PriceLabel.Parent = Card
 local QtyRow = Instance.new("Frame")
 QtyRow.Name = "QtyRow"
 QtyRow.Size = UDim2.new(1, -12, 0, 44)
-QtyRow.Position = UDim2.new(0, 6, 0, 120)
+QtyRow.Position = UDim2.new(0, 6, 0, 212)
 QtyRow.BackgroundTransparency = 1
 QtyRow.Parent = Card
 
@@ -335,7 +356,7 @@ makeQty("QtyX10", "x10", 2)
 local BuyButton = Instance.new("TextButton")
 BuyButton.Name = "BuyButton"
 BuyButton.Size = UDim2.new(1, -12, 0, 44)
-BuyButton.Position = UDim2.new(0, 6, 0, 168)
+BuyButton.Position = UDim2.new(0, 6, 0, 260)
 BuyButton.BorderSizePixel = 0
 BuyButton.Text = "BUY"
 bind(BuyButton, "TextColor3", "TextOnAccent")

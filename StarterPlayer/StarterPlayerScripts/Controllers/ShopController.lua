@@ -15,6 +15,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debounce = require(script.Parent.Parent.Utils.Debounce)
 local GuiEffects = require(script.Parent.Parent.Utils:WaitForChild("GuiEffects"))
+local WindowManager = require(script.Parent.Parent.Utils:WaitForChild("WindowManager"))
+local ThemeController = require(script.Parent.ThemeController)
 
 local ShopController = {}
 
@@ -31,10 +33,15 @@ local loadingOverlay = shopFrame and shopFrame:WaitForChild("LoadingOverlay", 5)
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
 
-local RARITY_TOKEN = {
-    Common = Theme.RarityCommon, Uncommon = Theme.RarityUncommon,
-    Rare = Theme.RarityRare, Epic = Theme.RarityEpic, Legendary = Theme.RarityLegendary,
-}
+-- Known rarity tiers (the badge token is "Rarity" .. tier); anything else falls back.
+local RARITY_TIERS = { Common = true, Uncommon = true, Rare = true, Epic = true, Legendary = true }
+
+-- Set a themed colour property AND its Theme_<Prop> tag, so a day/night repaint keeps
+-- the state (selected qty, disabled buy, tab highlight) instead of resetting it.
+local function setThemed(obj, prop, token)
+    obj:SetAttribute("Theme_" .. prop, token)
+    obj[prop] = ThemeController.Current()[token] or Theme[token]
+end
 
 local GetShopDataFunc, BuyItemFunc
 task.spawn(function()
@@ -79,7 +86,7 @@ local function refreshStockLabel(ref)
     else
         label.Visible = true
         label.Text = ref.stock > 0 and ("x" .. ref.stock) or "Out"
-        label.TextColor3 = ref.stock > 0 and Theme.TextMuted or Theme.Danger
+        setThemed(label, "TextColor3", ref.stock > 0 and "TextMuted" or "Danger")
     end
 end
 
@@ -92,7 +99,7 @@ local function applyAfford(itemId)
     local outOfStock = (ref.stock ~= nil and ref.stock <= 0)
     local buyable = affordable and not outOfStock
     ref.card.BackgroundTransparency = buyable and 0 or 0.55
-    ref.buyBtn.BackgroundColor3 = buyable and Theme.Accent or Theme.Control
+    setThemed(ref.buyBtn, "BackgroundColor3", buyable and "Accent" or "Control")
     ref.buyBtn.AutoButtonColor = buyable
     ref.buyBtn.Active = buyable
     if outOfStock then
@@ -114,7 +121,7 @@ local function highlightQty(card, qty)
     for _, n in ipairs({ { "QtyX1", 1 }, { "QtyX5", 5 }, { "QtyX10", 10 } }) do
         local btn = card:FindFirstChild(n[1], true)
         if btn then
-            btn.BackgroundColor3 = (n[2] == qty) and Theme.Accent or Theme.Control
+            setThemed(btn, "BackgroundColor3", (n[2] == qty) and "Accent" or "Control")
         end
     end
 end
@@ -165,7 +172,6 @@ local function makeCard(category, itemId, row, order)
     card.Name = "Card_" .. itemId
     card.Visible = true
     card.LayoutOrder = order
-    card:FindFirstChild("RarityStrip").BackgroundColor3 = RARITY_TOKEN[rarity] or Theme.RarityCommon
     card:FindFirstChild("NameLabel").Text = displayName
     card:FindFirstChild("PriceLabel").Text = "💰 " .. price
 
@@ -178,6 +184,18 @@ local function makeCard(category, itemId, row, order)
         icon.Image = ""
         if fallback then fallback.Visible = true; fallback.Text = displayName:sub(1, 1):upper() end
     end
+
+    -- Rarity badge: tier TEXT + tier COLOUR (both, FR-025), then paint the fresh clone
+    -- to the active palette (R9) so it is correct on a Day phase and repaints on change.
+    card.Parent = cardsScroll
+    local tier = RARITY_TIERS[rarity] and rarity or "Common"
+    local badge = card:FindFirstChild("RarityBadge", true)
+    if badge then
+        badge:SetAttribute("Theme_BackgroundColor3", "Rarity" .. tier)
+        local bt = badge:FindFirstChild("BadgeText")
+        if bt then bt.Text = string.upper(tier) end
+    end
+    ThemeController.Paint(card) -- whole subtree (PaintInstant only touches one instance)
 
     cardQty[itemId] = 1
     local buyBtn = card:FindFirstChild("BuyButton")
@@ -207,7 +225,6 @@ local function makeCard(category, itemId, row, order)
     end
 
     applyAfford(itemId)
-    card.Parent = cardsScroll
 end
 
 -- Clear previously built cards (keep the template + layout + padding).
@@ -224,7 +241,7 @@ function ShopController.SelectCategory(category)
     -- tab highlight
     for cat, tabName in pairs(TAB_IDS) do
         local tab = tabContainer:FindFirstChild(tabName)
-        if tab then tab.BackgroundColor3 = (cat == category) and Theme.Accent or Theme.Control end
+        if tab then setThemed(tab, "BackgroundColor3", (cat == category) and "Accent" or "Control") end
     end
     clearCards()
     if not shopData or not shopData.buy or not shopData.buy[category] then return end
@@ -237,6 +254,17 @@ function ShopController.SelectCategory(category)
     table.sort(arr, function(a, b) return a.price < b.price end)
     for i, entry in ipairs(arr) do
         makeCard(category, entry.id, entry.row, i)
+    end
+end
+
+-- Open the Shop on a given category tab (e.g. the HUD SEEDS nav passes "seeds", FR-015).
+function ShopController.OpenOnTab(tabKey)
+    local key = TAB_IDS[tabKey] and tabKey or "seeds"
+    selectedCategory = key
+    if WindowManager.GetOpen() == "Shop" then
+        ShopController.SelectCategory(key) -- already open: onOpen will not re-run
+    else
+        WindowManager.Open("Shop") -- onOpen -> LoadShopData selects selectedCategory
     end
 end
 
