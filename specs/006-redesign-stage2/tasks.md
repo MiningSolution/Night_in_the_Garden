@@ -83,7 +83,7 @@ rejected; wisps still collect by proximity. (quickstart §US2). **Depends on Pha
 - [x] T018 [US2] In `SpiritCollector.lua`, on any successful collect/capture call `PlayerDataManager.RecordSpiritCaught(player, spiritType.id)`; if `isFirst` and `firstCatchBonus > 0` award it server-side (coins/DreamSeeds) + fire `UpdateCurrency`; keep the existing wisp DreamSeeds reward for proximity types; for `net` repeats grant no currency (only the count). Fire `SpiritCollected`, `QuestService.Track(player,"catch_spirit",1)`, `IncrementStat("TotalSpiritsCollected",1)`.
 - [x] T019 [US2] Confirm the "appeared" banner covers the new creatures: `SpiritSpawner` already fires `ServerAnnounce("rare_spirit", name, rarity)` for `RetentionConfig.AnnounceRarities[rarity]`; add the new creatures' rarities to `ReplicatedStorage/RetentionConfig.lua` `AnnounceRarities` if they should announce.
 - [x] T020 [US2] Regenerate models (no GUI change expected) + run all specs (incl. `spirit_config.spec`); commit server/config changes.
-- [ ] T021 [US2] Studio playtest (both palettes): force night, spawn a Moonmoth/Moth (`SpiritManager.SpawnOnce`), see the announce banner; capture with the net (success + miss), verify first-catch bonus vs repeat-count, no-net/out-of-range rejection, and wisps still collect by proximity; no new Output errors.
+- [x] T021 [US2] Studio playtest (both palettes): force night, spawn a Moonmoth/Moth (`SpiritManager.SpawnOnce`), see the announce banner; capture with the net (success + miss), verify first-catch bonus vs repeat-count, no-net/out-of-range rejection, and wisps still collect by proximity; no new Output errors.
 
 **Checkpoint**: US2 shippable as PR-B.
 
