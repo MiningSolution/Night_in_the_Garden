@@ -78,21 +78,28 @@ local function seedDisplayName(seedId)
     return base:sub(1, 1):upper() .. base:sub(2) .. " Seed"
 end
 
+-- US8: real icon from config if one is set, else "" (renderSlot falls back to emoji).
+local function iconFor(serverTool)
+    if not ShopConfig then return "" end
+    local row = ShopConfig.buy.seeds[serverTool] or ShopConfig.buy.tools[serverTool] or ShopConfig.buy.items[serverTool]
+    return (row and row.icon) or ""
+end
+
 -- Build the ordered hotbar list from an inventory dictionary.
 local function buildItems(inv)
     inv = inv or {}
     local list = {}
     if (inv.basic_watering_can or 0) > 0 then
-        list[#list + 1] = { serverTool = "basic_watering_can", displayName = "Watering Can", emoji = EMOJI.basic_watering_can }
+        list[#list + 1] = { serverTool = "basic_watering_can", displayName = "Watering Can", emoji = EMOJI.basic_watering_can, icon = iconFor("basic_watering_can") }
     end
     if (inv.improved_watering_can or 0) > 0 then
-        list[#list + 1] = { serverTool = "improved_watering_can", displayName = "Improved Watering Can", emoji = EMOJI.improved_watering_can }
+        list[#list + 1] = { serverTool = "improved_watering_can", displayName = "Improved Watering Can", emoji = EMOJI.improved_watering_can, icon = iconFor("improved_watering_can") }
     end
     -- Harvest is always available (needs no item).
-    list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = EMOJI.Harvest }
+    list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = EMOJI.Harvest, icon = "" }
     for _, seedId in ipairs(SEED_ORDER) do
         if (inv[seedId] or 0) > 0 then
-            list[#list + 1] = { serverTool = seedId, displayName = seedDisplayName(seedId), emoji = EMOJI[seedId] or "🌱" }
+            list[#list + 1] = { serverTool = seedId, displayName = seedDisplayName(seedId), emoji = EMOJI[seedId] or "🌱", icon = iconFor(seedId) }
         end
     end
     return list
@@ -116,8 +123,14 @@ local function renderSlot(i)
     local emojiLabel = itemIcon and itemIcon:FindFirstChild("EmojiLabel")
     if item then
         slot.Visible = true
-        if itemIcon then itemIcon.Image = "rbxassetid://0" end -- real icons: US8
-        if emojiLabel then emojiLabel.Text = item.emoji end
+        -- US8: show the real icon when the item has one, else fall back to the emoji.
+        if item.icon and item.icon ~= "" then
+            if itemIcon then itemIcon.Image = item.icon end
+            if emojiLabel then emojiLabel.Text = "" end
+        else
+            if itemIcon then itemIcon.Image = "rbxassetid://0" end
+            if emojiLabel then emojiLabel.Text = item.emoji end
+        end
     else
         -- no item for this slot position: blank it
         if emojiLabel then emojiLabel.Text = "" end

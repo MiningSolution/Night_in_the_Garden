@@ -262,6 +262,53 @@ function UIController.ShowNotification(message, messageType, duration)
 end
 
 --[[
+    US7 (FR-014): floating "+N coins" that rises and fades above a world position
+    (defaults to the player's character). Pair it with UpdateCurrency so the HUD
+    coin counter animates to the new total at the same time.
+    @param amount (number) - coins gained
+    @param adornee (BasePart?) - world part to float above (default: character)
+]]
+function UIController.FloatCoins(amount, adornee)
+    amount = tonumber(amount) or 0
+    if amount <= 0 then return end
+    if not adornee then
+        local char = player.Character
+        adornee = char and (char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart"))
+    end
+    if not adornee then return end
+
+    local bb = Instance.new("BillboardGui")
+    bb.Name = "CoinFloat"
+    bb.Size = UDim2.fromOffset(140, 44)
+    bb.StudsOffset = Vector3.new(0, 3, 0)
+    bb.AlwaysOnTop = true
+    bb.Adornee = adornee
+    bb.Parent = adornee
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.fromScale(1, 1)
+    label.BackgroundTransparency = 1
+    label.Text = "+" .. amount .. " 🪙"
+    label.TextColor3 = Color3.fromRGB(255, 220, 100)
+    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    label.TextStrokeTransparency = 0.4
+    label.TextSize = 28
+    label.Font = Enum.Font.GothamBold
+    label.Parent = bb
+
+    TweenService:Create(bb, TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        StudsOffset = Vector3.new(0, 6.5, 0),
+    }):Play()
+    local fade = TweenService:Create(label, TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        TextTransparency = 1, TextStrokeTransparency = 1,
+    })
+    fade:Play()
+    fade.Completed:Connect(function()
+        bb:Destroy()
+    end)
+end
+
+--[[
     Close all open UIs
 ]]
 function UIController.CloseAllUIs()
@@ -357,6 +404,25 @@ function UIController.Initialize()
     menuButtons:WaitForChild("InventoryButton").Activated:Connect(function()
         UIController.ToggleInventory()
     end)
+
+    -- US6 (FR-013): teleport row (shop / garden / stall). The server validates the
+    -- target and performs the move (RequestTeleport); the buttons only request it.
+    local teleportRow = HUDControls:FindFirstChild("TeleportRow")
+    if teleportRow then
+        task.spawn(function()
+            local RequestTeleport = ReplicatedStorage:WaitForChild("RequestTeleport", 30)
+            if not RequestTeleport then return end
+            local targets = { TeleportShop = "shop", TeleportGarden = "garden", TeleportStall = "stall" }
+            for btnName, targetId in pairs(targets) do
+                local btn = teleportRow:FindFirstChild(btnName)
+                if btn then
+                    btn.Activated:Connect(function()
+                        pcall(function() RequestTeleport:InvokeServer(targetId) end)
+                    end)
+                end
+            end
+        end)
+    end
 
     -- US2 (FR-004): size and position the menu column and the windows from
     -- ResponsiveLayout so they fit every screen inside the safe area. Recompute

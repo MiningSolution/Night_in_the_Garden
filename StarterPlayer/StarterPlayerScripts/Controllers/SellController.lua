@@ -149,6 +149,7 @@ local function makeRow(itemId, count)
         end)
         if ok and type(result) == "table" and result.Success then
             UIController.UpdateCurrency(result.NewBalance or 0, 0)
+            UIController.FloatCoins(result.TotalEarned or 0) -- US7: floating "+N coins"
             UIController.ShowNotification(string.format("Sold 1 %s for %d coins", displayName, result.TotalEarned or 0), "success")
             if result.NewInventory then
                 InventoryController.UpdateInventory(result.NewInventory)
@@ -227,7 +228,16 @@ local function bindStall()
             return
         end
         stallPart = stall:IsA("Model") and (stall.PrimaryPart or stall:FindFirstChildWhichIsA("BasePart")) or stall
+        -- The prompt is a descendant created server-side; it can replicate to the
+        -- client a moment after the model, so wait for it instead of racing.
         local prompt = stall:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if not prompt then
+            local t0 = os.clock()
+            repeat
+                task.wait(0.1)
+                prompt = stall:FindFirstChildWhichIsA("ProximityPrompt", true)
+            until prompt or (os.clock() - t0) > 10
+        end
         if not prompt then
             warn("[SellController] SellStall has no ProximityPrompt")
             return
@@ -274,6 +284,7 @@ function SellController.Init()
         if ok and type(result) == "table" and result.Success then
             if (result.SoldCount or 0) > 0 then
                 UIController.UpdateCurrency(result.NewBalance or 0, 0)
+                UIController.FloatCoins(result.TotalEarned or 0) -- US7: floating "+N coins"
                 UIController.ShowNotification(string.format("Sold %d crops for %d coins", result.SoldCount, result.TotalEarned or 0), "success")
                 if result.NewInventory then
                     InventoryController.UpdateInventory(result.NewInventory)

@@ -157,6 +157,101 @@
       ]
     },
     {
+      "name": "TeleportRow",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [1, 0],
+        "BackgroundTransparency": 1,
+        "Position": {"UDim2": [[1, -8], [0, 8]]},
+        "Size": {"UDim2": [[0, 168], [0, 52]]}
+      },
+      "children": [
+        {
+          "name": "UIListLayout",
+          "className": "UIListLayout",
+          "properties": {
+            "FillDirection": "Horizontal",
+            "HorizontalAlignment": "Right",
+            "Padding": {"UDim": [0, 6]},
+            "SortOrder": "LayoutOrder",
+            "VerticalAlignment": "Center"
+          }
+        },
+        {
+          "name": "TeleportShop",
+          "className": "TextButton",
+          "properties": {
+            "AutoButtonColor": true,
+            "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+            "BorderSizePixel": 0,
+            "Font": "GothamBold",
+            "LayoutOrder": 1,
+            "Size": {"UDim2": [[0, 52], [0, 52]]},
+            "Text": "🛒",
+            "TextColor3": [1, 1, 1],
+            "TextSize": 26
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            }
+          ]
+        },
+        {
+          "name": "TeleportGarden",
+          "className": "TextButton",
+          "properties": {
+            "AutoButtonColor": true,
+            "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+            "BorderSizePixel": 0,
+            "Font": "GothamBold",
+            "LayoutOrder": 2,
+            "Size": {"UDim2": [[0, 52], [0, 52]]},
+            "Text": "🌱",
+            "TextColor3": [1, 1, 1],
+            "TextSize": 26
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            }
+          ]
+        },
+        {
+          "name": "TeleportStall",
+          "className": "TextButton",
+          "properties": {
+            "AutoButtonColor": true,
+            "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+            "BorderSizePixel": 0,
+            "Font": "GothamBold",
+            "LayoutOrder": 3,
+            "Size": {"UDim2": [[0, 52], [0, 52]]},
+            "Text": "💰",
+            "TextColor3": [1, 1, 1],
+            "TextSize": 26
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Hotbar",
       "className": "Frame",
       "properties": {

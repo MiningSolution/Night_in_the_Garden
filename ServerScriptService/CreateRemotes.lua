@@ -28,6 +28,7 @@ ensureEvent("BuyItem", "RemoteFunction")
 ensureEvent("SellItem", "RemoteFunction")
 ensureEvent("SellAll", "RemoteFunction")          -- feature 002: sell all non-favourite crops
 ensureEvent("ToggleFavourite", "RemoteFunction")  -- feature 002: protect a crop from Sell all
+ensureEvent("RequestTeleport", "RemoteFunction")  -- feature 002: quick travel (shop/garden/stall)
 ensureEvent("GetPlayerData", "RemoteFunction")
 
 -- Spirit system

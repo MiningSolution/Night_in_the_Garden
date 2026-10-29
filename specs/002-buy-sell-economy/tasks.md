@@ -147,12 +147,12 @@ colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimme
 **Independent Test**: tap each teleport button → character moves to shop/garden/stall; buttons
 ≥44×44 and reachable on PC/gamepad.
 
-- [ ] T031 [P] [US6] Add teleport **anchor parts** (shop/garden/stall) to the place and mirror in the repo
-- [ ] T032 [US6] `ServerScriptService/CreateRemotes.lua` + `RemoteHandlers.lua`: add `RequestTeleport` RemoteFunction; validate `targetId ∈ {shop,garden,stall}`, rate-limit, move `HumanoidRootPart` to the anchor, fail closed (FR-013/019, contracts/remotes.md)
-- [ ] T033 [P] [US6] Builder `Tools/StaticGui/builders/CreateHUDControls.luau`: add `TeleportRow` with `TeleportShop`/`TeleportGarden`/`TeleportStall` (≥44×44, selection group)
-- [ ] T034 [US6] `StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`: position `TeleportRow` via `ResponsiveLayout` (no overlap with menu column/hotbar/Roblox controls); bind each button through `InputActions` → `RequestTeleport`
-- [ ] T035 [US6] Regenerate models and commit `HUDControls.model.json`
-- [ ] T036 [US6] Studio playtest V6 (phone/PC/gamepad)
+- [x] T031 [P] [US6] Add teleport **anchor parts** (shop/garden/stall) to the place and mirror in the repo
+- [x] T032 [US6] `ServerScriptService/CreateRemotes.lua` + `RemoteHandlers.lua`: add `RequestTeleport` RemoteFunction; validate `targetId ∈ {shop,garden,stall}`, rate-limit, move `HumanoidRootPart` to the anchor, fail closed (FR-013/019, contracts/remotes.md)
+- [x] T033 [P] [US6] Builder `Tools/StaticGui/builders/CreateHUDControls.luau`: add `TeleportRow` with `TeleportShop`/`TeleportGarden`/`TeleportStall` (≥44×44, selection group)
+- [x] T034 [US6] `StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`: position `TeleportRow` via `ResponsiveLayout` (no overlap with menu column/hotbar/Roblox controls); bind each button through `InputActions` → `RequestTeleport`
+- [x] T035 [US6] Regenerate models and commit `HUDControls.model.json`
+- [x] T036 [US6] Studio playtest V6 (phone/PC/gamepad)
 
 **Checkpoint**: fast travel works.
 
@@ -164,8 +164,8 @@ colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimme
 
 **Independent Test**: sell or harvest → "+N coins" rises and fades while the coin total animates.
 
-- [ ] T037 [US7] Floating "+N coins": reuse the world-label pattern in `StarterPlayer/StarterPlayerScripts/Utils/PlotVisualizer.lua` above the harvested plot (and above the character on a sale), and reuse the `UIController.UpdateCurrency` tween for the counter (FR-014, R9)
-- [ ] T038 [US7] Studio playtest V7
+- [x] T037 [US7] Floating "+N coins": reuse the world-label pattern in `StarterPlayer/StarterPlayerScripts/Utils/PlotVisualizer.lua` above the harvested plot (and above the character on a sale), and reuse the `UIController.UpdateCurrency` tween for the counter (FR-014, R9)
+- [x] T038 [US7] Studio playtest V7
 
 **Checkpoint**: gains are felt.
 
@@ -177,9 +177,9 @@ colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimme
 
 **Independent Test**: open shop/inventory/hotbar → icons show; missing-icon items show the fallback.
 
-- [ ] T039 [P] [US8] Fill `icon` fields in `ReplicatedStorage/PlantData.lua` for items whose assets are available (missing ones stay `""`)
-- [ ] T040 [US8] Generalise icon rendering + fallback (first letter/emoji) across `ShopController` cards, `InventoryController`, and `HotbarController` so no broken image ever shows (FR-015, R11)
-- [ ] T041 [US8] Studio playtest V8
+- [x] T039 [P] [US8] Fill `icon` fields in `ReplicatedStorage/PlantData.lua` for items whose assets are available (missing ones stay `""`)
+- [x] T040 [US8] Generalise icon rendering + fallback (first letter/emoji) across `ShopController` cards, `InventoryController`, and `HotbarController` so no broken image ever shows (FR-015, R11)
+- [x] T041 [US8] Studio playtest V8
 
 **Checkpoint**: visual polish complete.
 

@@ -19,6 +19,7 @@ local BuyItem = RS:WaitForChild("BuyItem")
 local SellItem = RS:WaitForChild("SellItem")
 local SellAll = RS:WaitForChild("SellAll")
 local ToggleFavourite = RS:WaitForChild("ToggleFavourite")
+local RequestTeleport = RS:WaitForChild("RequestTeleport")
 local GetPlayerData = RS:WaitForChild("GetPlayerData")
 local CollectSpirit = RS:WaitForChild("CollectSpirit")
 
@@ -316,6 +317,56 @@ ToggleFavourite.OnServerInvoke = function(player, itemId)
 
     if not success then
         warn("[RemoteHandlers] ToggleFavourite error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+
+    return result
+end
+
+-- Feature 002 (US6, FR-013/019): quick travel to a fixed, named destination. The
+-- server resolves the target position from the world and moves the character; the
+-- client never sends a position. Targets are limited to a fixed set (fail closed).
+local Workspace = game:GetService("Workspace")
+local TELEPORT_TARGETS = { shop = true, garden = true, stall = true }
+
+local function resolveTargetPosition(targetId)
+    if targetId == "stall" then
+        local stall = Workspace:FindFirstChild("SellStall")
+        local base = stall and (stall.PrimaryPart or stall:FindFirstChildWhichIsA("BasePart"))
+        if base then return base.Position + Vector3.new(0, 5, 8) end
+    elseif targetId == "garden" then
+        local plot = Workspace:FindFirstChild("Plot1")
+        if plot then return plot:GetPivot().Position + Vector3.new(0, 5, 6) end
+    elseif targetId == "shop" then
+        -- no dedicated shop building in the test place; a fixed point near spawn
+        return Vector3.new(-18, 6, 0)
+    end
+    return nil
+end
+
+RequestTeleport.OnServerInvoke = function(player, targetId)
+    local success, result = pcall(function()
+        if not rate_ok(player, "RequestTeleport") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        if type(targetId) ~= "string" or not TELEPORT_TARGETS[targetId] then
+            return fail("Unknown destination")
+        end
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp then
+            return fail("Character not ready")
+        end
+        local pos = resolveTargetPosition(targetId)
+        if not pos then
+            return fail("Destination unavailable")
+        end
+        hrp.CFrame = CFrame.new(pos)
+        return ok({ Target = targetId })
+    end)
+
+    if not success then
+        warn("[RemoteHandlers] RequestTeleport error for", player.Name, ":", result)
         return fail("Internal server error")
     end
 
