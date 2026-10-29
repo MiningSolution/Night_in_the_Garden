@@ -56,11 +56,12 @@ In `HandleInteraction`, add after the Harvest branch:
 ```
 if toolName == "shovel" then
   if plot.State == "Empty" then return fail("Nothing to clear") end
-  -- reset plant: State=Empty, PlantId=nil, GrowthProgress=0, GrowthSeconds=0, IsWatered=false
+  if plot.State == "ReadyToHarvest" then return fail("Harvest it first") end  -- protect the ripe crop
+  -- else Planted/Growing/Withered: reset State=Empty, PlantId=nil, GrowthProgress=0, GrowthSeconds=0, IsWatered=false
   -- fire PlotStateChanged + PlotStateUpdated; return ok({Action="Cleared", PlotId=plotId})
 end
 ```
-No yield is granted. `"shovel"` is an owned tool, so `InventoryService.SetEquipped`'s `else`/HasItem
+No yield is granted; a ReadyToHarvest plot is rejected (the player harvests instead). `"shovel"` is an owned tool, so `InventoryService.SetEquipped`'s `else`/HasItem
 branch already permits equipping it (no allow-list edit).
 
 ## Tool definitions — `ReplicatedStorage/ShopConfig.lua` → `buy.tools`

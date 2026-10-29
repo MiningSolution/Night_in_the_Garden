@@ -51,20 +51,26 @@ never ship: three working tools replacing dead slots.
 
 **Acceptance Scenarios**:
 
-1. **Given** the player owns the lantern/net/shovel, **When** they look at the hotbar, **Then** slots
-   3–5 show those tools (icon + name + 1–5 key label on PC) instead of the locked placeholder, and each
-   is equippable by tap, number key and gamepad cycle.
-2. **Given** a tool the player does **not** own, **When** they view that slot, **Then** it still reads as
-   locked/unowned and tapping it equips nothing (no error, no server change).
-3. **Given** the player has the **shovel** equipped, **When** they use it on a plot that holds a plant
-   (e.g. a withered or unwanted crop), **Then** the server clears that plant and resets the plot to
-   Empty, and the plot updates from the server's confirmed response; using it on an already-empty plot
-   is rejected cleanly.
+1. **Given** the player owns the lantern/net/shovel, **When** they look at the hotbar tool strip, **Then**
+   each owned tool appears as a normal equippable item (icon + name + number-key label on PC) in a stable
+   order after the watering cans and Harvest, reachable in the visible slots and by cycling (L1/R1), and
+   is equippable by tap, number key and gamepad cycle. (The hotbar is inventory-driven, as in Stage 1;
+   owned tools replace the locked "coming soon" placeholders — their exact slot index is not fixed.)
+2. **Given** a tool the player does **not** own, **When** they view the trailing tool-strip slots, **Then**
+   those slots stay in the locked/"coming soon" placeholder state and tapping them equips nothing (no
+   error, no server change).
+3. **Given** the player has the **shovel** equipped, **When** they use it on a plot that holds a
+   **non-ready** plant (Planted, Growing or Withered — e.g. a withered or unwanted crop), **Then** the
+   server clears that plant and resets the plot to Empty (no yield), and the plot updates from the
+   server's confirmed response; using it on an already-Empty plot, or on a **ReadyToHarvest** plot
+   (harvest it instead), is rejected cleanly.
 4. **Given** it is night and the player has the **lantern** equipped, **When** they use/hold it, **Then**
    the server raises the spirit spawn rate within a radius around the player (more spirits appear where
    they stand, feeding the capture loop in US2); by day it has no spirit effect.
-5. **Given** the player has the **net** equipped and a capturable spirit is in range, **When** they use
-   it, **Then** the capture attempt is sent to the server (the capture outcome is specified in US2).
+5. **Given** the player has the **net** equipped and a capturable spirit is in range, **When** they
+   trigger that spirit's on-screen capture prompt (the net is "used" by acting on the spirit, not swung
+   in empty space), **Then** the capture attempt is sent to the server (the capture outcome is specified
+   in US2).
 6. **Given** the day↔night phase switches, **When** the hotbar repaints, **Then** the three new tools
    keep their slot, size and order and only their colours cross-fade (no tool equipped/unequipped by the
    switch).
@@ -165,6 +171,8 @@ with all existing actions still working through the existing remotes.
 
 - A tool the player sells or loses while it is equipped: the hotbar must fall back cleanly to an owned
   tool, and using the unowned tool must be rejected server-side.
+- Shovel used on a **ReadyToHarvest** plot: the server rejects it (the player should harvest, not
+  destroy the ripe crop); the shovel only clears Planted/Growing/Withered plants.
 - Two players try to capture the same spirit at once: the server must award it to at most one (fail the
   loser closed), never duplicate it.
 - A spirit despawns (day breaks, or it times out) mid-capture: the attempt must resolve as a clean
@@ -186,9 +194,11 @@ with all existing actions still working through the existing remotes.
   `ReplicatedStorage` config modules (ids, display names, icons, coin price), bought from the shop's
   **Tools** tab for coins like the existing tools, with prices single-sourced in `ShopConfig` and no
   numbers duplicated in controllers or builders.
-- **FR-002**: Owned tools MUST appear in hotbar slots 3–5 as normal equippable tools (icon, name, 1–5
-  key label on PC, on-screen tap, gamepad cycle); unowned tool slots MUST remain in the locked/unowned
-  state and equip nothing when tapped.
+- **FR-002**: Owned tools MUST appear in the inventory-driven hotbar tool strip as normal equippable
+  tools (icon, name, number-key label on PC, on-screen tap, gamepad cycle), in a stable order after the
+  watering cans and Harvest, reachable in the visible slots and by cycling (L1/R1); trailing slots with
+  no owned tool MUST stay in the locked/"coming soon" placeholder state and equip nothing when tapped.
+  (Exact slot indices are not fixed — the strip is driven by the player's inventory, as in Stage 1.)
 - **FR-003**: Each tool's effect MUST be decided and validated entirely on the server (caller,
   argument types, target state, ownership, range, cooldown), failing closed on invalid use; the client
   only sends the request and renders the confirmed result.
@@ -301,13 +311,17 @@ with all existing actions still working through the existing remotes.
 
 - **Lantern** = a night-time light radius around the player that raises the spirit spawn rate nearby,
   feeding the net-capture loop (not a passive buff, not a placed object).
-- **Shovel** = clears a plant from a plot and resets it to Empty (remove a withered/unwanted crop); it
-  does not dig up a growing crop for partial yield this stage.
+- **Shovel** = clears a **non-ready** plant (Planted/Growing/Withered) from a plot and resets it to
+  Empty (remove a withered/unwanted crop), no yield; it rejects on a ReadyToHarvest plot (harvest
+  instead) and on an empty plot, and does not dig up a growing crop for partial yield this stage.
 - **Capture rule** = the net is required only for the new flying creatures (Moonmoth / Moth-Spirit);
   existing wisp spirits keep today's proximity collection, unchanged.
 - **Capture success** = chance-based, rolled by the server from the spirit's rarity (rarer = lower
   chance); a failed roll ends the attempt cleanly.
 - **Tool acquisition** = the lantern / net / shovel are bought in the shop's Tools tab for coins.
+- **Balance numbers** (tool prices, per-rarity catch chances, first-catch bonuses, lantern spawn radius)
+  are single-sourced in [balance.md](./balance.md) with initial values to tune in Studio; the config
+  modules take their numbers from there.
 - **Catch reward** = the first catch of each type grants a one-time discovery bonus (coins / dream
   seeds); repeats only increment the count.
 - **Spirit Journal** = a cosmetic catalogue this stage (shows progress, grants no gameplay reward);

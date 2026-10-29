@@ -86,3 +86,5 @@ Rules & lifecycle:
 - `Constants.SPIRIT`: structural caps (spawn attempts, min spawn distance) — reuse; add only if needed.
 - Catch chances, weights, rewards, first-catch bonuses: in `SpiritData` (not duplicated elsewhere).
 - Tool prices: in `ShopConfig.buy.tools`.
+- The numeric values for all of the above are single-sourced in [balance.md](./balance.md) (initial
+  values to tune in Studio); the config modules take their numbers from there.

@@ -24,6 +24,10 @@ test suite.
 
 ## Phase 1: Setup (Shared Infrastructure)
 
+> Numeric balance (tool prices, per-rarity catch chances, first-catch bonuses, lantern spawn radius) is
+> single-sourced in [balance.md](./balance.md) (initial values to tune in Studio); the config tasks below
+> take their numbers from there.
+
 - [ ] T001 Baseline: on branch `006-redesign-stage2`, run `python3 Tools/StaticGui/build_models.py "$(command -v luau)"` and `for f in Tools/Tests/*.spec.luau; do luau "$f"; done`; confirm all specs pass and `StarterGui/*.model.json` is clean (git parity) before changes.
 - [ ] T002 [P] Add fallback glyphs for the new items in `ReplicatedStorage/ItemEmoji.lua`: `lantern` (🏮), `net` (🥅), `shovel` (⛏️/🪏), `moonmoth`, `moth_spirit` (shared by hotbar, shop, backpack and journal fallbacks).
 
@@ -34,11 +38,11 @@ test suite.
 **Purpose**: the single-source spirit catalog + the persisted collection layer. **Blocks US2 and US3.**
 US1 (tools) and US4 (window redesign) do NOT depend on this phase and may start in parallel with it.
 
-- [ ] T003 Create `ReplicatedStorage/SpiritData.lua` — the single-source spirit catalog (research R7, data-model.md). One entry per type with `{ id, displayName, rarity, weight, reward, captureMethod, catchChance, firstCatchBonus }`. Include existing `wisp_common`/`wisp_rare`/`wisp_epic` as `captureMethod="proximity"` (catchChance/firstCatchBonus = 0, keep current weights/reward) and new `moonmoth`, `moth_spirit` as `captureMethod="net"` with a per-rarity `catchChance` in (0,1] and `firstCatchBonus` > 0. Rarity MUST be a known tier; weight > 0.
+- [ ] T003 Create `ReplicatedStorage/SpiritData.lua` — the single-source spirit catalog (research R7, data-model.md). One entry per type with `{ id, displayName, rarity, weight, reward, captureMethod, catchChance, firstCatchBonus }`. Include existing `wisp_common`/`wisp_rare`/`wisp_epic` as `captureMethod="proximity"` (catchChance/firstCatchBonus = 0, keep current weights/reward) and new `moonmoth`, `moth_spirit` as `captureMethod="net"` with a per-rarity `catchChance` in (0,1] and `firstCatchBonus` > 0. Numeric values (weights, catchChance, firstCatchBonus) come from [balance.md](./balance.md). Rarity MUST be a known tier; weight > 0.
 - [ ] T004 Point `ServerScriptService/Services/Spirit/SpiritTypes.lua` at `ReplicatedStorage/SpiritData` (read/re-export the catalog; keep `ChooseRandom` weighted pick and `FindById`) so the server and client share one source.
 - [ ] T005 In `ReplicatedStorage/DefaultData.lua`: bump `SchemaVersion` 3 → 4; add top-level `SpiritCollection = {}` (keyed `[spiritTypeId] = { Count = 0, FirstCaughtAt = 0 }`) and declare `Stats.TotalSpiritsCollected = 0`.
 - [ ] T006 In `ServerScriptService/Services/PlayerDataManager.lua`: add `RecordSpiritCaught(player, typeId) -> isFirst` (create `{Count=1, FirstCaughtAt=os.time()}` + return true on first, else `Count += 1` + return false); include `SpiritCollection` in `Snapshot`; confirm `profile:Reconcile()` backfills the new field and `Migrate` stamps v4 (data-model.md rules).
-- [ ] T007 [P] Add `Tools/Tests/spirit_config.spec.luau` (offline): assert every `SpiritData` entry has the required fields, `captureMethod ∈ {proximity,net}`, net types have `catchChance ∈ (0,1]` and `firstCatchBonus > 0`, every rarity is a known tier; and test a pure `rollCatch(chance, rng)` (extract it to a shared, injectable-RNG function) returns deterministic results for a seeded RNG.
+- [ ] T007 [P] Add `Tools/Tests/spirit_config.spec.luau` (offline): assert every `SpiritData` entry has the required fields, `captureMethod ∈ {proximity,net}`, net types have `catchChance ∈ (0,1]` and `firstCatchBonus > 0`, every rarity is a known tier, and the values match [balance.md](./balance.md) (catchChance ↔ rarity table, weights, bonuses); and test a pure `rollCatch(chance, rng)` (extract it to a shared, injectable-RNG function) returns deterministic results for a seeded RNG.
 
 **Checkpoint**: catalog + collection layer ready — US2 and US3 can proceed.
 
@@ -52,12 +56,12 @@ raises nearby night spawns; all three equip by tap/key/cycle.
 **Independent Test**: buy + equip each tool; shovel clears a plot to Empty (empty plot rejects); with the
 lantern equipped at night more spirits spawn near the player; unowned slot stays locked. (quickstart §US1)
 
-- [ ] T008 [P] [US1] In `ReplicatedStorage/ShopConfig.lua` add to `buy.tools`: `lantern` (rarity Uncommon), `net` (rarity Rare), `shovel` (rarity Common), each `{ price=<coins>, rarity, displayName, icon="" }` (prices single-sourced here — the shop Tools tab + `GetCategoryItems` render them automatically).
-- [ ] T009 [P] [US1] In `ReplicatedStorage/GameSettings.lua` → `SpiritSettings`, add `LanternSpawnRadius` (< `SpawnRadius`) and any lantern spawn-bias knob (single source for R3).
-- [ ] T010 [US1] In `ServerScriptService/Services/PlotManager.lua` `HandleInteraction`, add a `shovel` branch after Harvest: if `plot.State == "Empty"` → `fail("Nothing to clear")`; else reset `State=Empty, PlantId=nil, GrowthProgress=0, GrowthSeconds=0, IsWatered=false`, fire `PlotStateChanged` + `PlotStateUpdated`, return `ok({Action="Cleared", PlotId=plotId})`. No yield (contracts/spirit-and-tools.md).
+- [ ] T008 [P] [US1] In `ReplicatedStorage/ShopConfig.lua` add to `buy.tools`: `lantern` (rarity Uncommon), `net` (rarity Rare), `shovel` (rarity Common), each `{ price=<coins from balance.md>, rarity, displayName, icon="" }` — the shop Tools tab + `GetCategoryItems` render them automatically.
+- [ ] T009 [P] [US1] In `ReplicatedStorage/GameSettings.lua` → `SpiritSettings`, add `LanternSpawnRadius` (< `SpawnRadius`, value from [balance.md](./balance.md)) and any lantern spawn-bias knob (single source for R3).
+- [ ] T010 [US1] In `ServerScriptService/Services/PlotManager.lua` `HandleInteraction`, add a `shovel` branch after Harvest: if `plot.State == "Empty"` → `fail("Nothing to clear")`; if `plot.State == "ReadyToHarvest"` → `fail("Harvest it first")` (protect the ripe crop, spec US1-AS3 / Edge Cases); else (Planted/Growing/Withered) reset `State=Empty, PlantId=nil, GrowthProgress=0, GrowthSeconds=0, IsWatered=false`, fire `PlotStateChanged` + `PlotStateUpdated`, return `ok({Action="Cleared", PlotId=plotId})`. No yield (contracts/spirit-and-tools.md).
 - [ ] T011 [US1] In `ServerScriptService/Services/InventoryService.lua` confirm `SetEquipped` permits the three owned tools via its `else`/`HasItem` branch; add explicit handling only if a tool must be equippable without ownership (none here).
 - [ ] T012 [US1] In `ServerScriptService/Services/Spirit/SpiritSpawner.lua` `spawnOne`, bias the spawn-anchor player toward those with `InventoryService.GetEquipped(player) == "lantern"` and spawn within `GameSettings.SpiritSettings.LanternSpawnRadius` around them (else the existing `SpawnRadius`); night-gating unchanged.
-- [ ] T013 [US1] In `StarterPlayer/StarterPlayerScripts/Controllers/HotbarController.lua` `buildItems`, append each owned `lantern`/`net`/`shovel` (icon via `iconFor`, emoji fallback via `ItemEmoji`) so owned tools fill slots 3–5 in a stable order; unowned slots keep the locked placeholder.
+- [ ] T013 [US1] In `StarterPlayer/StarterPlayerScripts/Controllers/HotbarController.lua` `buildItems`, append each owned `lantern`/`net`/`shovel` (icon via `iconFor`, emoji fallback via `ItemEmoji`) in a stable order **after the watering cans and Harvest** (before/after seeds — pick one fixed order and keep it), so they join the inventory-driven tool strip and are reachable in the visible 5 slots + by cycling; trailing empty slots keep the locked placeholder. The hotbar stays inventory-driven/cycling (no hard-pinned slot index) — see spec FR-002 / analyze I1.
 - [ ] T014 [US1] Regenerate `StarterGui/*.model.json`; run all `Tools/Tests/*.spec.luau`; commit changed config + any model diffs.
 - [ ] T015 [US1] Studio playtest (both palettes, phone-landscape): buy each tool in the shop Tools tab; equip from slots 3–5; shovel clears a planted/withered plot to Empty and rejects an empty plot; with the lantern equipped at night, more wisps spawn near the player; day↔night keeps slot order; no new Output errors.
 
