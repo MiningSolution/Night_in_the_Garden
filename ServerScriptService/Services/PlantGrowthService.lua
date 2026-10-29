@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local PlayerData = require(script.Parent:WaitForChild("PlayerDataManager"))
 local PlantData = require(RS:WaitForChild("PlantData"))
+local DayNightManager = require(script.Parent:WaitForChild("DayNightManager"))
 local PlotStateChanged = RS:WaitForChild("PlotStateChanged")
 local PlotStateUpdated = RS:WaitForChild("PlotStateUpdated")
 
@@ -12,15 +13,29 @@ local M = {}
 local growthThread = nil
 local isRunning = false
 
-local function updatePlayerPlots(plr)
+-- Feature 002 (FR-002/FR-007, R3): growth is accrued into a per-plot accumulator
+-- `GrowthSeconds`, advanced by the real elapsed time each tick ONLY when the
+-- plant's dayNight allows the current phase. Night plants (dayNight == "night")
+-- pause during the day; day/any plants always advance.
+local function plantGrowsNow(plant, phase)
+    if plant.dayNight == "night" then
+        return phase == "Night"
+    end
+    return true -- "day" or "any"
+end
+
+local function updatePlayerPlots(plr, dt, phase)
     local data = PlayerData.Get(plr); if not data then return end
     for plotId, plot in pairs(data.Plots) do
         if plot.State == "Planted" or plot.State == "Growing" then
             local plant = PlantData[plot.PlantId or ""]
             if plant then
-                local elapsed = os.time() - (plot.PlantedAt or os.time())
                 local total = plant.growthTimeSec or 120
-                local progress = math.clamp(elapsed / total, 0, 1)
+                plot.GrowthSeconds = plot.GrowthSeconds or 0
+                if plantGrowsNow(plant, phase) then
+                    plot.GrowthSeconds = math.min(total, plot.GrowthSeconds + dt)
+                end
+                local progress = math.clamp(plot.GrowthSeconds / total, 0, 1)
                 plot.GrowthProgress = progress
 
                 if progress >= 1 then
@@ -30,7 +45,7 @@ local function updatePlayerPlots(plr)
                     local snap = PlayerData.Snapshot(plr)
                     PlotStateUpdated:FireClient(plr, {PlotId=plotId, Success=true, Snapshot=snap})
                 else
-                    local timeRemaining = math.max(0, math.floor(total - elapsed))
+                    local timeRemaining = math.max(0, math.floor(total - plot.GrowthSeconds))
                     local update = {
                         State = "Growing",
                         PlantId = plot.PlantId,
@@ -47,23 +62,28 @@ end
 
 function M.Start()
     -- P0-4: Prevent multiple starts (memory leak protection)
-    if isRunning then 
+    if isRunning then
         warn("[PlantGrowth] Already running! Ignoring duplicate Start() call.")
         return false
     end
-    
+
     isRunning = true
     print("[PlantGrowth] Starting growth service...")
-    
+
     growthThread = task.spawn(function()
+        local lastTick = tick()
         while isRunning do
             task.wait(1)
-            
+            local now = tick()
+            local dt = now - lastTick
+            lastTick = now
+            local phase = DayNightManager.GetPhase()
+
             for _, plr in ipairs(Players:GetPlayers()) do
                 local success, err = pcall(function()
-                    updatePlayerPlots(plr)
+                    updatePlayerPlots(plr, dt, phase)
                 end)
-                
+
                 if not success then
                     warn("[PlantGrowth] Error updating player:", plr.Name, err)
                 end
@@ -71,19 +91,19 @@ function M.Start()
         end
         print("[PlantGrowth] Stopped.")
     end)
-    
+
     return true
 end
 
 -- P0-4: Stop function for cleanup
 function M.Stop()
-    if not isRunning then 
-        return 
+    if not isRunning then
+        return
     end
-    
+
     print("[PlantGrowth] Stopping growth service...")
     isRunning = false
-    
+
     if growthThread then
         task.cancel(growthThread)
         growthThread = nil

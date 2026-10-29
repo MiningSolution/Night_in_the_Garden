@@ -193,8 +193,34 @@ end
 -- Plots
 function M.GetPlot(p, plotId)
     local d = M.Get(p); if not d then return nil end
-    d.Plots[plotId] = d.Plots[plotId] or { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, IsWatered=false }
+    d.Plots[plotId] = d.Plots[plotId] or { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false }
     return d.Plots[plotId]
+end
+
+-- Favourites (feature 002, FR-004): per-player set of itemIds excluded from
+-- "Sell all". Server-owned so SellAll can honour it (constitution I).
+function M.GetFavourites(p)
+    local d = M.Get(p); if not d then return {} end
+    d.Favourites = d.Favourites or {}
+    return d.Favourites
+end
+
+function M.IsFavourite(p, itemId)
+    local favs = M.GetFavourites(p)
+    return favs[itemId] == true
+end
+
+-- Flips membership and returns the new boolean state.
+function M.ToggleFavourite(p, itemId)
+    local d = M.Get(p); if not d then return false end
+    d.Favourites = d.Favourites or {}
+    if d.Favourites[itemId] then
+        d.Favourites[itemId] = nil
+        return false
+    else
+        d.Favourites[itemId] = true
+        return true
+    end
 end
 
 game:BindToClose(function()

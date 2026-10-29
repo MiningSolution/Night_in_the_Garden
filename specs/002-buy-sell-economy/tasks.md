@@ -30,8 +30,8 @@ testable in Studio. Paths are repository-relative, following the Rojo layout in 
 
 **Purpose**: confirm tooling and lock the economy numbers before any config is written.
 
-- [ ] T001 Verify `.specify/feature.json` points at `specs/002-buy-sell-economy` and that `rojo`/`luau` run (reuse Phase 1 setup; no new dependencies)
-- [ ] T002 Finalize the proposed numbers in `specs/002-buy-sell-economy/balance.md` (seeds/crops buy/sell/grow/phase/rarity, tools, items, Dreamroot) — this is the written source transcribed into config next (FR-006)
+- [x] T001 Verify `.specify/feature.json` points at `specs/002-buy-sell-economy` and that `rojo`/`luau` run (reuse Phase 1 setup; no new dependencies)
+- [x] T002 Finalize the proposed numbers in `specs/002-buy-sell-economy/balance.md` (seeds/crops buy/sell/grow/phase/rarity, tools, items, Dreamroot) — this is the written source transcribed into config next (FR-006)
 
 **Checkpoint**: numbers agreed; config work can begin.
 
@@ -43,12 +43,12 @@ testable in Studio. Paths are repository-relative, following the Rojo layout in 
 
 **⚠️ CRITICAL**: no user-story work begins until this phase is complete.
 
-- [ ] T003 Restore/extend `ReplicatedStorage/PlantData.lua`: one definition per item (carrot, wheat, tomato, pumpkin, moonflower, starberry, **dreamroot** + their crops; watering cans; fertilizer, dream_dust) with fields `displayName, category ("seed"|"tool"|"item"|"crop"), rarity (Common|Uncommon|Rare|Epic|Legendary), buyPrice, sellValue, growthTimeSec, dayNight ("day"|"night"|"any"), icon, seedId/cropId`, values from `balance.md` (data-model.md > ItemDefinition)
-- [ ] T004 Extend `ReplicatedStorage/ShopConfig.lua`: derive `buy.seeds`/`buy.tools`/`buy.items` and the crop `sell` table from `PlantData`; keep `GetBuyPrice`/`GetSellPrice`/`CanSell`; add `GetRarity`, `IsNightPlant`, `GetCategoryItems(category)` (no number duplicated — II)
-- [ ] T005 [P] Add five rarity colour tokens to `ReplicatedStorage/UITheme.lua` (`RarityCommon/Uncommon/Rare/Epic/Legendary`, dark palette only — R10/FR-018)
-- [ ] T006 [P] `ReplicatedStorage/DefaultData.lua`: `SchemaVersion = 2`; add `Favourites = {}`, `Plots[*].GrowthSeconds = 0`, and inventory keys (default 0) for the new seeds/crops (moonflower, starberry, dreamroot) and items (fertilizer, dream_dust)
-- [ ] T007 `ServerScriptService/Services/PlayerDataManager.lua`: reconcile loaded profiles against `DefaultData` so old saves gain `Favourites`/`GrowthSeconds`/new keys without dropping fields (II; backward-compatible)
-- [ ] T008 `ServerScriptService/Services/DayNightManager.lua`: promote `phase` to module state and expose `DayNightManager.GetPhase()` → `"Day"|"Night"`
+- [x] T003 Restore/extend `ReplicatedStorage/PlantData.lua`: one definition per item (carrot, wheat, tomato, pumpkin, moonflower, starberry, **dreamroot** + their crops; watering cans; fertilizer, dream_dust) with fields `displayName, category ("seed"|"tool"|"item"|"crop"), rarity (Common|Uncommon|Rare|Epic|Legendary), buyPrice, sellValue, growthTimeSec, dayNight ("day"|"night"|"any"), icon, seedId/cropId`, values from `balance.md` (data-model.md > ItemDefinition)
+- [x] T004 Extend `ReplicatedStorage/ShopConfig.lua`: derive `buy.seeds`/`buy.tools`/`buy.items` and the crop `sell` table from `PlantData`; keep `GetBuyPrice`/`GetSellPrice`/`CanSell`; add `GetRarity`, `IsNightPlant`, `GetCategoryItems(category)` (no number duplicated — II)
+- [x] T005 [P] Add five rarity colour tokens to `ReplicatedStorage/UITheme.lua` (`RarityCommon/Uncommon/Rare/Epic/Legendary`, dark palette only — R10/FR-018)
+- [x] T006 [P] `ReplicatedStorage/DefaultData.lua`: `SchemaVersion = 2`; add `Favourites = {}`, `Plots[*].GrowthSeconds = 0`, and inventory keys (default 0) for the new seeds/crops (moonflower, starberry, dreamroot) and items (fertilizer, dream_dust)
+- [x] T007 `ServerScriptService/Services/PlayerDataManager.lua`: reconcile loaded profiles against `DefaultData` so old saves gain `Favourites`/`GrowthSeconds`/new keys without dropping fields (II; backward-compatible)
+- [x] T008 `ServerScriptService/Services/DayNightManager.lua`: promote `phase` to module state and expose `DayNightManager.GetPhase()` → `"Day"|"Night"`
 
 **Checkpoint**: config + schema + phase query ready — user stories can proceed.
 
@@ -62,9 +62,9 @@ only at night, matching the balance document.
 **Independent Test**: review `balance.md`, then in a playtest confirm shop prices, growth times and
 sell values match it, including a night plant and Dreamroot.
 
-- [ ] T009 [US2] `ServerScriptService/Services/PlantGrowthService.lua`: replace wall-clock progress with the per-plot accumulator — each tick add `dt` to `plot.GrowthSeconds` **only when** the plant's `dayNight` allows `DayNightManager.GetPhase()` (`any`/`day` always; `night` only at Night); `GrowthProgress = clamp(GrowthSeconds / growthTimeSec, 0, 1)`; `>= 1` → `ReadyToHarvest` (FR-007, R3)
-- [ ] T010 [P] [US2] Offline check `Tools/Tests/economy_config.spec.luau`: assert config equals `balance.md` (O1), only `category=="crop"` has `sellValue > 0`, no value duplicated across modules, every `seedId`/`cropId` resolves, every `rarity` is one of the five tiers, every `dayNight ∈ {day,night,any}` (O2); run with `luau`
-- [ ] T011 [US2] Studio playtest V2: shop and sell numbers match `balance.md`; plant a night seed (Moonflower/Dreamroot) → growth advances at night, pauses by day, ripens, sells for stated value; a day plant grows regardless of phase; Output clean
+- [x] T009 [US2] `ServerScriptService/Services/PlantGrowthService.lua`: replace wall-clock progress with the per-plot accumulator — each tick add `dt` to `plot.GrowthSeconds` **only when** the plant's `dayNight` allows `DayNightManager.GetPhase()` (`any`/`day` always; `night` only at Night); `GrowthProgress = clamp(GrowthSeconds / growthTimeSec, 0, 1)`; `>= 1` → `ReadyToHarvest` (FR-007, R3)
+- [x] T010 [P] [US2] Offline check `Tools/Tests/economy_config.spec.luau`: assert config equals `balance.md` (O1), only `category=="crop"` has `sellValue > 0`, no value duplicated across modules, every `seedId`/`cropId` resolves, every `rarity` is one of the five tiers, every `dayNight ∈ {day,night,any}` (O2); run with `luau`
+- [x] T011 [US2] Studio playtest V2: shop and sell numbers match `balance.md`; plant a night seed (Moonflower/Dreamroot) → growth advances at night, pauses by day, ripens, sells for stated value; a day plant grows regardless of phase; Output clean
 
 **Checkpoint**: the economy numbers are correct and single-sourced.
 
@@ -80,14 +80,14 @@ item then "Sell all", confirm the balance rises by the shown total and favourite
 
 **Depends on**: Foundational + US2 (crop categories and sell values must exist in config).
 
-- [ ] T012 [US1] `ServerScriptService/Services/PlayerDataManager.lua`: add favourite helpers (`IsFavourite`/`ToggleFavourite`/`GetFavourites`) and a `SellAllCrops(player)` helper that iterates crop stacks, skips favourites, sums `sellValue × count`, consumes and credits coins atomically, returns counts/total (contracts/remotes.md)
-- [ ] T013 [US1] `ServerScriptService/CreateRemotes.lua`: create `SellAll` and `ToggleFavourite` RemoteFunctions
-- [ ] T014 [US1] `ServerScriptService/RemoteHandlers.lua`: bind `SellAll` and `ToggleFavourite` (rate limit, type/ownership checks, fail closed, anti-cheat log) and **harden `SellItem` to `category=="crop"` only** (seeds/tools rejected) (FR-001/004/005, contracts/remotes.md)
-- [ ] T015 [US1] Add the seller **stall model + ProximityPrompt** to the place and mirror it in the repo; trigger range = stall range; `Triggered` opens the sell window; hide/close when the player leaves range (FR-002, edge cases)
-- [ ] T016 [P] [US1] Builder `Tools/StaticGui/builders/CreateSellUI.luau`: build `SellUI` per contracts/gui-tree.md — window + backdrop + close, `Header` with `TitleLabel`+`TotalLabel`, `ItemsScroll` + hidden `SellRowTemplate` (Icon/FallbackLetter, Name, Count, Value, `StarToggle`, `SellOneButton`), `SellAllButton`, `EmptyState`; theme tokens; ≥44×44; text ≥18/20
-- [ ] T017 [US1] `StarterPlayer/StarterPlayerScripts/Controllers/SellController.lua` (new): populate rows from the inventory snapshot + `Favourites`; show per-item value and the running total; `StarToggle → ToggleFavourite`; `SellOneButton → SellItem` (if favourited, confirm first); `SellAllButton → SellAll`; register with `WindowManager`; close on out-of-range; gamepad selection group
-- [ ] T018 [US1] Regenerate `StarterGui/*.model.json` (`build_models.py`) and commit the new `SellUI.model.json`
-- [ ] T019 [US1] Studio playtest V1 + V10 (authority): phone sell loop, Sell all skips favourites, individual favourite sale after confirm, out-of-range blocked; forged non-crop sell / overspend rejected server-side; Output clean
+- [x] T012 [US1] `ServerScriptService/Services/PlayerDataManager.lua`: add favourite helpers (`IsFavourite`/`ToggleFavourite`/`GetFavourites`) and a `SellAllCrops(player)` helper that iterates crop stacks, skips favourites, sums `sellValue × count`, consumes and credits coins atomically, returns counts/total (contracts/remotes.md)
+- [x] T013 [US1] `ServerScriptService/CreateRemotes.lua`: create `SellAll` and `ToggleFavourite` RemoteFunctions
+- [x] T014 [US1] `ServerScriptService/RemoteHandlers.lua`: bind `SellAll` and `ToggleFavourite` (rate limit, type/ownership checks, fail closed, anti-cheat log) and **harden `SellItem` to `category=="crop"` only** (seeds/tools rejected) (FR-001/004/005, contracts/remotes.md)
+- [x] T015 [US1] Add the seller **stall model + ProximityPrompt** to the place and mirror it in the repo; trigger range = stall range; `Triggered` opens the sell window; hide/close when the player leaves range (FR-002, edge cases)
+- [x] T016 [P] [US1] Builder `Tools/StaticGui/builders/CreateSellUI.luau`: build `SellUI` per contracts/gui-tree.md — window + backdrop + close, `Header` with `TitleLabel`+`TotalLabel`, `ItemsScroll` + hidden `SellRowTemplate` (Icon/FallbackLetter, Name, Count, Value, `StarToggle`, `SellOneButton`), `SellAllButton`, `EmptyState`; theme tokens; ≥44×44; text ≥18/20
+- [x] T017 [US1] `StarterPlayer/StarterPlayerScripts/Controllers/SellController.lua` (new): populate rows from the inventory snapshot + `Favourites`; show per-item value and the running total; `StarToggle → ToggleFavourite`; `SellOneButton → SellItem` (if favourited, confirm first); `SellAllButton → SellAll`; register with `WindowManager`; close on out-of-range; gamepad selection group
+- [x] T018 [US1] Regenerate `StarterGui/*.model.json` (`build_models.py`) and commit the new `SellUI.model.json`
+- [x] T019 [US1] Studio playtest V1 + V10 (authority): phone sell loop, Sell all skips favourites, individual favourite sale after confirm, out-of-range blocked; forged non-crop sell / overspend rejected server-side; Output clean
 
 **Checkpoint (MVP)**: Foundational + US2 + US1 = the closed economy loop with real numbers.
 

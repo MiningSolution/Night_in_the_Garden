@@ -48,6 +48,7 @@ boot(Controllers, "UIController")
 boot(Controllers, "HotbarController")
 boot(Controllers, "InventoryController")
 boot(Controllers, "ShopController")
+boot(Controllers, "SellController") -- feature 002: sell window at the seller stall
 
 -- Feature 001: the shared action layer (keyboard/touch/gamepad). Init after the
 -- controllers so the windows are registered before any action can toggle them.
