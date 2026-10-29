@@ -52,6 +52,7 @@ end)
 
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
+local ItemEmoji = require(ReplicatedStorage:WaitForChild("ItemEmoji")) -- feature 005: single source of item emoji
 
 -- State
 local VISIBLE_SLOTS = 5 -- feature 005: five visible slots; trailing empties show a locked placeholder
@@ -59,12 +60,7 @@ local items = {}        -- ordered list of { serverTool, displayName, emoji }
 local equippedIndex = 1 -- 1-based index into `items`
 local pageStart = 1     -- index of the item shown in Slot1
 
--- Display helpers (real icons arrive in US8; emoji/first-letter fallback for now).
-local EMOJI = {
-    basic_watering_can = "💧", improved_watering_can = "🚿", Harvest = "🧺",
-    carrot_seed = "🥕", wheat_seed = "🌾", tomato_seed = "🍅", pumpkin_seed = "🎃",
-    moonflower_seed = "🌙", starberry_seed = "⭐", dreamroot_seed = "💤",
-}
+-- Display helpers: item emoji comes from the shared ItemEmoji source (feature 005).
 -- Stable seed order for the hotbar list.
 local SEED_ORDER = {
     "carrot_seed", "wheat_seed", "tomato_seed", "pumpkin_seed",
@@ -91,16 +87,17 @@ local function buildItems(inv)
     inv = inv or {}
     local list = {}
     if (inv.basic_watering_can or 0) > 0 then
-        list[#list + 1] = { serverTool = "basic_watering_can", displayName = "Watering Can", emoji = EMOJI.basic_watering_can, icon = iconFor("basic_watering_can") }
+        list[#list + 1] = { serverTool = "basic_watering_can", displayName = "Watering Can", emoji = ItemEmoji.get("basic_watering_can"), icon = iconFor("basic_watering_can") }
     end
     if (inv.improved_watering_can or 0) > 0 then
-        list[#list + 1] = { serverTool = "improved_watering_can", displayName = "Improved Watering Can", emoji = EMOJI.improved_watering_can, icon = iconFor("improved_watering_can") }
+        list[#list + 1] = { serverTool = "improved_watering_can", displayName = "Improved Watering Can", emoji = ItemEmoji.get("improved_watering_can"), icon = iconFor("improved_watering_can") }
     end
     -- Harvest is always available (needs no item).
-    list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = EMOJI.Harvest, icon = "" }
+    list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = ItemEmoji.get("Harvest"), icon = "" }
     for _, seedId in ipairs(SEED_ORDER) do
         if (inv[seedId] or 0) > 0 then
-            list[#list + 1] = { serverTool = seedId, displayName = seedDisplayName(seedId), emoji = EMOJI[seedId] or "🌱", icon = iconFor(seedId) }
+            local seedEmoji = ItemEmoji.get(seedId)
+            list[#list + 1] = { serverTool = seedId, displayName = seedDisplayName(seedId), emoji = (seedEmoji ~= "" and seedEmoji) or "🌱", icon = iconFor(seedId) }
         end
     end
     return list

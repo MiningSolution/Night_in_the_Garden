@@ -51,6 +51,7 @@ end
 -- Load configurations
 local PlantData = ReplicatedStorage:FindFirstChild("PlantData") and require(ReplicatedStorage.PlantData)
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
+local ItemEmoji = require(ReplicatedStorage:WaitForChild("ItemEmoji")) -- feature 005: emoji icon fallback
 
 -- Optional collaborators (lazy + pcall so load order / a missing module is safe)
 local function getThemeController()
@@ -202,7 +203,7 @@ local function hasIcon(iconId)
 end
 
 -- Fill an ImageLabel + its FallbackLetter child from an icon id / display name.
-local function applyIcon(iconLabel, iconId, displayName)
+local function applyIcon(iconLabel, iconId, displayName, itemId)
     if not iconLabel then return end
     local fallback = iconLabel:FindFirstChild("FallbackLetter")
     if hasIcon(iconId) then
@@ -211,7 +212,10 @@ local function applyIcon(iconLabel, iconId, displayName)
     else
         iconLabel.Image = ""
         if fallback then
-            fallback.Text = displayName:sub(1, 1):upper()
+            -- Feature 005 (US4 interim): item emoji when there is no image icon,
+            -- else the first letter of the name.
+            local emoji = itemId and ItemEmoji.get(itemId) or ""
+            fallback.Text = (emoji ~= "" and emoji) or displayName:sub(1, 1):upper()
             fallback.Visible = true
         end
     end
@@ -278,7 +282,7 @@ function InventoryController.CreateCard(itemName, quantity)
     card:SetAttribute("ItemName", itemName)
     card.Parent = itemGrid
 
-    applyIcon(card:FindFirstChild("Icon"), itemData.icon, itemData.displayName)
+    applyIcon(card:FindFirstChild("Icon"), itemData.icon, itemData.displayName, itemName)
 
     -- Rarity badge: tier colour via the Theme_ token (repaints on day/night) + tier text
     -- so rarity is never colour-only (FR-025).
@@ -421,7 +425,7 @@ function RefreshDetail()
 
     local itemData = GetItemDisplayData(selectedItem)
     local category = CategoryOf(selectedItem)
-    if selIcon then applyIcon(selIcon, itemData.icon, itemData.displayName) end
+    if selIcon then applyIcon(selIcon, itemData.icon, itemData.displayName, selectedItem) end
     if selName then selName.Text = string.format("%s  x%d", itemData.displayName, qty) end
     if selDesc then selDesc.Text = string.upper(RarityOf(selectedItem)) .. " - " .. itemData.description end
 

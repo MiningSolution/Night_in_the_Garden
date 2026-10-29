@@ -32,6 +32,7 @@ local loadingOverlay = shopFrame and shopFrame:WaitForChild("LoadingOverlay", 5)
 
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
+local ItemEmoji = require(ReplicatedStorage:WaitForChild("ItemEmoji")) -- feature 005: emoji icon fallback
 
 -- Known rarity tiers (the badge token is "Rarity" .. tier); anything else falls back.
 local RARITY_TIERS = { Common = true, Uncommon = true, Rare = true, Epic = true, Legendary = true }
@@ -182,7 +183,13 @@ local function makeCard(category, itemId, row, order)
         if fallback then fallback.Visible = false end
     else
         icon.Image = ""
-        if fallback then fallback.Visible = true; fallback.Text = displayName:sub(1, 1):upper() end
+        -- Feature 005 (US4 interim): show the item's emoji when there is no image
+        -- icon yet, else fall back to the first letter of the name.
+        if fallback then
+            fallback.Visible = true
+            local emoji = ItemEmoji.get(itemId)
+            fallback.Text = (emoji ~= "" and emoji) or displayName:sub(1, 1):upper()
+        end
     end
 
     -- Rarity badge: tier TEXT + tier COLOUR (both, FR-025), then paint the fresh clone
