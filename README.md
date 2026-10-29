@@ -190,8 +190,9 @@ remotes.
   on-screen tap or the `F` key (via the existing `InteractWithPlot` path). Hidden at night, out of
   range, or with a window open.
 
-The items Stage 1 deferred (the real tools, spirit collection + Journal, new creatures + net capture,
-and the window re-skin) all shipped in **Feature 006 (Stage 2)** — see below.
+Deferred to later stages (see `specs/005-ui-redesign/spec.md` "Out of Scope"): the real
+lantern/net/shovel tools, spirit-collection data + Spirit Journal, new creatures and the capture
+announcement/net action, and the full redesign of the Sell/Notifications/Daily-Gift/Quests windows.
 
 ### Redesign controls
 
@@ -202,29 +203,6 @@ and the window re-skin) all shipped in **Feature 006 (Stage 2)** — see below.
 | Open Backpack / Quests / Gifts | tap BAG / QUESTS / GIFTS | `I` / `Q` / `R` | Y / D-pad down / D-pad up |
 | Select tool slot 1–5 | tap the slot | `1`–`5` | L1 / R1 to cycle |
 | Harvest a ready plot (by day) | tap the Harvest hint | `F` (or click the plot) | tap the hint |
-
-## Feature 006: cosy-garden redesign (Stage 2)
-
-The systems deferred from Stage 1, server-authoritative with no new remotes. `DefaultData` is
-SchemaVersion 4 (adds `SpiritCollection`); balance in `specs/006-redesign-stage2/balance.md`, catalog
-checked by `Tools/Tests/spirit_config.spec.luau`.
-
-- **Real tools (slots 3–5)**: `lantern` / `net` / `shovel` are bought in the shop Tools tab and fill
-  the hotbar. The **shovel** clears a non-ready plant from a plot (rejects a ready crop); the
-  **lantern** raises the night spirit spawn rate around the equipped player; the **net** catches the
-  new flying creatures.
-- **Spirit capture**: new **Moonmoth / Moth-Spirit** spawn at night (catalog in
-  `ReplicatedStorage/SpiritData.lua`). Existing wisps still collect by walking up (proximity); the new
-  creatures need the net, and the server rolls a per-rarity catch chance. The first catch of each type
-  pays a one-time Dream-Seeds discovery bonus. Notable spawns reuse the existing "appeared" banner.
-- **Spirit Journal**: a catalogue screen (`SpiritJournalUI`) listing every known spirit — caught ones
-  revealed (name / rarity / count / first-caught), uncaught ones as a locked "???", with overall
-  progress. Opened from the Backpack **Spirits** tab, which also shows caught spirits as cards.
-- **Window re-skin**: the Sell / Quests / Daily-Gift / Notifications windows are rebuilt on theme
-  tokens so they retint on the day/night switch, matching the cosy-garden concept (no behaviour change).
-
-Collection is read from the existing `GetPlayerData` snapshot; the Journal uses `SpiritData` for the
-full set. Deferred beyond Stage 2 (spec "scope ceiling"): trading, new currencies, a world/map redesign.
 
 ## Notes
 - Shop is single-source-of-truth via `ReplicatedStorage/ShopConfig.lua`

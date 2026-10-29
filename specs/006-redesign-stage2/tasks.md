@@ -129,8 +129,8 @@ actions unchanged. Independent of US1–US3; each window is its own small PR. (q
 ## Phase 7: Polish & Cross-Cutting
 
 - [ ] T035 Full device-emulator pass (owner) at phone-landscape in both palettes across all new/changed surfaces: readability, ≥44×44, no clipped text (incl. a long/RU label), movement/jump zones clear, no new Output errors (SC-006).
-- [x] T036 [P] Update `Docs/HANDOFF.md` and `README.md` with the Stage-2 state (tools, capture, journal, redesigned windows) and what remains deferred.
-- [x] T037 Final regenerate + full `Tools/Tests/*.spec.luau` green + git parity of all `StarterGui/*.model.json`; confirm NO new remotes were added (contracts/reused-remotes.md).
+- [ ] T036 [P] Update `Docs/HANDOFF.md` and `README.md` with the Stage-2 state (tools, capture, journal, redesigned windows) and what remains deferred.
+- [ ] T037 Final regenerate + full `Tools/Tests/*.spec.luau` green + git parity of all `StarterGui/*.model.json`; confirm NO new remotes were added (contracts/reused-remotes.md).
 - [ ] T038 Run `specs/006-redesign-stage2/quickstart.md` end-to-end and tick this tasks.md.
 
 ---

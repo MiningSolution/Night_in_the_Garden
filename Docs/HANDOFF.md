@@ -1,6 +1,6 @@
 # Handoff — 2026-10-29
 
-State after Feature 006 (cosy-garden redesign, Stage 2) merged. Owner: Ruslan.
+State after Feature 005 (cosy-garden UI redesign, Stage 1) merged. Owner: Ruslan.
 
 ## Where we are
 
@@ -15,7 +15,6 @@ State after Feature 006 (cosy-garden redesign, Stage 2) merged. Owner: Ruslan.
 | Phase 4 — visual style / day–night theme engine (`004-visual-style`) | Merged to `main` |
 | Feature 005 — cosy-garden UI redesign, Stage 1 (`005-ui-redesign`) | Merged to `main` (PR #10) |
 | FR-007 — contextual day Harvest hint (closes 005 gap G1) | Merged to `main` (PR #11) |
-| Feature 006 — cosy-garden redesign, Stage 2 (`006-redesign-stage2`) | Merged to `main` (US1 #13, US2 #14, US3 #17, US4 #16) |
 | Next | No feature in flight — see "What's next" below |
 
 ## Phase 3 summary (what shipped on `003-retention`)
@@ -112,37 +111,18 @@ all server-authoritative with no new remotes (contracts/reused-remotes.md).
 Studio-verified (MCP) in Day and Night, both palettes: hint show/tap-harvest/hide, proximity
 re-show, night hide, F harvest next to the stall. No new Output errors.
 
-## Feature 006 summary (cosy-garden redesign Stage 2, `006-redesign-stage2`, merged)
+## Deferred to a later stage (NOT in Feature 005, per the spec's "Out of Scope")
 
-Builds the systems deferred from Stage 1's Out of Scope, as four independently shipped PRs. Server-
-authoritative, **no new remotes**; `DefaultData` SchemaVersion 3 → 4 (adds `SpiritCollection` +
-`Stats.TotalSpiritsCollected`; reconciled into old profiles). Balance in
-`specs/006-redesign-stage2/balance.md`, catalog checked by `Tools/Tests/spirit_config.spec.luau`.
-
-1. **US1 — real hotbar tools (PR #13)**: `lantern` / `net` / `shovel` added to `ShopConfig.buy.tools`
-   (bought in the shop Tools tab), fill hotbar slots 3–5 via `HotbarController`. Shovel clears a
-   non-ready plant to Empty (rejects a ReadyToHarvest crop) through `PlotManager`/`InteractWithPlot`.
-   Lantern biases the night spawn tick (`SpiritSpawner`) toward the equipped player.
-2. **US2 — net capture (PR #14)**: new `SpiritData.lua` single-source catalog (read by the server +
-   the client Journal); Moonmoth / Moth-Spirit spawn at night; `SpiritCollector` branches by
-   `captureMethod` — wisps keep proximity collection, flying creatures need the net and a server-rolled
-   per-rarity catch chance, with a one-time first-catch discovery bonus. Reuses the existing spirit
-   `ProximityPrompt` + `ServerAnnounce` "appeared" banner.
-3. **US3 — Spirit Journal (PR #17)**: `SpiritJournalUI` builder + `SpiritJournalController` (lists every
-   catalog type, discovered vs undiscovered, with progress); Backpack Spirits tab shows caught spirits
-   as cards + an "Open Journal" action. Reads the collection from the existing `GetPlayerData` snapshot.
-4. **US4 — window re-skin (PR #16)**: Sell / Quests / Daily-Gift / Notifications rebuilt on theme
-   tokens (`Theme_<Prop>`) so they retint on day/night; cosy-garden gradient headers / cards / buttons;
-   element names unchanged (controllers untouched).
-
-## Deferred to a later stage (NOT in Feature 006 — spec "scope ceiling")
-
-Trading, new currencies, a world/map redesign, and anything else beyond the four Stage-2 stories.
+- Real **lantern / net / shovel** tools behind hotbar slots 3–5 (now locked placeholders).
+- Per-player **spirit collection** data, the Spirits tab's real contents, and a **Spirit Journal** screen.
+- New **Moonmoth / Moth-Spirit** creatures; the night **"X appeared!"** capture announcement + a
+  **Capture** net action (capture stays the existing proximity interaction).
+- Full redesign of the **Sell / Notifications / Daily-Gift / Quests** windows (only re-tinted by the
+  theme engine so far).
 
 ## What's next
 
-No feature is in flight. The remaining open item on Stage 2 is the owner's **device-emulator visual
-pass** (phone-landscape + gamepad, both palettes) plus the runtime checks the MCP couldn't exercise on
-the test profile — the lantern spawn boost, a successful net capture + first-catch bonus, the Journal's
-discovered entries, and the full both-palette sweep of the four re-skinned windows. See
-`specs/006-redesign-stage2/quickstart.md`.
+No feature is in flight. The redesign's later stages (the deferred items above) each need new
+server-side systems and owner approval before build. The remaining open item on Stage 1 is the
+owner's **device-emulator visual pass** (phone-landscape + gamepad sweep of every new element — the
+MCP can't drive it), see `specs/005-ui-redesign/quickstart.md`.
