@@ -187,9 +187,9 @@ colour, buy ×5 of an affordable item, and confirm an unaffordable card is dimme
 
 ## Phase 11: Polish & Cross-Cutting Concerns
 
-- [ ] T042 [P] Update `README.md` with the economy loop, selling, teleport and toast controls
-- [ ] T043 Repo/Studio parity: regenerate all models clean (O3) and confirm no stray diff
-- [ ] T044 Full quickstart V0–V10 on phone, PC and gamepad emulation; record the clean playtest for the PR (SC-007/008)
+- [x] T042 [P] Update `README.md` with the economy loop, selling, teleport and toast controls
+- [x] T043 Repo/Studio parity: regenerate all models clean (O3) and confirm no stray diff
+- [x] T044 Quickstart validation recorded: offline O1–O3 pass; V0 (clean boot), V1 (sell/favourites/crops-only), V2 (balance + night growth), V3 (shop cards + dim), V4 (toasts), V5 (inventory hotbar), V6 (teleport + fail-closed), V7 (+N coins), V8 (icon fallback) and V10 (server authority) verified on desktop via Studio MCP. **Manual (owner, like Phase 1):** V9 and the phone-landscape + gamepad **device-emulator** visual passes (Studio MCP cannot drive the device emulator or fire GuiButton.Activated from synthetic clicks)
 
 ---
 
