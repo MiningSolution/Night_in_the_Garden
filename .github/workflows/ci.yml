@@ -1,0 +1,54 @@
+name: CI
+
+# Runs the offline Luau unit tests and checks that the static GUI models are in
+# sync with their builders. No Roblox Studio is needed — Studio playtests remain
+# the manual quality gate (see the constitution, principle VI).
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Luau
+        run: |
+          set -euo pipefail
+          curl -fsSL https://github.com/luau-lang/luau/releases/latest/download/luau-ubuntu.zip -o luau.zip
+          unzip -o luau.zip
+          chmod +x luau
+          sudo mv luau /usr/local/bin/luau
+          rm -f luau.zip
+          echo "luau installed at $(command -v luau)"
+
+      - name: Offline unit tests (Tools/Tests/*.spec.luau)
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          specs=(Tools/Tests/*.spec.luau)
+          if [ ${#specs[@]} -eq 0 ]; then
+            echo "No spec files found under Tools/Tests/"; exit 1
+          fi
+          for f in "${specs[@]}"; do
+            echo "::group::$f"
+            luau "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Static GUI parity (models match builders)
+        run: |
+          set -euo pipefail
+          python3 Tools/StaticGui/build_models.py "$(command -v luau)"
+          if ! git diff --quiet -- StarterGui; then
+            echo "::error::StarterGui/*.model.json is out of sync with the builders."
+            echo "Run: python3 Tools/StaticGui/build_models.py \"\$(command -v luau)\" and commit the result."
+            git --no-pager diff --stat -- StarterGui
+            exit 1
+          fi
+          echo "Static GUI models are in sync."
