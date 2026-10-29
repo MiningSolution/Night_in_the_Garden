@@ -1,16 +1,30 @@
 -- DefaultData.lua
+-- Default player profile. ProfileService:Reconcile() deep-fills any field missing
+-- from a loaded profile against this table, so adding fields here is backward
+-- compatible with existing saves (constitution II: reconcile, never drop).
+-- SchemaVersion 2 (feature 002): adds Favourites, per-plot GrowthSeconds, and
+-- inventory keys for the night plants / Dreamroot / items.
 return {
-    SchemaVersion = 1,
+    SchemaVersion = 2,
     Currency = { Coins = 50, DreamSeeds = 0 },
     Inventory = {
+        -- seeds
         carrot_seed = 3, tomato_seed = 0, wheat_seed = 0, pumpkin_seed = 0,
+        moonflower_seed = 0, starberry_seed = 0, dreamroot_seed = 0,
+        -- tools
         basic_watering_can = 1, improved_watering_can = 0,
+        -- items
+        fertilizer = 0, dream_dust = 0,
+        -- crops (harvested, sellable)
         carrot_crop = 0, tomato_crop = 0, wheat_crop = 0, pumpkin_crop = 0,
+        moonflower_crop = 0, starberry_crop = 0, dreamroot_crop = 0,
     },
+    -- Per-player set of itemIds excluded from "Sell all" (FR-004). itemId -> true.
+    Favourites = {},
     Plots = {
-        Plot1 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, IsWatered=false },
-        Plot2 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, IsWatered=false },
-        Plot3 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, IsWatered=false },
+        Plot1 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },
+        Plot2 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },
+        Plot3 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },
     },
     Stats = { Level=1, XP=0, TotalHarvests=0, TotalEarnings=0, PlayTimeSeconds=0 },
     Settings = { MusicEnabled=true, SFXEnabled=true, UIScale=1.0 },

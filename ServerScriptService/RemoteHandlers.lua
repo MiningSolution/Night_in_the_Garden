@@ -17,6 +17,9 @@ local EquipTool = RS:WaitForChild("EquipTool")
 local GetShopData = RS:WaitForChild("GetShopData")
 local BuyItem = RS:WaitForChild("BuyItem")
 local SellItem = RS:WaitForChild("SellItem")
+local SellAll = RS:WaitForChild("SellAll")
+local ToggleFavourite = RS:WaitForChild("ToggleFavourite")
+local RequestTeleport = RS:WaitForChild("RequestTeleport")
 local GetPlayerData = RS:WaitForChild("GetPlayerData")
 local CollectSpirit = RS:WaitForChild("CollectSpirit")
 
@@ -104,7 +107,7 @@ GetPlayerData.OnServerInvoke = function(player)
         if not d then 
             return fail("Data not loaded") 
         end
-        return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats })
+        return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats, Favourites=(d.Favourites or {}) })
     end)
     
     if not success then
@@ -213,12 +216,17 @@ SellItem.OnServerInvoke = function(player, itemId, quantity)
         end
         quantity = validQty
 
-        if not PlayerData.HasItem(player, itemId, quantity) then 
-            return fail("Not enough items") 
+        -- FR-001: only harvested crops are sellable (crops are the only items in
+        -- the sell table). Seeds/tools are rejected.
+        if not ShopConfig.CanSell(itemId) then
+            return fail("Item cannot be sold")
+        end
+        if not PlayerData.HasItem(player, itemId, quantity) then
+            return fail("Not enough items")
         end
         local price = sellPrice(itemId)
-        if price <= 0 then 
-            return fail("Item cannot be sold") 
+        if price <= 0 then
+            return fail("Item cannot be sold")
         end
 
         if not PlayerData.TryConsumeItem(player, itemId, quantity) then 
@@ -234,7 +242,134 @@ SellItem.OnServerInvoke = function(player, itemId, quantity)
         warn("[RemoteHandlers] SellItem error for", player.Name, ":", result)
         return fail("Internal server error")
     end
-    
+
+    return result
+end
+
+-- Feature 002 (FR-001/004/005): sell every non-favourite crop stack in one action.
+-- The server decides what is sellable (crops only) and what is protected (the
+-- server-owned Favourites set); the client sends nothing but the request.
+SellAll.OnServerInvoke = function(player)
+    local success, result = pcall(function()
+        if not rate_ok(player, "SellAll") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        local snap = PlayerData.Snapshot(player)
+        if not snap then return fail("Data not loaded") end
+
+        local favourites = PlayerData.GetFavourites(player)
+        local totalEarned, soldCount, skippedFavourites = 0, 0, 0
+
+        for itemId, count in pairs(snap.Inventory or {}) do
+            count = tonumber(count) or 0
+            if count > 0 and ShopConfig.CanSell(itemId) then
+                if favourites[itemId] then
+                    skippedFavourites = skippedFavourites + 1
+                else
+                    -- consume the whole stack, then credit its value
+                    if PlayerData.TryConsumeItem(player, itemId, count) then
+                        local price = sellPrice(itemId)
+                        totalEarned = totalEarned + price * count
+                        soldCount = soldCount + count
+                    end
+                end
+            end
+        end
+
+        if totalEarned > 0 then
+            PlayerData.AddCoins(player, totalEarned)
+        end
+
+        local out = PlayerData.Snapshot(player)
+        return ok({
+            SoldCount = soldCount,
+            TotalEarned = totalEarned,
+            SkippedFavourites = skippedFavourites,
+            NewBalance = out.Currency.Coins,
+            NewInventory = out.Inventory,
+        })
+    end)
+
+    if not success then
+        warn("[RemoteHandlers] SellAll error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+
+    return result
+end
+
+-- Feature 002 (FR-004): toggle a crop's membership in the protected Favourites set.
+ToggleFavourite.OnServerInvoke = function(player, itemId)
+    local success, result = pcall(function()
+        if not rate_ok(player, "ToggleFavourite") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        if type(itemId) ~= "string" then
+            return fail("Bad args")
+        end
+        -- Only sellable crops can be favourited (favourites gate Sell all).
+        if not ShopConfig.CanSell(itemId) then
+            return fail("Item cannot be favourited")
+        end
+        local isFav = PlayerData.ToggleFavourite(player, itemId)
+        return ok({ ItemId = itemId, IsFavourite = isFav, Favourites = PlayerData.GetFavourites(player) })
+    end)
+
+    if not success then
+        warn("[RemoteHandlers] ToggleFavourite error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+
+    return result
+end
+
+-- Feature 002 (US6, FR-013/019): quick travel to a fixed, named destination. The
+-- server resolves the target position from the world and moves the character; the
+-- client never sends a position. Targets are limited to a fixed set (fail closed).
+local Workspace = game:GetService("Workspace")
+local TELEPORT_TARGETS = { shop = true, garden = true, stall = true }
+
+local function resolveTargetPosition(targetId)
+    if targetId == "stall" then
+        local stall = Workspace:FindFirstChild("SellStall")
+        local base = stall and (stall.PrimaryPart or stall:FindFirstChildWhichIsA("BasePart"))
+        if base then return base.Position + Vector3.new(0, 5, 8) end
+    elseif targetId == "garden" then
+        local plot = Workspace:FindFirstChild("Plot1")
+        if plot then return plot:GetPivot().Position + Vector3.new(0, 5, 6) end
+    elseif targetId == "shop" then
+        -- no dedicated shop building in the test place; a fixed point near spawn
+        return Vector3.new(-18, 6, 0)
+    end
+    return nil
+end
+
+RequestTeleport.OnServerInvoke = function(player, targetId)
+    local success, result = pcall(function()
+        if not rate_ok(player, "RequestTeleport") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        if type(targetId) ~= "string" or not TELEPORT_TARGETS[targetId] then
+            return fail("Unknown destination")
+        end
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp then
+            return fail("Character not ready")
+        end
+        local pos = resolveTargetPosition(targetId)
+        if not pos then
+            return fail("Destination unavailable")
+        end
+        hrp.CFrame = CFrame.new(pos)
+        return ok({ Target = targetId })
+    end)
+
+    if not success then
+        warn("[RemoteHandlers] RequestTeleport error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+
     return result
 end
 

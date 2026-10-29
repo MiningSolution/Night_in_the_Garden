@@ -1,51 +1,106 @@
--- ShopConfig.lua (single source of truth for economy)
--- Values unchanged; helper functions added because InventoryController calls
--- ShopConfig.GetSellPrice(category, itemId). Functions are dropped when this table
--- is sent through GetShopData, so clients that need them require this module directly.
-local ShopConfig = {
-    buy = {
-        seeds = {
-            carrot_seed = { price = 5 },
-            tomato_seed = { price = 8 },
-            wheat_seed  = { price = 6 },
-            pumpkin_seed= { price = 12 },
-        },
-        tools = {
-            basic_watering_can = { price = 0 },
-            improved_watering_can = { price = 50 },
-        }
+-- ShopConfig.lua (single source of truth for the shop / economy numbers)
+--
+-- Seeds and crops are DERIVED from PlantData (constitution II: no number is
+-- duplicated). Tools and items are not plants, so their definitions live here.
+-- The derived `buy.seeds` and `sell` rows carry rarity/displayName/icon so the
+-- shop cards (US3) and the sell window (US1) can render without re-deriving.
+--
+-- The helper functions are dropped when this table is sent through GetShopData
+-- (only `buy` and `sell` data cross the wire); server and client code that needs
+-- a helper requires this module directly.
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PlantData = require(ReplicatedStorage:WaitForChild("PlantData"))
+
+local ShopConfig = {}
+
+-- Non-plant definitions (tools, items). Prices/rarity live here once.
+ShopConfig.buy = {
+    seeds = {}, -- filled from PlantData below
+    tools = {
+        basic_watering_can    = { price = 0,  rarity = "Common", displayName = "Basic Watering Can",    icon = "" },
+        improved_watering_can = { price = 50, rarity = "Rare",   displayName = "Improved Watering Can", icon = "" },
     },
-    sell = {
-        carrot_crop = { price = 3 },
-        tomato_crop = { price = 5 },
-        wheat_crop  = { price = 4 },
-        pumpkin_crop= { price = 9 },
-    }
+    items = {
+        fertilizer = { price = 15, rarity = "Uncommon", displayName = "Fertilizer", icon = "" },
+        dream_dust = { price = 40, rarity = "Epic",     displayName = "Dream Dust",  icon = "" },
+    },
 }
+
+ShopConfig.sell = {} -- filled from PlantData below (crops only — FR-001)
+
+-- rarity lookup for every known itemId (seeds, crops, tools, items)
+local rarityById = {}
+
+for base, def in pairs(PlantData) do
+    local seedId = base .. "_seed"
+    local cropId = base .. "_crop"
+    ShopConfig.buy.seeds[seedId] = {
+        price = def.seedPrice, rarity = def.rarity,
+        displayName = def.displayName .. " Seed", icon = def.seedIcon or "",
+    }
+    ShopConfig.sell[cropId] = {
+        price = def.sellValue, rarity = def.rarity,
+        displayName = def.displayName, icon = def.cropIcon or "",
+    }
+    rarityById[seedId] = def.rarity
+    rarityById[cropId] = def.rarity
+end
+for _, category in ipairs({ "tools", "items" }) do
+    for itemId, row in pairs(ShopConfig.buy[category]) do
+        rarityById[itemId] = row.rarity
+    end
+end
 
 local function priceOf(row)
     if type(row) == "table" then return tonumber(row.price) or 0 end
     return tonumber(row) or 0
 end
 
--- Buy price for an item in a category ("seeds", "tools", ...). 0 = not purchasable.
+-- Buy price for an item in a category ("seeds"/"tools"/"items"). 0 = not purchasable.
 function ShopConfig.GetBuyPrice(category, itemId)
     local cat = ShopConfig.buy[category]
     return cat and priceOf(cat[itemId]) or 0
 end
 
--- Sell price for an item. The sell table is flat, so category is accepted for
--- compatibility but only used if a nested category table exists.
-function ShopConfig.GetSellPrice(category, itemId)
-    local nested = ShopConfig.sell[category]
-    if type(nested) == "table" and nested.price == nil and nested[itemId] ~= nil then
-        return priceOf(nested[itemId])
-    end
+-- Sell price for an item. The sell table is flat by cropId; `category` is accepted
+-- for call-site compatibility but ignored.
+function ShopConfig.GetSellPrice(_, itemId)
+    if itemId == nil then return 0 end
     return priceOf(ShopConfig.sell[itemId])
 end
 
+-- Only crops are in the sell table, so this is the crops-only sellability gate (FR-001).
 function ShopConfig.CanSell(itemId)
-    return ShopConfig.GetSellPrice(nil, itemId) > 0
+    local row = ShopConfig.sell[itemId]
+    return row ~= nil and priceOf(row) > 0
+end
+
+function ShopConfig.GetRarity(itemId)
+    return rarityById[itemId] or "Common"
+end
+
+-- Accepts a base id ("moonflower") or a seed/crop id ("moonflower_seed").
+function ShopConfig.IsNightPlant(id)
+    if type(id) ~= "string" then return false end
+    local base = id:gsub("_seed$", ""):gsub("_crop$", "")
+    local def = PlantData[base]
+    return def ~= nil and def.dayNight == "night"
+end
+
+-- Returns an array of { id, price, rarity, displayName, icon } for a buy category.
+function ShopConfig.GetCategoryItems(category)
+    local out = {}
+    local cat = ShopConfig.buy[category]
+    if cat then
+        for id, row in pairs(cat) do
+            out[#out + 1] = {
+                id = id, price = row.price, rarity = row.rarity,
+                displayName = row.displayName, icon = row.icon,
+            }
+        end
+    end
+    return out
 end
 
 return ShopConfig

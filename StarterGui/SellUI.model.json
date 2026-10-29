@@ -1,0 +1,358 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "Enabled": false,
+    "IgnoreGuiInset": false,
+    "ResetOnSpawn": false,
+    "ScreenInsets": "CoreUISafeInsets",
+    "ZIndexBehavior": "Sibling"
+  },
+  "children": [
+    {
+      "name": "Backdrop",
+      "className": "TextButton",
+      "properties": {
+        "AutoButtonColor": false,
+        "BackgroundColor3": [0, 0, 0],
+        "BackgroundTransparency": 0.5,
+        "BorderSizePixel": 0,
+        "Size": {"UDim2": [[1, 0], [1, 0]]},
+        "Text": "",
+        "ZIndex": 0
+      }
+    },
+    {
+      "name": "SellFrame",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [0.5, 0.5],
+        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "SelectionBehaviorDown": "Stop",
+        "SelectionBehaviorLeft": "Stop",
+        "SelectionBehaviorRight": "Stop",
+        "SelectionBehaviorUp": "Stop",
+        "SelectionGroup": true,
+        "Size": {"UDim2": [[0.9, 0], [0.9, 0]]}
+      },
+      "children": [
+        {
+          "name": "UISizeConstraint",
+          "className": "UISizeConstraint",
+          "properties": {
+            "MaxSize": [560, 480],
+            "MinSize": [320, 260]
+          }
+        },
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 12]}
+          }
+        },
+        {
+          "name": "HeaderBar",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.141176, 0.141176, 0.188235],
+            "BorderSizePixel": 0,
+            "Size": {"UDim2": [[1, 0], [0, 50]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            },
+            {
+              "name": "TitleLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 20], [0, 0]]},
+                "Size": {"UDim2": [[1, -110], [1, 0]]},
+                "Text": "💰 SELL",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24,
+                "TextXAlignment": "Left"
+              }
+            },
+            {
+              "name": "CloseButton",
+              "className": "TextButton",
+              "properties": {
+                "AnchorPoint": [0, 0.5],
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.862745, 0.313725, 0.313725],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[1, -54], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 44], [0, 44]]},
+                "Text": "X",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 8]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TotalLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamMedium",
+            "Position": {"UDim2": [[0, 20], [0, 58]]},
+            "Size": {"UDim2": [[1, -40], [0, 30]]},
+            "Text": "Sell all total: 0 coins",
+            "TextColor3": [0.784314, 0.784314, 0.784314],
+            "TextSize": 20,
+            "TextXAlignment": "Left"
+          }
+        },
+        {
+          "name": "ItemsScroll",
+          "className": "ScrollingFrame",
+          "properties": {
+            "AutomaticCanvasSize": "Y",
+            "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+            "BackgroundTransparency": 0.4,
+            "BorderSizePixel": 0,
+            "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
+            "Position": {"UDim2": [[0, 20], [0, 94]]},
+            "ScrollBarImageColor3": [0.235294, 0.235294, 0.27451],
+            "ScrollBarThickness": 8,
+            "Size": {"UDim2": [[1, -40], [1, -160]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "UIListLayout",
+              "className": "UIListLayout",
+              "properties": {
+                "FillDirection": "Vertical",
+                "Padding": {"UDim": [0, 6]},
+                "SortOrder": "Name"
+              }
+            },
+            {
+              "name": "UIPadding",
+              "className": "UIPadding",
+              "properties": {
+                "PaddingBottom": {"UDim": [0, 6]},
+                "PaddingLeft": {"UDim": [0, 6]},
+                "PaddingRight": {"UDim": [0, 6]},
+                "PaddingTop": {"UDim": [0, 6]}
+              }
+            },
+            {
+              "name": "SellRowTemplate",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[1, -12], [0, 56]]},
+                "Visible": false
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 6]}
+                  }
+                },
+                {
+                  "name": "RarityStrip",
+                  "className": "Frame",
+                  "properties": {
+                    "BackgroundColor3": [0.666667, 0.666667, 0.705882],
+                    "BorderSizePixel": 0,
+                    "Position": {"UDim2": [[0, 6], [0, 6]]},
+                    "Size": {"UDim2": [[0, 6], [1, -12]]}
+                  }
+                },
+                {
+                  "name": "Icon",
+                  "className": "ImageLabel",
+                  "properties": {
+                    "AnchorPoint": [0, 0.5],
+                    "BackgroundTransparency": 1,
+                    "Image": "",
+                    "Position": {"UDim2": [[0, 20], [0.5, 0]]},
+                    "ScaleType": "Fit",
+                    "Size": {"UDim2": [[0, 40], [0, 40]]}
+                  },
+                  "children": [
+                    {
+                      "name": "FallbackLetter",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "?",
+                        "TextColor3": [0.784314, 0.784314, 0.784314],
+                        "TextSize": 24
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "NameLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamMedium",
+                    "Position": {"UDim2": [[0, 70], [0, 0]]},
+                    "Size": {"UDim2": [[0, 170], [1, 0]]},
+                    "Text": "Crop",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 18,
+                    "TextXAlignment": "Left"
+                  }
+                },
+                {
+                  "name": "CountLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "Gotham",
+                    "Position": {"UDim2": [[0, 246], [0, 0]]},
+                    "Size": {"UDim2": [[0, 46], [1, 0]]},
+                    "Text": "x0",
+                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextSize": 18
+                  }
+                },
+                {
+                  "name": "ValueLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "Gotham",
+                    "Position": {"UDim2": [[0, 294], [0, 0]]},
+                    "Size": {"UDim2": [[0, 58], [1, 0]]},
+                    "Text": "0 ea",
+                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextSize": 18,
+                    "TextXAlignment": "Left"
+                  }
+                },
+                {
+                  "name": "StarToggle",
+                  "className": "TextButton",
+                  "properties": {
+                    "AnchorPoint": [0, 0.5],
+                    "AutoButtonColor": false,
+                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                    "BorderSizePixel": 0,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[1, -150], [0.5, 0]]},
+                    "Size": {"UDim2": [[0, 44], [0, 44]]},
+                    "Text": "☆",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 24
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "SellOneButton",
+                  "className": "TextButton",
+                  "properties": {
+                    "AnchorPoint": [0, 0.5],
+                    "AutoButtonColor": false,
+                    "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+                    "BorderSizePixel": 0,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[1, -98], [0.5, 0]]},
+                    "Size": {"UDim2": [[0, 90], [0, 44]]},
+                    "Text": "Sell",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 20
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EmptyState",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "Gotham",
+            "Position": {"UDim2": [[0, 20], [0, 150]]},
+            "Size": {"UDim2": [[1, -40], [0, 40]]},
+            "Text": "Nothing to sell — harvest some crops first.",
+            "TextColor3": [0.784314, 0.784314, 0.784314],
+            "TextSize": 18,
+            "TextWrapped": true,
+            "Visible": false
+          }
+        },
+        {
+          "name": "SellAllButton",
+          "className": "TextButton",
+          "properties": {
+            "AnchorPoint": [0, 0],
+            "AutoButtonColor": false,
+            "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+            "BorderSizePixel": 0,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[0, 20], [1, -56]]},
+            "Size": {"UDim2": [[1, -40], [0, 48]]},
+            "Text": "SELL ALL",
+            "TextColor3": [1, 1, 1],
+            "TextSize": 22
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

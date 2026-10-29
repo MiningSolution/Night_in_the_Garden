@@ -128,6 +128,7 @@ function M.HandleInteraction(player, plotModel, clientToolName)
         plot.PlantId = pid
         plot.PlantedAt = os.time()
         plot.GrowthProgress = 0
+        plot.GrowthSeconds = 0 -- feature 002: phase-gated growth accumulator (FR-007)
         plot.IsWatered = false
 
         PlotStateChanged:FireClient(player, plotId, plot)
@@ -150,6 +151,7 @@ function M.HandleInteraction(player, plotModel, clientToolName)
             plot.State = "Empty"
             plot.PlantId = nil
             plot.GrowthProgress = 0
+            plot.GrowthSeconds = 0
             plot.IsWatered = false
 
             PlotStateChanged:FireClient(player, plotId, plot)

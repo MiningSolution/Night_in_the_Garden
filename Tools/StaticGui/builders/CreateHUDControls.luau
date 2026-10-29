@@ -108,6 +108,52 @@ end
 makeMenuButton("ShopButton", "🛒", "B", 1)
 makeMenuButton("InventoryButton", "🎒", "I", 2)
 
+--[[ TELEPORT ROW (US6) — a horizontal row of quick-travel buttons, top-right so
+     it is clear of the coin HUD (top-left), the day/night bar (top-centre), the
+     menu column (left) and the hotbar (bottom). Inside the safe area via the
+     ScreenGui's CoreUISafeInsets. Each button >= 44x44. ]]
+local TeleportRow = Instance.new("Frame")
+TeleportRow.Name = "TeleportRow"
+TeleportRow.AnchorPoint = Vector2.new(1, 0)
+TeleportRow.Position = UDim2.new(1, -8, 0, 8)
+TeleportRow.Size = UDim2.new(0, 3 * 52 + 2 * 6, 0, 52)
+TeleportRow.BackgroundTransparency = 1
+TeleportRow.Parent = HUDControls
+
+local teleLayout = Instance.new("UIListLayout")
+teleLayout.FillDirection = Enum.FillDirection.Horizontal
+teleLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+teleLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+teleLayout.SortOrder = Enum.SortOrder.LayoutOrder
+teleLayout.Padding = UDim.new(0, 6)
+teleLayout.Parent = TeleportRow
+
+local function makeTeleportButton(name, emoji, order)
+	local button = Instance.new("TextButton")
+	button.Name = name
+	button.Size = UDim2.new(0, 52, 0, 52) -- >= 44x44 (FR-013)
+	button.BackgroundColor3 = Theme.Control
+	button.BorderSizePixel = 0
+	button.Text = emoji
+	button.TextSize = 26
+	button.TextColor3 = Theme.TextPrimary
+	button.Font = Enum.Font.GothamBold
+	button.AutoButtonColor = true
+	button.LayoutOrder = order
+	button.Parent = TeleportRow
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 12)
+	corner.Parent = button
+	return button
+end
+
+-- Render-safe glyphs (Roblox's font does not render 🏪 / 🪙): shop cart, seedling,
+-- coin bag for the seller's stall.
+makeTeleportButton("TeleportShop", "🛒", 1)
+makeTeleportButton("TeleportGarden", "🌱", 2)
+makeTeleportButton("TeleportStall", "💰", 3)
+
 --[[ HOTBAR — moved from HUD; runtime position and slot size ]]
 local Hotbar = Instance.new("Frame")
 Hotbar.Name = "Hotbar"
