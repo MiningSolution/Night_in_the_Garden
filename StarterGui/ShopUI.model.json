@@ -326,7 +326,7 @@
                         "Size": {"UDim2": [[0.32, 0], [1, 0]]},
                         "Text": "x1",
                         "TextColor3": [1, 1, 1],
-                        "TextSize": 18
+                        "TextSize": 20
                       },
                       "children": [
                         {
@@ -350,7 +350,7 @@
                         "Size": {"UDim2": [[0.32, 0], [1, 0]]},
                         "Text": "x5",
                         "TextColor3": [1, 1, 1],
-                        "TextSize": 18
+                        "TextSize": 20
                       },
                       "children": [
                         {
@@ -374,7 +374,7 @@
                         "Size": {"UDim2": [[0.32, 0], [1, 0]]},
                         "Text": "x10",
                         "TextColor3": [1, 1, 1],
-                        "TextSize": 18
+                        "TextSize": 20
                       },
                       "children": [
                         {

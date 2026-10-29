@@ -31,6 +31,9 @@ local UITheme = {
 	TextPrimary = Color3.fromRGB(255, 255, 255),
 	TextMuted = Color3.fromRGB(200, 200, 200),
 
+	-- Currency (coin gold) — single source for prices and the "+N coins" float.
+	Coins = Color3.fromRGB(255, 220, 100),
+
 	-- Rarity tiers (feature 002, dark/night palette only; day palette is Phase 4).
 	-- Used by shop cards and sell rows to colour an item by its rarity (FR-008/018).
 	RarityCommon = Color3.fromRGB(170, 170, 180),    -- neutral grey

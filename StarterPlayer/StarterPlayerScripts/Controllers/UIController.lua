@@ -24,6 +24,7 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
+local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
 
 local UIController = {}
 
@@ -289,7 +290,7 @@ function UIController.FloatCoins(amount, adornee)
     label.Size = UDim2.fromScale(1, 1)
     label.BackgroundTransparency = 1
     label.Text = "+" .. amount .. " 🪙"
-    label.TextColor3 = Color3.fromRGB(255, 220, 100)
+    label.TextColor3 = Theme.Coins
     label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     label.TextStrokeTransparency = 0.4
     label.TextSize = 28

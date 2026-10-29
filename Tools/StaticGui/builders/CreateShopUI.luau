@@ -224,7 +224,7 @@ PriceLabel.Size = UDim2.new(1, -12, 0, 22)
 PriceLabel.Position = UDim2.new(0, 6, 0, 94)
 PriceLabel.BackgroundTransparency = 1
 PriceLabel.Text = "💰 0"
-PriceLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+PriceLabel.TextColor3 = Theme.Coins
 PriceLabel.TextSize = 18
 PriceLabel.Font = Enum.Font.GothamBold
 PriceLabel.Parent = Card
@@ -246,7 +246,7 @@ local function makeQty(name, text, order)
     b.BorderSizePixel = 0
     b.Text = text
     b.TextColor3 = Theme.TextPrimary
-    b.TextSize = 18
+    b.TextSize = 20 -- buttons >= 20 (FR-017)
     b.Font = Enum.Font.GothamBold
     b.AutoButtonColor = false
     b.Parent = QtyRow

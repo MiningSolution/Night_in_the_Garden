@@ -184,18 +184,18 @@ garden and the stall respectively.
 
 ### User Story 7 - Visible reward feedback (Priority: P3)
 
-Selling or harvesting shows a floating "+N coins" above the plot, and the coin counter animates
-up, so gains are felt immediately.
+Selling shows a floating "+N coins" above the player and the coin counter animates up, so gains
+are felt immediately. (Harvesting yields a crop, not coins, so it shows no coin float.)
 
 **Why this priority**: game feel; the numbers are already correct without it.
 
-**Independent Test**: sell or harvest and see "+N coins" rise and fade above the plot while the
-coin total animates to the new value.
+**Independent Test**: sell at the stall and see "+N coins" rise and fade above the player while
+the coin total animates to the new value.
 
 **Acceptance Scenarios**:
 
-1. **Given** a sale or harvest that grants coins, **When** it completes, **Then** a "+N coins"
-   label appears above the plot and fades, and the HUD coin counter animates to the new total.
+1. **Given** a sale that grants coins, **When** it completes, **Then** a "+N coins" label appears
+   above the player and fades, and the HUD coin counter animates to the new total.
 
 ---
 
@@ -225,8 +225,8 @@ a sensible fallback where an icon is missing.
   it and an error toast explains.
 - The player leaves the stall's range while the sell window is open: the window closes or the
   sell action is blocked (no selling from out of range).
-- Two coin-granting events at once (sell + harvest): toasts and "+N coins" labels both show
-  without overlapping illegibly.
+- A sale while a crop-ready or spirit toast is showing: the "+N coins" float and the toasts both
+  show without overlapping illegibly.
 - The hotbar is full when a new seed is bought: the seed stays in the inventory and is not forced
   into a slot; the player can swap it in.
 - A spirit is caught while a window is open: its toast still appears above the window.
@@ -267,8 +267,9 @@ a sensible fallback where an icon is missing.
 - **FR-013**: The HUD MUST offer teleport controls to the shop, the player's garden and the stall,
   each ≥ 44×44 and operable by touch, keyboard/mouse and gamepad, without overlapping the existing
   menu column, hotbar or Roblox controls.
-- **FR-014**: On a coin-granting sell or harvest, the game MUST show a floating "+N coins" label
-  above the relevant plot and animate the HUD coin counter to the new total.
+- **FR-014**: On a coin-granting sale, the game MUST show a floating "+N coins" label above the
+  player and animate the HUD coin counter to the new total. Harvesting yields a crop (not coins),
+  so it shows no coin float.
 - **FR-015**: Items, seeds and tools MUST show real icons in the shop, inventory and hotbar, with a
   consistent fallback when an icon is missing.
 - **FR-016**: All new and changed GUI MUST be stored in the repository's static GUI definitions and

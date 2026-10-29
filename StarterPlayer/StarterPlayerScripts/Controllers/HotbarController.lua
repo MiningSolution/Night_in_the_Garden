@@ -51,6 +51,7 @@ task.spawn(function()
 end)
 
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
+local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
 
 -- State
 local VISIBLE_SLOTS = 3
@@ -153,7 +154,7 @@ local function UpdateSlotVisuals()
             end
             if slotButton then
                 TweenService:Create(slotButton, TweenInfo.new(0.15), {
-                    BackgroundColor3 = selected and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(60, 60, 70),
+                    BackgroundColor3 = selected and Theme.Accent or Theme.Control,
                 }):Play()
             end
         end
@@ -280,12 +281,12 @@ local function SetupSlotButtons()
             end)
             slotButton.MouseEnter:Connect(function()
                 if (pageStart + i - 1) ~= equippedIndex then
-                    TweenService:Create(slotButton, TweenInfo.new(0.1), { BackgroundColor3 = Color3.fromRGB(70, 70, 80) }):Play()
+                    TweenService:Create(slotButton, TweenInfo.new(0.1), { BackgroundColor3 = Theme.ControlHover }):Play()
                 end
             end)
             slotButton.MouseLeave:Connect(function()
                 if (pageStart + i - 1) ~= equippedIndex then
-                    TweenService:Create(slotButton, TweenInfo.new(0.1), { BackgroundColor3 = Color3.fromRGB(60, 60, 70) }):Play()
+                    TweenService:Create(slotButton, TweenInfo.new(0.1), { BackgroundColor3 = Theme.Control }):Play()
                 end
             end)
         end
