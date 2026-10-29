@@ -96,7 +96,7 @@ DreamSeedsLabel.Name = "DreamSeedsLabel"
 DreamSeedsLabel.Size = UDim2.new(1, -20, 0, 30)
 DreamSeedsLabel.Position = UDim2.new(0, 10, 0, 40)
 DreamSeedsLabel.BackgroundTransparency = 1
-DreamSeedsLabel.Text = "🌙 Dreams: 0"
+DreamSeedsLabel.Text = "💎 Dream Seeds: 0"
 bind(DreamSeedsLabel, "TextColor3", "Dream")
 DreamSeedsLabel.TextSize = 18
 DreamSeedsLabel.Font = Style.DisplayFont
@@ -107,10 +107,13 @@ DreamSeedsLabel.Parent = CurrencyDisplay
     DAY/NIGHT INDICATOR
     Top-center showing current phase and progress
 ]]
+-- Feature 005: the phase pill moves to the TOP-RIGHT (the concept HUD); the
+-- top-centre is now the SEEDS/GARDEN/SELL nav in HUDControls.
 local DayNightIndicator = Instance.new("Frame")
 DayNightIndicator.Name = "DayNightIndicator"
-DayNightIndicator.Size = UDim2.new(0, 200, 0, 60)
-DayNightIndicator.Position = UDim2.new(0.5, -100, 0, 20)
+DayNightIndicator.AnchorPoint = Vector2.new(1, 0)
+DayNightIndicator.Size = UDim2.new(0, 220, 0, 64)
+DayNightIndicator.Position = UDim2.new(1, -20, 0, 20)
 bind(DayNightIndicator, "BackgroundColor3", "Surface")
 DayNightIndicator.BorderSizePixel = 0
 DayNightIndicator.Parent = HUD
@@ -121,17 +124,35 @@ dayNightCorner.Parent = DayNightIndicator
 
 strokeOf(DayNightIndicator, "Outline")
 
--- Phase label
+-- Phase label (left of the pill). Feature 005: themed via tokens; the phase is
+-- read from the text ("☀️ Day" / "🌙 Night"), not a per-phase hard-coded colour.
 local PhaseLabel = Instance.new("TextLabel")
 PhaseLabel.Name = "PhaseLabel"
-PhaseLabel.Size = UDim2.new(1, -20, 0, 30)
+PhaseLabel.Size = UDim2.new(0, 110, 0, 30)
 PhaseLabel.Position = UDim2.new(0, 10, 0, 5)
 PhaseLabel.BackgroundTransparency = 1
 PhaseLabel.Text = "☀️ Day"
-PhaseLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+bind(PhaseLabel, "TextColor3", "TextPrimary")
+PhaseLabel.TextXAlignment = Enum.TextXAlignment.Left
 PhaseLabel.TextSize = 18
-PhaseLabel.Font = Enum.Font.GothamBold
+PhaseLabel.Font = Style.DisplayFont
 PhaseLabel.Parent = DayNightIndicator
+
+-- Time-left label (right of the pill). Feature 005: countdown to the phase end,
+-- filled by UIController from the phase progress + a config duration (no client
+-- clock); blank until data is available.
+local TimeLeftLabel = Instance.new("TextLabel")
+TimeLeftLabel.Name = "TimeLeftLabel"
+TimeLeftLabel.AnchorPoint = Vector2.new(1, 0)
+TimeLeftLabel.Size = UDim2.new(0, 80, 0, 30)
+TimeLeftLabel.Position = UDim2.new(1, -10, 0, 5)
+TimeLeftLabel.BackgroundTransparency = 1
+TimeLeftLabel.Text = ""
+bind(TimeLeftLabel, "TextColor3", "TextMuted")
+TimeLeftLabel.TextXAlignment = Enum.TextXAlignment.Right
+TimeLeftLabel.TextSize = 16
+TimeLeftLabel.Font = Style.BodyFont
+TimeLeftLabel.Parent = DayNightIndicator
 
 -- Progress bar container
 local ProgressBarContainer = Instance.new("Frame")
@@ -146,17 +167,91 @@ local progressContainerCorner = Instance.new("UICorner")
 progressContainerCorner.CornerRadius = UDim.new(0, 6)
 progressContainerCorner.Parent = ProgressBarContainer
 
--- Progress bar (fills from left to right)
+-- Progress bar (fills from left to right). Feature 005: themed Accent fill.
 local ProgressBar = Instance.new("Frame")
 ProgressBar.Name = "ProgressBar"
 ProgressBar.Size = UDim2.new(0, 0, 1, 0)
-ProgressBar.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+bind(ProgressBar, "BackgroundColor3", "Accent")
 ProgressBar.BorderSizePixel = 0
 ProgressBar.Parent = ProgressBarContainer
 
 local progressBarCorner = Instance.new("UICorner")
 progressBarCorner.CornerRadius = UDim.new(0, 6)
 progressBarCorner.Parent = ProgressBar
+
+--[[
+    QUEST CARD (feature 005)
+    Right side, under the phase pill: one current goal with its progress and reward.
+    Populated by UIController from the existing quest state (first incomplete quest);
+    a tap opens the full Quests window. Hidden until there is a quest to show.
+]]
+local QuestCard = Instance.new("TextButton")
+QuestCard.Name = "QuestCard"
+QuestCard.AnchorPoint = Vector2.new(1, 0)
+QuestCard.Size = UDim2.new(0, 230, 0, 86)
+QuestCard.Position = UDim2.new(1, -20, 0, 96)
+bind(QuestCard, "BackgroundColor3", "SurfaceRaised")
+QuestCard.BorderSizePixel = 0
+QuestCard.AutoButtonColor = true
+QuestCard.Text = ""
+QuestCard.Visible = false
+QuestCard.Parent = HUD
+
+local questCorner = Instance.new("UICorner")
+questCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
+questCorner.Parent = QuestCard
+
+strokeOf(QuestCard, "Outline")
+
+local questHeading = Instance.new("TextLabel")
+questHeading.Name = "HeadingLabel"
+questHeading.Size = UDim2.new(1, -20, 0, 18)
+questHeading.Position = UDim2.new(0, 10, 0, 6)
+questHeading.BackgroundTransparency = 1
+questHeading.Text = "📋 Current Quest"
+bind(questHeading, "TextColor3", "TextMuted")
+questHeading.TextXAlignment = Enum.TextXAlignment.Left
+questHeading.TextSize = 13
+questHeading.Font = Style.BodyFont
+questHeading.Parent = QuestCard
+
+local questTitle = Instance.new("TextLabel")
+questTitle.Name = "TitleLabel"
+questTitle.Size = UDim2.new(1, -20, 0, 24)
+questTitle.Position = UDim2.new(0, 10, 0, 24)
+questTitle.BackgroundTransparency = 1
+questTitle.Text = "—"
+bind(questTitle, "TextColor3", "TextPrimary")
+questTitle.TextXAlignment = Enum.TextXAlignment.Left
+questTitle.TextTruncate = Enum.TextTruncate.AtEnd
+questTitle.TextSize = 17
+questTitle.Font = Style.DisplayFont
+questTitle.Parent = QuestCard
+
+local questProgress = Instance.new("TextLabel")
+questProgress.Name = "ProgressLabel"
+questProgress.Size = UDim2.new(0.6, -10, 0, 20)
+questProgress.Position = UDim2.new(0, 10, 1, -24)
+questProgress.BackgroundTransparency = 1
+questProgress.Text = ""
+bind(questProgress, "TextColor3", "TextMuted")
+questProgress.TextXAlignment = Enum.TextXAlignment.Left
+questProgress.TextSize = 14
+questProgress.Font = Style.BodyFont
+questProgress.Parent = QuestCard
+
+local questReward = Instance.new("TextLabel")
+questReward.Name = "RewardLabel"
+questReward.AnchorPoint = Vector2.new(1, 0)
+questReward.Size = UDim2.new(0.4, -10, 0, 20)
+questReward.Position = UDim2.new(1, -10, 1, -24)
+questReward.BackgroundTransparency = 1
+questReward.Text = ""
+bind(questReward, "TextColor3", "Coins")
+questReward.TextXAlignment = Enum.TextXAlignment.Right
+questReward.TextSize = 14
+questReward.Font = Style.DisplayFont
+questReward.Parent = QuestCard
 
 print("✅ HUD created successfully!")
 print("   Components:")

@@ -20,14 +20,15 @@ local ResponsiveLayout = {}
 local MENU_BUTTON = 56
 local MENU_GAP = 8
 local MENU_LEFT_MARGIN = 12
-local MENU_CAPACITY = 4 -- room for Shop, Inventory, Rewards, Quests (FR-001)
+local MENU_CAPACITY = 3 -- left column: BAG, QUESTS, GIFTS (feature 005; SEEDS is in the top nav)
 
-local HOTBAR_SLOTS = 3
+local HOTBAR_SLOTS = 5 -- feature 005: five tool slots (watering/seed tools + locked placeholders)
 local HOTBAR_TOUCH_SLOT = 64
 local HOTBAR_TOUCH_GAP = 8
 local HOTBAR_BOTTOM_MARGIN = 12
--- Keyboard / gamepad hotbar keeps today's geometry.
-local HOTBAR_DESKTOP_W = 340
+-- Keyboard / gamepad hotbar keeps today's slot size (100) and gap (10); width grows
+-- to fit five slots: 5*100 + 4*10 = 540 (+ margin).
+local HOTBAR_DESKTOP_W = 560
 local HOTBAR_DESKTOP_H = 110
 local HOTBAR_DESKTOP_BOTTOM = 20
 
@@ -111,7 +112,6 @@ function ResponsiveLayout.compute(input)
 	-- Hotbar.
 	local hotbar
 	if isTouch then
-		local w = HOTBAR_SLOTS * HOTBAR_TOUCH_SLOT + (HOTBAR_SLOTS - 1) * HOTBAR_TOUCH_GAP
 		-- Horizontal gap between the thumbstick zone (left 40% of the viewport)
 		-- and the jump button (right side); centre the hotbar in it (R5).
 		local thumbRight = gui.x + vp.w * 0.40
@@ -122,17 +122,25 @@ function ResponsiveLayout.compute(input)
 			local fallback = isPhone and JUMP_SMALL or JUMP_LARGE
 			jumpLeft = gui.x + vp.w - fallback.inset
 		end
+		-- Feature 005: with five slots, shrink the slot to fit the available gap so
+		-- the strip stays clear of the jump button, but never below the 44px touch
+		-- minimum (FR-009 / SC-004).
+		local gap = HOTBAR_TOUCH_GAP
+		local avail = jumpLeft - thumbRight
+		local maxSlot = (avail - (HOTBAR_SLOTS - 1) * gap) / HOTBAR_SLOTS
+		local slot = math.max(44, math.min(HOTBAR_TOUCH_SLOT, maxSlot))
+		local w = HOTBAR_SLOTS * slot + (HOTBAR_SLOTS - 1) * gap
 		local center = (thumbRight + jumpLeft) / 2
 		local x = center - w / 2
 		-- Keep inside the safe area if the gap is tight.
 		x = math.max(gui.x, math.min(x, gui.x + gui.w - w))
 		hotbar = {
 			x = x,
-			y = gui.y + gui.h - HOTBAR_TOUCH_SLOT - HOTBAR_BOTTOM_MARGIN,
+			y = gui.y + gui.h - slot - HOTBAR_BOTTOM_MARGIN,
 			w = w,
-			h = HOTBAR_TOUCH_SLOT,
-			slotSize = HOTBAR_TOUCH_SLOT,
-			gap = HOTBAR_TOUCH_GAP,
+			h = slot,
+			slotSize = slot,
+			gap = gap,
 		}
 	else
 		hotbar = {

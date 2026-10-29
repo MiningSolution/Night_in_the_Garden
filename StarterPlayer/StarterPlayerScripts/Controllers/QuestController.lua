@@ -31,6 +31,12 @@ local GetQuests = ReplicatedStorage:WaitForChild("GetQuests")
 local ClaimQuest = ReplicatedStorage:WaitForChild("ClaimQuest")
 local QuestUpdated = ReplicatedStorage:WaitForChild("QuestUpdated")
 
+-- Feature 005: the HUD shows one current-quest card (not the whole list). It is
+-- populated from the same quest data this controller fetches.
+local HUD = playerGui:WaitForChild("HUD")
+local questCard = HUD:WaitForChild("QuestCard", 5)
+local lastQuests = {}
+
 local function uiController()
     local ok, mod = pcall(require, script.Parent:WaitForChild("UIController", 5))
     return ok and mod or nil
@@ -44,6 +50,36 @@ local function rewardText(reward)
     if reward and (reward.coins or 0) > 0 then parts[#parts + 1] = "💰 " .. reward.coins end
     if reward and (reward.seeds or 0) > 0 then parts[#parts + 1] = "🌙 " .. reward.seeds end
     return table.concat(parts, "   ")
+end
+
+-- Feature 005: refresh the HUD card to the first still-open quest (not claimed;
+-- an incomplete goal is preferred over a claimable one). Hidden when all are claimed.
+local function updateHudCard()
+    if not questCard then return end
+    local current
+    for _, q in ipairs(lastQuests) do
+        if not q.claimed then
+            if (q.progress or 0) < (q.target or 0) then
+                current = q
+                break
+            elseif not current then
+                current = q -- complete but unclaimed: a fallback current goal
+            end
+        end
+    end
+    if not current then
+        questCard.Visible = false
+        return
+    end
+    local titleLabel = questCard:FindFirstChild("TitleLabel")
+    local progressLabel = questCard:FindFirstChild("ProgressLabel")
+    local rewardLabel = questCard:FindFirstChild("RewardLabel")
+    if titleLabel then titleLabel.Text = current.text or current.id end
+    if progressLabel then
+        progressLabel.Text = string.format("%d / %d", math.min(current.target or 0, current.progress or 0), current.target or 0)
+    end
+    if rewardLabel then rewardLabel.Text = rewardText(current.reward) end
+    questCard.Visible = true
 end
 
 local function applyRowState(entry, progress, claimed)
@@ -114,6 +150,7 @@ function QuestController.Refresh()
     end
     clearRows()
     local quests = res.Quests or {}
+    lastQuests = quests -- feature 005: cache for the HUD card
     EmptyState.Visible = #quests == 0
     for i, q in ipairs(quests) do
         local row = RowTemplate:Clone()
@@ -135,6 +172,7 @@ function QuestController.Refresh()
             claimButton.Activated:Connect(function() onClaim(q.id, entry) end)
         end
     end
+    updateHudCard() -- feature 005
 end
 
 function QuestController.Initialize()
@@ -157,11 +195,20 @@ function QuestController.Initialize()
 
     -- Incremental progress/claim updates from the server.
     QuestUpdated.OnClientEvent:Connect(function(questId, progress, claimed)
+        -- feature 005: keep the cached list (and the HUD card) in sync too.
+        for _, q in ipairs(lastQuests) do
+            if q.id == questId then
+                q.progress = progress
+                if claimed ~= nil then q.claimed = claimed end
+                break
+            end
+        end
         local entry = rows[questId]
         if entry then
             entry.progress = progress
             applyRowState(entry, progress, claimed)
         end
+        updateHudCard()
     end)
 
     -- HUD Quests button (touch); keyboard/gamepad go through InputActions.
@@ -171,6 +218,13 @@ function QuestController.Initialize()
     if questsButton then
         questsButton.Activated:Connect(function() WindowManager.Toggle("Quests") end)
     end
+
+    -- Feature 005: tapping the HUD quest card opens the full Quests window; populate
+    -- the card at join so it shows the current goal before the window is first opened.
+    if questCard then
+        questCard.Activated:Connect(function() WindowManager.Toggle("Quests") end)
+    end
+    task.spawn(function() QuestController.Refresh() end)
 
     print("✅ QuestController ready")
 end

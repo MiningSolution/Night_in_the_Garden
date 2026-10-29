@@ -64,7 +64,7 @@
             "Font": "GothamBold",
             "Position": {"UDim2": [[0, 10], [0, 40]]},
             "Size": {"UDim2": [[1, -20], [0, 30]]},
-            "Text": "🌙 Dreams: 0",
+            "Text": "💎 Dream Seeds: 0",
             "TextColor3": [0.588235, 0.745098, 1],
             "TextSize": 18,
             "TextXAlignment": "Left"
@@ -79,10 +79,11 @@
       "name": "DayNightIndicator",
       "className": "Frame",
       "properties": {
+        "AnchorPoint": [1, 0],
         "BackgroundColor3": [0.066667, 0.121569, 0.231373],
         "BorderSizePixel": 0,
-        "Position": {"UDim2": [[0.5, -100], [0, 20]]},
-        "Size": {"UDim2": [[0, 200], [0, 60]]}
+        "Position": {"UDim2": [[1, -20], [0, 20]]},
+        "Size": {"UDim2": [[0, 220], [0, 64]]}
       },
       "attributes": {
         "Theme_BackgroundColor3": "Surface"
@@ -114,10 +115,32 @@
             "BackgroundTransparency": 1,
             "Font": "GothamBold",
             "Position": {"UDim2": [[0, 10], [0, 5]]},
-            "Size": {"UDim2": [[1, -20], [0, 30]]},
+            "Size": {"UDim2": [[0, 110], [0, 30]]},
             "Text": "☀️ Day",
-            "TextColor3": [1, 0.784314, 0.196078],
-            "TextSize": 18
+            "TextColor3": [0.960784, 0.956863, 0.913725],
+            "TextSize": 18,
+            "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextPrimary"
+          }
+        },
+        {
+          "name": "TimeLeftLabel",
+          "className": "TextLabel",
+          "properties": {
+            "AnchorPoint": [1, 0],
+            "BackgroundTransparency": 1,
+            "Font": "Gotham",
+            "Position": {"UDim2": [[1, -10], [0, 5]]},
+            "Size": {"UDim2": [[0, 80], [0, 30]]},
+            "Text": "",
+            "TextColor3": [0.72549, 0.788235, 0.87451],
+            "TextSize": 16,
+            "TextXAlignment": "Right"
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextMuted"
           }
         },
         {
@@ -144,9 +167,12 @@
               "name": "ProgressBar",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [1, 0.784314, 0.196078],
+                "BackgroundColor3": [0.086275, 0.419608, 0.701961],
                 "BorderSizePixel": 0,
                 "Size": {"UDim2": [[0, 0], [1, 0]]}
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Accent"
               },
               "children": [
                 {
@@ -159,6 +185,114 @@
               ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "QuestCard",
+      "className": "TextButton",
+      "properties": {
+        "AnchorPoint": [1, 0],
+        "AutoButtonColor": true,
+        "BackgroundColor3": [0.12549, 0.2, 0.301961],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[1, -20], [0, 96]]},
+        "Size": {"UDim2": [[0, 230], [0, 86]]},
+        "Text": "",
+        "Visible": false
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "SurfaceRaised"
+      },
+      "children": [
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 14]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "ApplyStrokeMode": "Border",
+            "Color": [0.25098, 0.368627, 0.517647],
+            "Thickness": 3
+          },
+          "attributes": {
+            "Theme_Color": "Outline"
+          }
+        },
+        {
+          "name": "HeadingLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "Gotham",
+            "Position": {"UDim2": [[0, 10], [0, 6]]},
+            "Size": {"UDim2": [[1, -20], [0, 18]]},
+            "Text": "📋 Current Quest",
+            "TextColor3": [0.72549, 0.788235, 0.87451],
+            "TextSize": 13,
+            "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextMuted"
+          }
+        },
+        {
+          "name": "TitleLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[0, 10], [0, 24]]},
+            "Size": {"UDim2": [[1, -20], [0, 24]]},
+            "Text": "—",
+            "TextColor3": [0.960784, 0.956863, 0.913725],
+            "TextSize": 17,
+            "TextTruncate": "AtEnd",
+            "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextPrimary"
+          }
+        },
+        {
+          "name": "ProgressLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "Gotham",
+            "Position": {"UDim2": [[0, 10], [1, -24]]},
+            "Size": {"UDim2": [[0.6, -10], [0, 20]]},
+            "Text": "",
+            "TextColor3": [0.72549, 0.788235, 0.87451],
+            "TextSize": 14,
+            "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextMuted"
+          }
+        },
+        {
+          "name": "RewardLabel",
+          "className": "TextLabel",
+          "properties": {
+            "AnchorPoint": [1, 0],
+            "BackgroundTransparency": 1,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[1, -10], [1, -24]]},
+            "Size": {"UDim2": [[0.4, -10], [0, 20]]},
+            "Text": "",
+            "TextColor3": [1, 0.854902, 0.482353],
+            "TextSize": 14,
+            "TextXAlignment": "Right"
+          },
+          "attributes": {
+            "Theme_TextColor3": "Coins"
+          }
         }
       ]
     }

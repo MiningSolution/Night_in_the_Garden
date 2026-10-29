@@ -54,7 +54,7 @@ local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(Re
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
 
 -- State
-local VISIBLE_SLOTS = 3
+local VISIBLE_SLOTS = 5 -- feature 005: five visible slots; trailing empties show a locked placeholder
 local items = {}        -- ordered list of { serverTool, displayName, emoji }
 local equippedIndex = 1 -- 1-based index into `items`
 local pageStart = 1     -- index of the item shown in Slot1
@@ -122,8 +122,10 @@ local function renderSlot(i)
     local item = items[pageStart + i - 1]
     local itemIcon = slot:FindFirstChild("ItemIcon")
     local emojiLabel = itemIcon and itemIcon:FindFirstChild("EmojiLabel")
+    local lockOverlay = slot:FindFirstChild("LockOverlay")
     if item then
         slot.Visible = true
+        if lockOverlay then lockOverlay.Visible = false end
         -- US8: show the real icon when the item has one, else fall back to the emoji.
         if item.icon and item.icon ~= "" then
             if itemIcon then itemIcon.Image = item.icon end
@@ -133,7 +135,9 @@ local function renderSlot(i)
             if emojiLabel then emojiLabel.Text = item.emoji end
         end
     else
-        -- no item for this slot position: blank it
+        -- Feature 005: no tool/seed for this slot yet — show the locked placeholder
+        -- (e.g. the future lantern/net/shovel slots) and blank the icon.
+        if lockOverlay then lockOverlay.Visible = true end
         if emojiLabel then emojiLabel.Text = "" end
         if itemIcon then itemIcon.Image = "rbxassetid://0" end
     end
@@ -302,6 +306,10 @@ local function SetupKeyboardShortcuts()
             HotbarController.EquipSlot(2)
         elseif input.KeyCode == Enum.KeyCode.Three then
             HotbarController.EquipSlot(3)
+        elseif input.KeyCode == Enum.KeyCode.Four then
+            HotbarController.EquipSlot(4)
+        elseif input.KeyCode == Enum.KeyCode.Five then
+            HotbarController.EquipSlot(5)
         end
     end)
 end

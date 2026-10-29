@@ -214,9 +214,19 @@ local function applyHints(mode)
 		end
 	end
 
+	-- Feature 005: SEEDS lives in the top nav (same action as the old Shop button,
+	-- B / ButtonX). Its KeyHint text is set here since the builder leaves it blank.
+	local nav = hudc:FindFirstChild("PrimaryNav")
+	if nav then
+		local seeds = nav:FindFirstChild("SeedsButton")
+		local kh = seeds and seeds:FindFirstChild("KeyHint")
+		if kh then kh.Text = "B" end
+		setButton(seeds, Enum.KeyCode.ButtonX)
+		-- GARDEN / SELL are teleports with no keyboard shortcut; no hint shown.
+	end
+
 	local menu = hudc:FindFirstChild("MenuButtons")
 	if menu then
-		setButton(menu:FindFirstChild("ShopButton"), Enum.KeyCode.ButtonX)
 		setButton(menu:FindFirstChild("InventoryButton"), Enum.KeyCode.ButtonY)
 		setButton(menu:FindFirstChild("RewardsButton"), Enum.KeyCode.DPadUp)
 		setButton(menu:FindFirstChild("QuestsButton"), Enum.KeyCode.DPadDown)
@@ -224,7 +234,7 @@ local function applyHints(mode)
 
 	local hotbar = hudc:FindFirstChild("Hotbar")
 	if hotbar then
-		for i = 1, 3 do
+		for i = 1, 5 do
 			local slot = hotbar:FindFirstChild("Slot" .. i)
 			local kbh = slot and slot:FindFirstChild("KeybindHint")
 			if kbh then kbh.Visible = isKbd end
