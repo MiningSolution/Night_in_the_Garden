@@ -66,6 +66,9 @@ local SEED_ORDER = {
     "carrot_seed", "wheat_seed", "tomato_seed", "pumpkin_seed",
     "moonflower_seed", "starberry_seed", "dreamroot_seed",
 }
+-- feature 006 (US1): the real slot 3–5 tools, placed after the watering cans + Harvest
+-- (so with the basic can equipped they fall into slots 3/4/5) and before the seeds.
+local TOOL_ORDER = { "shovel", "lantern", "net" }
 
 local function seedDisplayName(seedId)
     if ShopConfig and ShopConfig.buy.seeds[seedId] then
@@ -94,6 +97,14 @@ local function buildItems(inv)
     end
     -- Harvest is always available (needs no item).
     list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = ItemEmoji.get("Harvest"), icon = "" }
+    -- feature 006 (US1): owned tools (shovel/lantern/net) fill the next slots.
+    for _, toolId in ipairs(TOOL_ORDER) do
+        if (inv[toolId] or 0) > 0 then
+            local row = ShopConfig and ShopConfig.buy.tools[toolId]
+            local displayName = (row and row.displayName) or toolId
+            list[#list + 1] = { serverTool = toolId, displayName = displayName, emoji = ItemEmoji.get(toolId), icon = iconFor(toolId) }
+        end
+    end
     for _, seedId in ipairs(SEED_ORDER) do
         if (inv[seedId] or 0) > 0 then
             local seedEmoji = ItemEmoji.get(seedId)

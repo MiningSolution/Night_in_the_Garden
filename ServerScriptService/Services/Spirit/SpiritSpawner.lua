@@ -7,6 +7,8 @@ local Debris = game:GetService("Debris")
 
 local Config = require(script.Parent.SpiritConfig)
 local Types = require(script.Parent.SpiritTypes)
+-- feature 006 (US1): lantern-equipped players draw spirits (weighted anchor + tighter radius).
+local InventoryService = require(script.Parent.Parent.InventoryService)
 
 -- feature 003 (US4): announce rare/epic spawns server-wide.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -68,6 +70,45 @@ local function getAnyPlayerPosition()
     end
     
     return Vector3.new(0, 5, 0)
+end
+
+--[[
+    feature 006 (US1): choose the spawn-anchor player, preferring a lantern-equipped one
+    (weighted by Config.LanternAnchorWeight), and return the radius to spawn within around
+    them (the smaller Config.LanternSpawnRadius when that anchor holds the lantern). This
+    makes "more spirits appear where the lantern is" without touching the spawn cadence.
+    @return Vector3, number - anchor position and spawn radius
+]]
+local function isLantern(p)
+    local ok, equipped = pcall(InventoryService.GetEquipped, p)
+    return ok and equipped == "lantern"
+end
+
+local function chooseAnchor()
+    local list = Players:GetPlayers()
+    if #list == 0 then
+        return Vector3.new(0, 5, 0), Config.SpawnRadius
+    end
+
+    -- Weighted pick: a lantern-equipped player counts LanternAnchorWeight times.
+    local total = 0
+    local buckets = {}
+    for _, p in ipairs(list) do
+        local w = isLantern(p) and Config.LanternAnchorWeight or 1
+        total = total + w
+        buckets[#buckets + 1] = { p = p, acc = total }
+    end
+    local roll = math.random() * total
+    local chosen = list[#list]
+    for _, b in ipairs(buckets) do
+        if roll <= b.acc then chosen = b.p break end
+    end
+
+    local char = chosen.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local pos = (hrp and hrp.Position) or Vector3.new(0, 5, 0)
+    local radius = isLantern(chosen) and Config.LanternSpawnRadius or Config.SpawnRadius
+    return pos, radius
 end
 
 --[[
@@ -236,17 +277,17 @@ function M.spawnOne(onCollectCallback)
     local spiritType = Types.ChooseRandom()
     local id = HttpService:GenerateGUID(false)
 
-    -- Spawn near any player with anti-clustering
-    local center = getAnyPlayerPosition()
-    local pos = clampY(getRandomXZ(center, Config.SpawnRadius))
-    
+    -- Spawn near an anchor player (lantern-biased) with anti-clustering
+    local center, radius = chooseAnchor()
+    local pos = clampY(getRandomXZ(center, radius))
+
     -- P2-4: Use constant from Constants
     local Constants = require(game:GetService("ReplicatedStorage"):WaitForChild("Constants"))
-    
+
     -- Retry if too close to existing spirits
     local attempts = 0
     while M.isPositionOccupied(pos, Constants.SPIRIT.MIN_SPAWN_DISTANCE) and attempts < Constants.SPIRIT.SPAWN_ATTEMPTS do
-        pos = clampY(getRandomXZ(center, Config.SpawnRadius))
+        pos = clampY(getRandomXZ(center, radius))
         attempts = attempts + 1
     end
     

@@ -15,6 +15,8 @@ return {
         moonflower_seed = 0, starberry_seed = 0, dreamroot_seed = 0,
         -- tools
         basic_watering_can = 1, improved_watering_can = 0,
+        -- feature 006 (US1): real slot 3–5 tools (owned via the shop; reconcile backfills at 0)
+        lantern = 0, net = 0, shovel = 0,
         -- items
         fertilizer = 0, dream_dust = 0,
         -- crops (harvested, sellable)
