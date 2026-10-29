@@ -46,6 +46,7 @@ boot(Utils, "ClientDataCache") -- starts the initial GetPlayerData sync
 -- Controllers (each one self-initializes on require)
 boot(Controllers, "UIController")
 boot(Controllers, "HotbarController")
+boot(Controllers, "HarvestHintController") -- feature 005 (FR-007): contextual day harvest hint
 boot(Controllers, "InventoryController")
 boot(Controllers, "ShopController")
 boot(Controllers, "SellController") -- feature 002: sell window at the seller stall
