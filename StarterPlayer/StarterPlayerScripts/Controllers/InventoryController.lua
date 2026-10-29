@@ -310,9 +310,6 @@ function InventoryController.CreateCard(itemName, quantity)
         end)
         button.Activated:Connect(function()
             SelectItem(itemName)
-            if CategoryOf(itemName) == "Crops" then
-                InventoryController.LoadFavourites()
-            end
         end)
     end
 

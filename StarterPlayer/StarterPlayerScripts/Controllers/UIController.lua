@@ -465,7 +465,17 @@ function UIController.Initialize()
     -- stall's range-watch keeps it correct once the player arrives.
     local primaryNav = HUDControls:WaitForChild("PrimaryNav")
     primaryNav:WaitForChild("SeedsButton").Activated:Connect(function()
-        UIController.ToggleShop()
+        -- FR-015: open the shop preselecting the Seeds tab (toggle closed if already open).
+        if WindowManager.GetOpen() == "Shop" then
+            WindowManager.Close()
+        else
+            local ok, shop = pcall(require, script.Parent.ShopController)
+            if ok and shop and shop.OpenOnTab then
+                shop.OpenOnTab("seeds")
+            else
+                UIController.ToggleShop()
+            end
+        end
     end)
     task.spawn(function()
         local RequestTeleport = ReplicatedStorage:WaitForChild("RequestTeleport", 30)
