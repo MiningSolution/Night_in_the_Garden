@@ -32,6 +32,7 @@
 ## Notes
 
 - All checklist items pass. The four scope-level questions (lantern behaviour, shovel behaviour,
-  capture-vs-proximity rule, and Journal rewards) were resolved by the owner on 2026-10-29 and baked
-  into the spec (see "Resolved design decisions" in spec.md). Spec is ready for `/speckit-clarify`
-  (optional) or `/speckit-plan`.
+  capture-vs-proximity rule, and Journal rewards) were resolved during `/speckit-specify`, and
+  `/speckit-clarify` (Session 2026-10-29) resolved four more (tool acquisition, capture success model,
+  lantern specifics, catch reward) — all baked into spec.md (see the Clarifications section and
+  "Resolved design decisions"). Spec is ready for `/speckit-plan`.

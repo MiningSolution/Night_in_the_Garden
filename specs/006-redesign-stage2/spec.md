@@ -20,6 +20,19 @@ content live once in `ReplicatedStorage` config (II), GUI is static and generate
 every action is reachable by touch and bound through the shared action layer (IV), colours come from
 the day/night theme tokens in both palettes (V), and each story is verified in Studio before merge (VI).
 
+## Clarifications
+
+### Session 2026-10-29
+
+- Q: What should the lantern do? → A: A night-time light radius around the player that reveals/attracts nearby spirits (feeds the net-capture loop).
+- Q: What should the shovel do? → A: Clear a plant from a plot and reset it to Empty (remove a withered/unwanted crop); no early-dig partial yield.
+- Q: How do the net capture and the existing proximity collection relate? → A: Net is required only for the new flying creatures (Moonmoth / Moth-Spirit); existing wisps keep proximity collection unchanged.
+- Q: Does the Spirit Journal grant gameplay rewards? → A: No — it is a cosmetic catalogue this stage (shows progress only).
+- Q: How are the three tools (lantern / net / shovel) acquired? → A: Bought in the shop's Tools tab for coins, like the existing tools (prices single-sourced in ShopConfig).
+- Q: How is a net capture's success decided? → A: Chance-based by the spirit's rarity — the server rolls (rarer = lower catch chance).
+- Q: What does the lantern's "attract" do specifically? → A: It increases the night spirit spawn rate within a radius around the player (more targets where you stand).
+- Q: Does catching give a reward beyond the collection entry? → A: The first catch of each spirit type grants a one-time bonus (coins / dream seeds); repeat catches only increment the count.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Real tools behind the hotbar (lantern / net / shovel) (Priority: P1)
@@ -48,8 +61,8 @@ never ship: three working tools replacing dead slots.
    Empty, and the plot updates from the server's confirmed response; using it on an already-empty plot
    is rejected cleanly.
 4. **Given** it is night and the player has the **lantern** equipped, **When** they use/hold it, **Then**
-   it creates a light radius around the player that reveals/attracts nearby spirits (feeding the capture
-   loop in US2); by day it has no spirit effect.
+   the server raises the spirit spawn rate within a radius around the player (more spirits appear where
+   they stand, feeding the capture loop in US2); by day it has no spirit effect.
 5. **Given** the player has the **net** equipped and a capturable spirit is in range, **When** they use
    it, **Then** the capture attempt is sent to the server (the capture outcome is specified in US2).
 6. **Given** the day↔night phase switches, **When** the hotbar repaints, **Then** the three new tools
@@ -77,16 +90,19 @@ clarified rules). Testable without US3's journal screen (catch confirmation + in
    is shown, reusing the existing announcement layer.
 2. **Given** a capturable spirit is within range and the player has the net equipped, **When** they use
    the net (tap the on-screen prompt / press the bound key), **Then** the server validates range,
-   ownership and cooldown and decides success; on success the spirit is removed from the world and the
-   catch is recorded for that player, with on-screen feedback.
+   ownership and cooldown and rolls a catch chance based on the spirit's rarity (rarer = lower chance);
+   on a successful roll the spirit is removed from the world and the catch is recorded for that player,
+   and on a failed roll the attempt ends with on-screen feedback and the spirit may remain.
 3. **Given** a capture is attempted out of range, on cooldown, or on a non-capturable target, **Then**
    the server rejects it (fail closed) and nothing is recorded.
 4. **Given** both the existing proximity collection and the new net capture exist, **When** the player
    encounters a spirit, **Then** the rule is: the existing wisp spirits keep today's proximity
    collection unchanged, and only the new flying creatures (Moonmoth / Moth-Spirit) require the net —
    a wisp is never net-only and a flying creature is never collected by walking into it.
-5. **Given** a successful catch, **When** the server confirms it, **Then** any reward (coins / dream
-   seeds / item) is applied server-side and the currency/inventory updates from the confirmed response.
+5. **Given** the **first** successful catch of a given spirit type, **When** the server confirms it,
+   **Then** a one-time discovery bonus (coins / dream seeds) is applied server-side and the currency
+   updates from the confirmed response; a repeat catch of an already-discovered type only increments its
+   count and grants no currency.
 
 ---
 
@@ -167,7 +183,8 @@ with all existing actions still working through the existing remotes.
 **Tools (US1)**
 
 - **FR-001**: The three tools (lantern, net, shovel) MUST be ownable items defined once in the
-  `ReplicatedStorage` config modules (ids, display names, icons, and any acquisition price), with no
+  `ReplicatedStorage` config modules (ids, display names, icons, coin price), bought from the shop's
+  **Tools** tab for coins like the existing tools, with prices single-sourced in `ShopConfig` and no
   numbers duplicated in controllers or builders.
 - **FR-002**: Owned tools MUST appear in hotbar slots 3–5 as normal equippable tools (icon, name, 1–5
   key label on PC, on-screen tap, gamepad cycle); unowned tool slots MUST remain in the locked/unowned
@@ -183,12 +200,15 @@ with all existing actions still working through the existing remotes.
 - **FR-005**: The game MUST support new night creature types (Moonmoth / Moth-Spirit) defined once in
   config, that spawn at night and are visible in the world.
 - **FR-006**: The player MUST be able to capture a capturable spirit with the net via an on-screen
-  control (not keyboard-only); the server MUST validate and decide the outcome and record a successful
-  catch against that player.
+  control (not keyboard-only); the server MUST validate the attempt and decide success by rolling a
+  per-rarity catch chance (single-sourced in config), recording a successful catch against that player
+  and resolving a failed roll cleanly.
 - **FR-007**: On a notable spawn, the game MUST show a rate-limited, server-wide "appeared" announcement
   reusing the existing announcement layer (no new broadcast remote).
-- **FR-008**: Any capture reward (currency or item) MUST be applied server-side and reflected to the
-  client only from the server's confirmed response.
+- **FR-008**: The first catch of each spirit type MUST grant a one-time discovery bonus (coins / dream
+  seeds, single-sourced in config) applied server-side; repeat catches MUST only increment the type's
+  count and grant no currency. All currency changes reflect to the client only from the server's
+  confirmed response.
 - **FR-009**: Collection method MUST follow a single rule by spirit type: existing wisp spirits keep
   proximity collection unchanged; the new flying creatures (Moonmoth / Moth-Spirit) are capturable only
   with the net. The net capture MUST NOT change how wisps are collected.
@@ -233,7 +253,8 @@ with all existing actions still working through the existing remotes.
   server-defined effect and eligible-target rule. Relates to the hotbar (slots 3–5) and to the player's
   inventory (ownership).
 - **Spirit type**: a creature definition (id, display name, rarity tier, where/when it appears, how it
-  is collected/captured). Includes existing wisp types and the new Moonmoth / Moth-Spirit.
+  is collected/captured, and — for net-captured types — a per-rarity catch chance and a first-catch
+  discovery bonus). Includes existing wisp types and the new Moonmoth / Moth-Spirit.
 - **Spirit collection record**: per-player data — for each spirit type, whether caught, how many, and
   first-caught — the source of truth for the Spirits tab and the Journal. Belongs to the persisted
   player profile.
@@ -270,19 +291,24 @@ with all existing actions still working through the existing remotes.
   persisted collection), with balance numbers single-sourced.
 - **Theme**: both palettes already exist (Feature 004); new UI only consumes tokens, so no palette
   values change.
-- **Tool acquisition**: the three tools are obtained the same way existing tools are (e.g. the shop /
-  existing ownership), not via a new economy system; exact prices/availability are a planning/clarify
-  detail, not a new mechanic.
+- **Tool acquisition**: the three tools are bought from the shop's Tools tab for coins, like the
+  existing tools (prices in `ShopConfig`); no new economy system. Exact price values are a balance
+  detail for planning.
 - **Scope ceiling**: this is Stage 2 of the redesign; anything not in these four stories (e.g. trading,
   new currencies, a world/map redesign) is out of scope.
 
 ### Resolved design decisions (owner, 2026-10-29)
 
-- **Lantern** = a night-time light radius around the player that reveals/attracts nearby spirits,
+- **Lantern** = a night-time light radius around the player that raises the spirit spawn rate nearby,
   feeding the net-capture loop (not a passive buff, not a placed object).
 - **Shovel** = clears a plant from a plot and resets it to Empty (remove a withered/unwanted crop); it
   does not dig up a growing crop for partial yield this stage.
 - **Capture rule** = the net is required only for the new flying creatures (Moonmoth / Moth-Spirit);
   existing wisp spirits keep today's proximity collection, unchanged.
+- **Capture success** = chance-based, rolled by the server from the spirit's rarity (rarer = lower
+  chance); a failed roll ends the attempt cleanly.
+- **Tool acquisition** = the lantern / net / shovel are bought in the shop's Tools tab for coins.
+- **Catch reward** = the first catch of each type grants a one-time discovery bonus (coins / dream
+  seeds); repeats only increment the count.
 - **Spirit Journal** = a cosmetic catalogue this stage (shows progress, grants no gameplay reward);
   milestone rewards are a possible later feature, deliberately not built here.
