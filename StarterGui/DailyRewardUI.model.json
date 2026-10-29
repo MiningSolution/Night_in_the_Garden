@@ -20,6 +20,9 @@
         "Size": {"UDim2": [[1, 0], [1, 0]]},
         "Text": "",
         "ZIndex": 0
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Backdrop"
       }
     },
     {
@@ -37,6 +40,9 @@
         "SelectionGroup": true,
         "Size": {"UDim2": [[0.95, 0], [0.7, 0]]}
       },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
+      },
       "children": [
         {
           "name": "UISizeConstraint",
@@ -50,23 +56,55 @@
           "name": "UICorner",
           "className": "UICorner",
           "properties": {
-            "CornerRadius": {"UDim": [0, 12]}
+            "CornerRadius": {"UDim": [0, 14]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "ApplyStrokeMode": "Border",
+            "Color": [0.023529, 0.090196, 0.180392],
+            "Thickness": 4
+          },
+          "attributes": {
+            "Theme_Color": "OutlineDeep"
           }
         },
         {
           "name": "HeaderBar",
           "className": "Frame",
           "properties": {
-            "BackgroundColor3": [0.082353, 0.215686, 0.407843],
+            "BackgroundColor3": [1, 1, 1],
             "BorderSizePixel": 0,
             "Size": {"UDim2": [[1, 0], [0, 50]]}
           },
           "children": [
             {
+              "name": "UIGradient",
+              "className": "UIGradient",
+              "properties": {
+                "Color": {
+                  "ColorSequence": {"keypoints": [{
+                      "color": [0.082353, 0.215686, 0.407843],
+                      "time": 0
+                    }, {
+                      "color": [0.043137, 0.121569, 0.258824],
+                      "time": 1
+                    }]}
+                },
+                "Rotation": 90
+              },
+              "attributes": {
+                "Theme_GradientBottom": "HeaderBottom",
+                "Theme_GradientTop": "HeaderTop"
+              }
+            },
+            {
               "name": "UICorner",
               "className": "UICorner",
               "properties": {
-                "CornerRadius": {"UDim": [0, 12]}
+                "CornerRadius": {"UDim": [0, 14]}
               }
             },
             {
@@ -81,6 +119,9 @@
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24,
                 "TextXAlignment": "Left"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextOnHeader"
               }
             },
             {
@@ -88,13 +129,16 @@
               "className": "TextLabel",
               "properties": {
                 "BackgroundTransparency": 1,
-                "Font": "GothamMedium",
+                "Font": "GothamBold",
                 "Position": {"UDim2": [[0.5, 0], [0, 0]]},
                 "Size": {"UDim2": [[0.5, -74], [1, 0]]},
                 "Text": "Day 0 / 7",
-                "TextColor3": [0.72549, 0.788235, 0.87451],
+                "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 20,
                 "TextXAlignment": "Right"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextOnHeader"
               }
             },
             {
@@ -111,6 +155,10 @@
                 "Text": "X",
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Danger",
+                "Theme_TextColor3": "TextOnAccent"
               },
               "children": [
                 {
@@ -153,12 +201,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 1
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -167,7 +230,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -175,12 +241,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 1",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -196,6 +265,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -203,13 +275,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -222,9 +297,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -237,12 +315,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 2
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -251,7 +344,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -259,12 +355,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 2",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -280,6 +379,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -287,13 +389,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -306,9 +411,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -321,12 +429,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 3
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -335,7 +458,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -343,12 +469,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 3",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -364,6 +493,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -371,13 +503,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -390,9 +525,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -405,12 +543,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 4
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -419,7 +572,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -427,12 +583,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 4",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -448,6 +607,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -455,13 +617,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -474,9 +639,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -489,12 +657,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 5
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -503,7 +686,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -511,12 +697,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 5",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -532,6 +721,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -539,13 +731,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -558,9 +753,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -573,12 +771,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 6
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -587,7 +800,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -595,12 +811,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 6",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -616,6 +835,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -623,13 +845,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -642,9 +867,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -657,12 +885,27 @@
                 "BorderSizePixel": 0,
                 "LayoutOrder": 7
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 8]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -671,7 +914,10 @@
                   "properties": {
                     "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
-                    "Thickness": 2
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Accent"
                   }
                 },
                 {
@@ -679,12 +925,15 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 7",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -700,6 +949,9 @@
                     "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -707,13 +959,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.560784, 0.827451, 1],
+                    "TextColor3": [0.588235, 0.745098, 1],
                     "TextSize": 16,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Dream"
                   }
                 },
                 {
@@ -726,9 +981,12 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.086275, 0.419608, 0.701961],
+                    "TextColor3": [0.352941, 0.784314, 0.470588],
                     "TextSize": 20,
                     "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Positive"
                   }
                 }
               ]
@@ -741,7 +999,7 @@
           "properties": {
             "AnchorPoint": [0, 0],
             "AutoButtonColor": false,
-            "BackgroundColor3": [0.086275, 0.419608, 0.701961],
+            "BackgroundColor3": [0.352941, 0.784314, 0.470588],
             "BorderSizePixel": 0,
             "Font": "GothamBold",
             "Position": {"UDim2": [[0, 20], [1, -56]]},
@@ -750,12 +1008,28 @@
             "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 22
           },
+          "attributes": {
+            "Theme_BackgroundColor3": "Positive",
+            "Theme_TextColor3": "TextOnAccent"
+          },
           "children": [
             {
               "name": "UICorner",
               "className": "UICorner",
               "properties": {
                 "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "UIStroke",
+              "className": "UIStroke",
+              "properties": {
+                "ApplyStrokeMode": "Border",
+                "Color": [0.023529, 0.090196, 0.180392],
+                "Thickness": 3
+              },
+              "attributes": {
+                "Theme_Color": "OutlineDeep"
               }
             }
           ]

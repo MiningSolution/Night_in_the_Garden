@@ -41,12 +41,26 @@
             "Size": {"UDim2": [[1, 0], [0, 52]]},
             "Visible": false
           },
+          "attributes": {
+            "Theme_BackgroundColor3": "Surface"
+          },
           "children": [
             {
               "name": "UICorner",
               "className": "UICorner",
               "properties": {
-                "CornerRadius": {"UDim": [0, 8]}
+                "CornerRadius": {"UDim": [0, 10]}
+              }
+            },
+            {
+              "name": "UIStroke",
+              "className": "UIStroke",
+              "properties": {
+                "Color": [0.25098, 0.368627, 0.517647],
+                "Thickness": 3
+              },
+              "attributes": {
+                "Theme_Color": "Outline"
               }
             },
             {
@@ -86,7 +100,7 @@
               "className": "TextLabel",
               "properties": {
                 "BackgroundTransparency": 1,
-                "Font": "GothamMedium",
+                "Font": "GothamBold",
                 "Position": {"UDim2": [[0, 58], [0, 6]]},
                 "Size": {"UDim2": [[1, -70], [1, -12]]},
                 "Text": "Notification",
@@ -95,6 +109,9 @@
                 "TextWrapped": true,
                 "TextXAlignment": "Left",
                 "TextYAlignment": "Center"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextPrimary"
               }
             }
           ]
@@ -139,6 +156,9 @@
             "TextScaled": false,
             "TextSize": 24,
             "TextWrapped": true
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextOnHeader"
           }
         }
       ]
@@ -154,6 +174,9 @@
         "Position": {"UDim2": [[0.5, 0], [0.3, 0]]},
         "Size": {"UDim2": [[0.72, 0], [0, 48]]},
         "Visible": false
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
       },
       "children": [
         {
@@ -174,6 +197,9 @@
           "properties": {
             "Color": [0.831373, 0.678431, 1],
             "Thickness": 2
+          },
+          "attributes": {
+            "Theme_Color": "RarityEpic"
           }
         },
         {
@@ -188,6 +214,9 @@
             "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 20,
             "TextWrapped": true
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextPrimary"
           }
         }
       ]
@@ -203,6 +232,9 @@
         "Position": {"UDim2": [[0.5, 0], [0.42, 0]]},
         "Size": {"UDim2": [[0.6, 0], [0, 72]]},
         "Visible": false
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
       },
       "children": [
         {
@@ -223,6 +255,9 @@
           "properties": {
             "Color": [0.086275, 0.419608, 0.701961],
             "Thickness": 2
+          },
+          "attributes": {
+            "Theme_Color": "Accent"
           }
         },
         {
@@ -242,7 +277,7 @@
           "className": "TextLabel",
           "properties": {
             "BackgroundTransparency": 1,
-            "Font": "GothamMedium",
+            "Font": "GothamBold",
             "Position": {"UDim2": [[0, 54], [0, 6]]},
             "Size": {"UDim2": [[1, -140], [1, -12]]},
             "Text": "Welcome! Plant a seed on a plot.",
@@ -250,6 +285,9 @@
             "TextSize": 18,
             "TextWrapped": true,
             "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextPrimary"
           }
         },
         {
@@ -266,6 +304,10 @@
             "Text": "Skip",
             "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 18
+          },
+          "attributes": {
+            "Theme_BackgroundColor3": "Control",
+            "Theme_TextColor3": "TextPrimary"
           },
           "children": [
             {
