@@ -7,7 +7,7 @@
     A contextual day-time "Harvest" hint on the HUD. When the player stands near a
     ready-to-harvest plant BY DAY, a themed hint button (HUD.HarvestHint, built by
     Tools/StaticGui/builders/CreateHUD.luau) appears bottom-centre, above the tool
-    strip. Tapping it — or pressing E on PC — harvests the nearest ready plot. It is
+    strip. Tapping it — or pressing F on PC — harvests the nearest ready plot. It is
     hidden at night, when no ready plant is in range, and while a window is open.
 
     REUSES EXISTING SYSTEMS ONLY (constitution I; no new remotes, no client trust):
@@ -139,10 +139,11 @@ function HarvestHintController.Init()
     -- On-screen tap (primary path, works on every input type).
     HarvestHint.Activated:Connect(doHarvest)
 
-    -- Keyboard E (PC shortcut, not the only path).
+    -- Keyboard F (PC shortcut, not the only path). F rather than E so it never
+    -- clashes with the seller stall's ProximityPrompt, which consumes E.
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
-        if input.KeyCode == Enum.KeyCode.E and HarvestHint.Visible and currentPlot then
+        if input.KeyCode == Enum.KeyCode.F and HarvestHint.Visible and currentPlot then
             doHarvest()
         end
     end)

@@ -347,7 +347,7 @@
             "Font": "GothamBold",
             "Position": {"UDim2": [[1, -8], [0.5, 0]]},
             "Size": {"UDim2": [[0, 24], [0, 24]]},
-            "Text": "E",
+            "Text": "F",
             "TextColor3": [1, 1, 1],
             "TextSize": 16,
             "Visible": false

@@ -257,7 +257,7 @@ questReward.Parent = QuestCard
     HARVEST HINT (feature 005, FR-007)
     A contextual day-time hint shown bottom-centre, above the tool strip. It appears
     only when the player is near a ready-to-harvest plant by day (driven by
-    HarvestHintController) and is actionable by an on-screen tap, not only the E key.
+    HarvestHintController) and is actionable by an on-screen tap, not only the F key.
     A primary (Accent) button so it reads as the one thing to do; hidden by default.
     The anchored bottom-centre position clears the hotbar in every input mode, so it
     needs no per-mode ResponsiveLayout math.
@@ -283,8 +283,9 @@ harvestCorner.Parent = HarvestHint
 
 strokeOf(HarvestHint, "OutlineDeep")
 
--- Key chip (PC): the E shortcut. Shown in KeyboardMouse mode by HarvestHintController;
+-- Key chip (PC): the F shortcut. Shown in KeyboardMouse mode by HarvestHintController;
 -- a neutral dark chip with white text, matching the hotbar keybind chips (not themed).
+-- F (not E) so it never clashes with the seller stall's ProximityPrompt, which uses E.
 local HarvestKeyHint = Instance.new("TextLabel")
 HarvestKeyHint.Name = "KeyHint"
 HarvestKeyHint.AnchorPoint = Vector2.new(1, 0.5)
@@ -293,7 +294,7 @@ HarvestKeyHint.Size = UDim2.new(0, 24, 0, 24)
 HarvestKeyHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 HarvestKeyHint.BackgroundTransparency = 0.4
 HarvestKeyHint.BorderSizePixel = 0
-HarvestKeyHint.Text = "E"
+HarvestKeyHint.Text = "F"
 HarvestKeyHint.TextColor3 = Color3.fromRGB(255, 255, 255)
 HarvestKeyHint.TextSize = 16
 HarvestKeyHint.Font = Enum.Font.GothamBold
