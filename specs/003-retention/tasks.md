@@ -107,13 +107,13 @@ with a countdown and restock toast; the server never oversells.
 **Independent Test**: open the shop, see per-item stock + a restock countdown, buy an item to 0 (then
 it cannot be bought), and watch stock refill with a toast at the boundary (quickstart V7/V8).
 
-- [ ] T027 [US3] `ServerScriptService/Services/ShopStockService.lua`: hold `currentWindow` + `remaining[itemId]`; `Refill()` (re-init from `RetentionConfig.ShopStock`, set window, broadcast `ShopRestocked(RestockAt, Stock)`), `TryReserve(itemId, qty)` (unlimited → true; else atomic check-and-decrement), `GetStock()` / `RestockAt()`; a 1 Hz tick (own loop or hook the `DayNightManager` cadence) detects the window boundary and calls `Refill` (R4/R5)
-- [ ] T028 [US3] `ServerScriptService/CreateRemotes.lua`: add `ShopRestocked` (RemoteEvent, FireAllClients)
-- [ ] T029 [US3] `ServerScriptService/RemoteHandlers.lua`: extend `GetShopData` to include `Stock`, `RestockAt`, `Interval`; in `BuyItem`, call `ShopStockService.TryReserve(itemId, quantity)` before `TrySpendCoins` and `fail("Out of stock")` on false (no coin spend, no grant); return the item's updated `Stock` (contracts/remotes.md)
-- [ ] T030 [P] [US3] `Tools/StaticGui/builders/CreateShopUI.luau`: add `StockLabel` to `CardTemplate` and `RestockLabel` to the header (tokens; text/size rules)
-- [ ] T031 [US3] Regenerate models and confirm only `ShopUI.model.json` changed
-- [ ] T032 [US3] `StarterPlayer/StarterPlayerScripts/Controllers/ShopController.lua`: set each card's `StockLabel` from `GetShopData.Stock`, dim + disable Buy at 0 (in addition to the Phase-2 unaffordable dim), tick `RestockLabel` from `RestockAt` vs synced server time, and on `ShopRestocked` refill labels + reset the countdown + show a restock toast; update stock from the `BuyItem` response
-- [ ] T033 [US3] Studio playtest V7+V8 (short interval): stock shown + countdown; buy to 0 → dimmed + server-refused; ×5 with 3 left → whole purchase rejected atomically; boundary → refill + toast; two clients share the countdown; direct out-of-stock `BuyItem` returns `Success=false` with no state change; Output clean
+- [x] T027 [US3] `ServerScriptService/Services/ShopStockService.lua`: hold `currentWindow` + `remaining[itemId]`; `Refill()` (re-init from `RetentionConfig.ShopStock`, set window, broadcast `ShopRestocked(RestockAt, Stock)`), `TryReserve(itemId, qty)` (unlimited → true; else atomic check-and-decrement), `GetStock()` / `RestockAt()`; a 1 Hz tick (own loop or hook the `DayNightManager` cadence) detects the window boundary and calls `Refill` (R4/R5)
+- [x] T028 [US3] `ServerScriptService/CreateRemotes.lua`: add `ShopRestocked` (RemoteEvent, FireAllClients)
+- [x] T029 [US3] `ServerScriptService/RemoteHandlers.lua`: extend `GetShopData` to include `Stock`, `RestockAt`, `Interval`; in `BuyItem`, call `ShopStockService.TryReserve(itemId, quantity)` before `TrySpendCoins` and `fail("Out of stock")` on false (no coin spend, no grant); return the item's updated `Stock` (contracts/remotes.md)
+- [x] T030 [P] [US3] `Tools/StaticGui/builders/CreateShopUI.luau`: add `StockLabel` to `CardTemplate` and `RestockLabel` to the header (tokens; text/size rules)
+- [x] T031 [US3] Regenerate models and confirm only `ShopUI.model.json` changed
+- [x] T032 [US3] `StarterPlayer/StarterPlayerScripts/Controllers/ShopController.lua`: set each card's `StockLabel` from `GetShopData.Stock`, dim + disable Buy at 0 (in addition to the Phase-2 unaffordable dim), tick `RestockLabel` from `RestockAt` vs synced server time, and on `ShopRestocked` refill labels + reset the countdown + show a restock toast; update stock from the `BuyItem` response
+- [x] T033 [US3] Studio playtest V7+V8 (short interval): stock shown + countdown; buy to 0 → dimmed + server-refused; ×5 with 3 left → whole purchase rejected atomically; boundary → refill + toast; two clients share the countdown; direct out-of-stock `BuyItem` returns `Success=false` with no state change; Output clean
 
 **Checkpoint**: shop restock functional and independently testable.
 

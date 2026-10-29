@@ -12,6 +12,7 @@ local SpiritSpawner = require(SpiritFolder:WaitForChild("SpiritSpawner"))
 local SpiritCollector = require(SpiritFolder:WaitForChild("SpiritCollector"))
 local DailyRewardService = require(Services:WaitForChild("DailyRewardService"))
 local QuestService = require(Services:WaitForChild("QuestService"))
+local ShopStockService = require(Services:WaitForChild("ShopStockService"))
 
 -- Remotes
 local InteractWithPlot = RS:WaitForChild("InteractWithPlot")
@@ -136,8 +137,15 @@ GetShopData.OnServerInvoke = function(player)
         if not d then 
             return fail("Data not loaded") 
         end
-        -- Send data only: ShopConfig also holds helper functions, which do not belong on the wire
-        return ok({ Config={ buy=ShopConfig.buy, sell=ShopConfig.sell }, PlayerCoins=d.Currency.Coins })
+        -- Send data only: ShopConfig also holds helper functions, which do not belong on the wire.
+        -- Feature 003 (US3): include per-item remaining stock + the shared restock schedule.
+        return ok({
+            Config={ buy=ShopConfig.buy, sell=ShopConfig.sell },
+            PlayerCoins=d.Currency.Coins,
+            Stock=ShopStockService.GetStock(),
+            RestockAt=ShopStockService.RestockAt(),
+            Interval=ShopStockService.Interval(),
+        })
     end)
     
     if not success then
@@ -183,18 +191,25 @@ BuyItem.OnServerInvoke = function(player, category, itemId, quantity)
         end
 
         local price = buyPrice(category, itemId)
-        if price <= 0 then 
-            return fail("Item not purchasable") 
+        if price <= 0 then
+            return fail("Item not purchasable")
+        end
+
+        -- Feature 003 (US3): reserve limited stock before spending; fail closed when
+        -- out of stock (no coins spent, no item granted). Unlimited items always pass.
+        if not ShopStockService.TryReserve(itemId, quantity) then
+            return fail("Out of stock")
         end
 
         local oksp, newBal = PlayerData.TrySpendCoins(player, price*quantity)
-        if not oksp then 
-            return fail("Not enough coins") 
+        if not oksp then
+            ShopStockService.Release(itemId, quantity) -- unwind the reservation
+            return fail("Not enough coins")
         end
 
         PlayerData.AddItem(player, itemId, quantity)
         local snap = PlayerData.Snapshot(player)
-        return ok({ ItemName=itemId, Quantity=quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory })
+        return ok({ ItemName=itemId, Quantity=quantity, NewBalance=snap.Currency.Coins, NewInventory=snap.Inventory, Stock=ShopStockService.Remaining(itemId) })
     end)
     
     if not success then

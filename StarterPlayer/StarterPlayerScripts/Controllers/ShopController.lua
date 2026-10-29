@@ -48,7 +48,11 @@ local shopData = nil
 local playerCoins = 0
 local selectedCategory = "seeds"
 local cardQty = {}   -- [itemId] = chosen quantity (1/5/10)
-local cardRefs = {}  -- [itemId] = { card=, price=, buyBtn= } for re-dimming
+local cardRefs = {}  -- [itemId] = { card=, price=, buyBtn=, stock= } for re-dimming
+-- Feature 003 (US3): per-item remaining stock and the shared restock schedule.
+local shopStock = nil    -- { [itemId] = remaining } (limited items only; nil = unlimited)
+local restockAt = nil    -- server os.time() of the next restock boundary
+local shopInterval = nil -- RestockIntervalSec
 
 local TAB_IDS = { seeds = "seedsTab", tools = "toolsTab", items = "itemsTab" }
 
@@ -66,18 +70,39 @@ end
 local function ShowLoading() if loadingOverlay then loadingOverlay.Visible = true end end
 local function HideLoading() if loadingOverlay then loadingOverlay.Visible = false end end
 
--- Dim / undim a single card based on affordability at its current quantity.
+-- Update a card's stock badge (feature 003, US3). nil stock = unlimited -> hidden.
+local function refreshStockLabel(ref)
+    local label = ref.card:FindFirstChild("StockLabel")
+    if not label then return end
+    if ref.stock == nil then
+        label.Visible = false
+    else
+        label.Visible = true
+        label.Text = ref.stock > 0 and ("x" .. ref.stock) or "Out"
+        label.TextColor3 = ref.stock > 0 and Theme.TextMuted or Theme.Danger
+    end
+end
+
+-- Dim / undim a single card based on affordability AND stock at its current quantity.
 local function applyAfford(itemId)
     local ref = cardRefs[itemId]
     if not ref then return end
     local qty = cardQty[itemId] or 1
     local affordable = (ref.price * qty) <= playerCoins
-    ref.card.BackgroundTransparency = affordable and 0 or 0.55
-    ref.buyBtn.BackgroundColor3 = affordable and Theme.Accent or Theme.Control
-    ref.buyBtn.AutoButtonColor = affordable
-    ref.buyBtn.Active = affordable
-    ref.buyBtn.Text = affordable and ("BUY " .. (ref.price * qty)) or "Can't afford"
-    ref.affordable = affordable
+    local outOfStock = (ref.stock ~= nil and ref.stock <= 0)
+    local buyable = affordable and not outOfStock
+    ref.card.BackgroundTransparency = buyable and 0 or 0.55
+    ref.buyBtn.BackgroundColor3 = buyable and Theme.Accent or Theme.Control
+    ref.buyBtn.AutoButtonColor = buyable
+    ref.buyBtn.Active = buyable
+    if outOfStock then
+        ref.buyBtn.Text = "Out of stock"
+    elseif not affordable then
+        ref.buyBtn.Text = "Can't afford"
+    else
+        ref.buyBtn.Text = "BUY " .. (ref.price * qty)
+    end
+    ref.affordable = buyable -- Buy() blocks when this is false (dimmed = not buyable)
 end
 
 local function applyAffordAll()
@@ -114,6 +139,13 @@ function ShopController.Buy(category, itemId)
         local InventoryController = require(script.Parent.InventoryController)
         if result.NewInventory then InventoryController.UpdateInventory(result.NewInventory) end
         playerCoins = result.NewBalance or playerCoins
+        -- Feature 003 (US3): update this item's remaining stock from the server reply.
+        local ref = cardRefs[itemId]
+        if ref and result.Stock ~= nil then
+            ref.stock = result.Stock
+            if shopStock then shopStock[itemId] = result.Stock end
+            refreshStockLabel(ref)
+        end
         applyAffordAll() -- coins changed: re-evaluate every card (FR-009)
     elseif ok and result then
         UIController.ShowNotification(result.Error or "Purchase failed", "error")
@@ -149,7 +181,9 @@ local function makeCard(category, itemId, row, order)
 
     cardQty[itemId] = 1
     local buyBtn = card:FindFirstChild("BuyButton")
-    cardRefs[itemId] = { card = card, price = price, buyBtn = buyBtn }
+    local stock = shopStock and shopStock[itemId] -- nil = unlimited
+    cardRefs[itemId] = { card = card, price = price, buyBtn = buyBtn, stock = stock }
+    refreshStockLabel(cardRefs[itemId])
 
     -- quantity buttons
     for _, spec in ipairs({ { "QtyX1", 1 }, { "QtyX5", 5 }, { "QtyX10", 10 } }) do
@@ -218,6 +252,9 @@ function ShopController.LoadShopData()
     if ok and result and result.Success then
         shopData = result.Config or { buy = ShopConfig.buy, sell = ShopConfig.sell }
         playerCoins = result.PlayerCoins or playerCoins
+        shopStock = result.Stock or shopStock
+        restockAt = result.RestockAt or restockAt
+        shopInterval = result.Interval or shopInterval
     elseif ShopConfig then
         shopData = { buy = ShopConfig.buy, sell = ShopConfig.sell }
     end
@@ -248,6 +285,43 @@ function ShopController.Initialize()
         if tab then
             tab.Activated:Connect(function() ShopController.SelectCategory(cat) end)
         end
+    end
+
+    -- Feature 003 (US3): restock countdown + refill broadcast.
+    local headerBar = shopFrame:FindFirstChild("HeaderBar")
+    local restockLabel = headerBar and headerBar:FindFirstChild("RestockLabel")
+
+    local function formatCountdown(secs)
+        secs = math.max(0, math.floor(secs))
+        return string.format("Restock in %d:%02d", math.floor(secs / 60), secs % 60)
+    end
+
+    -- Tick the countdown each second from RestockAt (server os.time(), matches the
+    -- client UTC clock). Only when the shop is open, so hidden UI does no per-frame work.
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            if restockLabel and shopUI.Enabled and restockAt then
+                restockLabel.Text = formatCountdown(restockAt - os.time())
+            end
+        end
+    end)
+
+    -- On a restock, refill every card's stock, reset the countdown and toast.
+    local ShopRestocked = ReplicatedStorage:WaitForChild("ShopRestocked", 30)
+    if ShopRestocked then
+        ShopRestocked.OnClientEvent:Connect(function(newRestockAt, newStock)
+            restockAt = newRestockAt or restockAt
+            shopStock = newStock or shopStock
+            for itemId, ref in pairs(cardRefs) do
+                ref.stock = shopStock and shopStock[itemId]
+                refreshStockLabel(ref)
+            end
+            applyAffordAll()
+            if restockLabel and restockAt then restockLabel.Text = formatCountdown(restockAt - os.time()) end
+            local ok, ui = pcall(require, script.Parent.UIController)
+            if ok and ui then ui.ShowNotification("Shop restocked!", "info") end
+        end)
     end
 
     print("✅ Shop tabs + card grid ready")

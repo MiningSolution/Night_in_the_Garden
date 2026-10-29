@@ -76,7 +76,7 @@ headerCorner.Parent = HeaderBar
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "TitleLabel"
-TitleLabel.Size = UDim2.new(1, -110, 1, 0)
+TitleLabel.Size = UDim2.new(1, -270, 1, 0)
 TitleLabel.Position = UDim2.new(0, 20, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "🏪 SHOP"
@@ -103,6 +103,20 @@ CloseButton.Parent = HeaderBar
 local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 8)
 closeCorner.Parent = CloseButton
+
+-- Restock countdown (feature 003, US3). ShopController ticks the text from RestockAt.
+local RestockLabel = Instance.new("TextLabel")
+RestockLabel.Name = "RestockLabel"
+RestockLabel.Size = UDim2.new(0, 190, 1, 0)
+RestockLabel.Position = UDim2.new(1, -64, 0, 0)
+RestockLabel.AnchorPoint = Vector2.new(1, 0)
+RestockLabel.BackgroundTransparency = 1
+RestockLabel.Text = "Restock in --:--"
+RestockLabel.TextColor3 = Theme.TextMuted
+RestockLabel.TextSize = 18
+RestockLabel.Font = Enum.Font.GothamMedium
+RestockLabel.TextXAlignment = Enum.TextXAlignment.Right
+RestockLabel.Parent = HeaderBar
 
 -- Category tabs (Seeds / Tools / Items)
 local TabContainer = Instance.new("Frame")
@@ -185,6 +199,22 @@ RarityStrip.Size = UDim2.new(1, 0, 0, 6)
 RarityStrip.BackgroundColor3 = Theme.RarityCommon
 RarityStrip.BorderSizePixel = 0
 RarityStrip.Parent = Card
+
+-- Stock badge (feature 003, US3): top-right "xN" / "Out". ShopController fills it;
+-- hidden for unlimited items.
+local StockLabel = Instance.new("TextLabel")
+StockLabel.Name = "StockLabel"
+StockLabel.Size = UDim2.new(0, 60, 0, 20)
+StockLabel.Position = UDim2.new(1, -6, 0, 12)
+StockLabel.AnchorPoint = Vector2.new(1, 0)
+StockLabel.BackgroundTransparency = 1
+StockLabel.Text = ""
+StockLabel.TextColor3 = Theme.TextMuted
+StockLabel.TextSize = 16
+StockLabel.Font = Enum.Font.GothamBold
+StockLabel.TextXAlignment = Enum.TextXAlignment.Right
+StockLabel.Visible = false
+StockLabel.Parent = Card
 
 local Icon = Instance.new("ImageLabel")
 Icon.Name = "Icon"

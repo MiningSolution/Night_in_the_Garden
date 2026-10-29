@@ -67,7 +67,7 @@
                 "BackgroundTransparency": 1,
                 "Font": "GothamBold",
                 "Position": {"UDim2": [[0, 20], [0, 0]]},
-                "Size": {"UDim2": [[1, -110], [1, 0]]},
+                "Size": {"UDim2": [[1, -270], [1, 0]]},
                 "Text": "🏪 SHOP",
                 "TextColor3": [1, 1, 1],
                 "TextSize": 24,
@@ -98,6 +98,21 @@
                   }
                 }
               ]
+            },
+            {
+              "name": "RestockLabel",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [1, 0],
+                "BackgroundTransparency": 1,
+                "Font": "GothamMedium",
+                "Position": {"UDim2": [[1, -64], [0, 0]]},
+                "Size": {"UDim2": [[0, 190], [1, 0]]},
+                "Text": "Restock in --:--",
+                "TextColor3": [0.784314, 0.784314, 0.784314],
+                "TextSize": 18,
+                "TextXAlignment": "Right"
+              }
             }
           ]
         },
@@ -250,6 +265,22 @@
                     "BackgroundColor3": [0.666667, 0.666667, 0.705882],
                     "BorderSizePixel": 0,
                     "Size": {"UDim2": [[1, 0], [0, 6]]}
+                  }
+                },
+                {
+                  "name": "StockLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "AnchorPoint": [1, 0],
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[1, -6], [0, 12]]},
+                    "Size": {"UDim2": [[0, 60], [0, 20]]},
+                    "Text": "",
+                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextSize": 16,
+                    "TextXAlignment": "Right",
+                    "Visible": false
                   }
                 },
                 {
