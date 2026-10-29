@@ -162,6 +162,48 @@ in [`specs/003-retention/balance.md`](specs/003-retention/balance.md) and checke
 | Open / toggle Quests | tap the Quests button | `Q` | D-pad down |
 | Claim a reward / quest | tap Claim | click Claim | select + `A` |
 
+## Phase 4: day/night theme engine
+
+Two palettes — Day ("cosy garden") and Night ("moonlit") — live in
+`ReplicatedStorage/UITheme.lua` with the structural style tokens. The static GUI builders bake the
+Night colours and tag each themed property with a `Theme_<Prop> = "<Token>"` attribute;
+`Controllers/ThemeController.lua` cross-fades every tagged instance to the active palette on the
+`DayNightUpdate` phase change — no model regeneration. `Tools/Tests/theme.spec.luau` enforces that
+every token exists in both palettes.
+
+## Feature 005: cosy-garden UI redesign (Stage 1)
+
+The HUD, Seed Shop and Backpack rebuilt on the theme engine, server-authoritative with no new
+remotes.
+
+- **HUD**: top-centre SEEDS / GARDEN / SELL nav, left BAG / QUESTS / GIFTS column, top-right day/night
+  pill with countdown, a single current-quest card, and a bottom-centre five-slot tool strip (slots
+  3–5 are locked "coming soon" placeholders this stage).
+- **Seed Shop**: large image cards with rarity badges, an ×1 / ×5 / ×10 quantity selector + Buy, and
+  Seeds / Tools / Special tabs (SEEDS preselects Seeds).
+- **Backpack**: a rarity-badged card grid with a detail panel and working Equip, five tabs incl. a
+  Spirits placeholder.
+- **Item icons**: a shared emoji/icon source (`ReplicatedStorage/ItemEmoji.lua`) across shop,
+  backpack and hotbar, with a letter/emoji fallback.
+- **Harvest hint (FR-007)**: by day, near a ready plot, a themed `HUD.HarvestHint` appears
+  bottom-centre; `Controllers/HarvestHintController.lua` harvests the nearest ready plot on an
+  on-screen tap or the `F` key (via the existing `InteractWithPlot` path). Hidden at night, out of
+  range, or with a window open.
+
+Deferred to later stages (see `specs/005-ui-redesign/spec.md` "Out of Scope"): the real
+lantern/net/shovel tools, spirit-collection data + Spirit Journal, new creatures and the capture
+announcement/net action, and the full redesign of the Sell/Notifications/Daily-Gift/Quests windows.
+
+### Redesign controls
+
+| Action | Touch | Keyboard / mouse | Gamepad |
+| --- | --- | --- | --- |
+| Open Seed Shop | tap SEEDS | `B` | button X |
+| Teleport to garden / stall | tap GARDEN / SELL | click GARDEN / SELL | select + `A` |
+| Open Backpack / Quests / Gifts | tap BAG / QUESTS / GIFTS | `I` / `Q` / `R` | Y / D-pad down / D-pad up |
+| Select tool slot 1–5 | tap the slot | `1`–`5` | L1 / R1 to cycle |
+| Harvest a ready plot (by day) | tap the Harvest hint | `F` (or click the plot) | tap the hint |
+
 ## Notes
 - Shop is single-source-of-truth via `ReplicatedStorage/ShopConfig.lua`
 - Player data template in `ReplicatedStorage/DefaultData.lua`
