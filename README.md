@@ -24,14 +24,16 @@ ServerScriptService/
   RemoteHandlers.lua          remote handlers (required by Init)
   ProfileService.lua          vendored, Apache 2.0 (ThirdParty/)
   Services/                   PlayerDataManager, PlotManager, PlantGrowthService,
-                              DayNightManager, StallService (seller stall), ...
+                              DayNightManager, StallService (seller stall),
+                              DailyRewardService, QuestService, ShopStockService, ...
     Spirit/                   spirit system
 StarterGui/                   static GUI: HUD, HUDControls, InventoryUI, ShopUI,
-                              SellUI, Notifications (.model.json)
+                              SellUI, Notifications, DailyRewardUI, QuestsUI (.model.json)
 StarterPlayer/StarterPlayerScripts/
   ClientMain.client.lua       client entry point, boots the controllers
   Controllers/                UIController, HotbarController, InventoryController,
-                              ShopController, SellController
+                              ShopController, SellController, DailyRewardController,
+                              QuestController, TutorialController
   Utils/                      StateManager, ClientDataCache, PlotVisualizer, GuiEffects, Debounce,
                               InputActions, WindowManager, ResponsiveLayout, ToastQueue,
                               EventHandlers.client.lua, PlotInteraction.client.lua
@@ -128,6 +130,37 @@ Day / night palette switching is Phase 4 (the dark palette is used throughout fo
 | Open the sell window | tap the stall's on-screen "Sell" button | `E` prompt at the stall | on-screen prompt button |
 | Teleport (shop / garden / stall) | tap a teleport button | click a teleport button | select + `A` |
 | Pick buy quantity (×1 / ×5 / ×10) | tap | click | select + `A` |
+
+## Phase 3: retention
+
+Mechanics that bring players back and teach the loop. All reward / quest / stock state is
+server-authoritative; the numbers live once in `ReplicatedStorage/RetentionConfig.lua`, written first
+in [`specs/003-retention/balance.md`](specs/003-retention/balance.md) and checked by
+`Tools/Tests/retention_config.spec.luau`. `DefaultData` is SchemaVersion 3 (adds `DailyReward`,
+`Quests`, `Onboarding`; reconciled into existing profiles).
+
+- **Daily reward** (`DailyRewardService` + `DailyRewardUI` + `DailyRewardController`): a 7-day streak,
+  claimable once per UTC day; the streak advances on consecutive days, resets after a missed day and
+  loops after day 7. The window auto-opens on the first login of a day and also opens from the HUD
+  **Rewards** button.
+- **Daily quests** (`QuestService` + `QuestsUI` + `QuestController`): three per-day objectives chosen
+  deterministically from the config pool by the day index (same for everyone), tracked from real
+  events (plant / harvest / sell / catch a spirit) and claimed once; a completion toast confirms.
+- **Shop restock** (`ShopStockService`): each stocked item has a limited, per-server stock that
+  refills on a time-derived window (identical countdown on every server); the shop shows the remaining
+  stock and a restock countdown, and `BuyItem` fails closed when out of stock (never oversells).
+- **Night as an event**: a brief nightfall banner on the day→night transition, and a rate-limited,
+  server-wide announcement when a Rare or Epic spirit appears (`SpiritSpawner` → `ServerAnnounce`).
+- **Onboarding** (`TutorialController`): a one-time, skippable guide through plant → water → sell for
+  new players; completion persists (`SetTutorialDone`) so it shows once.
+
+### Retention controls
+
+| Action | Touch | Keyboard / mouse | Gamepad |
+| --- | --- | --- | --- |
+| Open / toggle Daily Reward | tap the Rewards button | `R` | D-pad up |
+| Open / toggle Quests | tap the Quests button | `Q` | D-pad down |
+| Claim a reward / quest | tap Claim | click Claim | select + `A` |
 
 ## Notes
 - Shop is single-source-of-truth via `ReplicatedStorage/ShopConfig.lua`

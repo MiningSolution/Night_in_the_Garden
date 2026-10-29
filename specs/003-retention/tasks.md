@@ -161,10 +161,10 @@ completion/skip; a done profile never sees it (quickstart V11).
 
 **Purpose**: documentation, parity and the full-feature validation pass.
 
-- [ ] T046 [P] Update `README.md` with a Retention section (daily reward, quests, restock, night event, tutorial; controls for the new HUD buttons)
-- [ ] T047 [P] Update `Docs/HANDOFF.md` to reflect Phase 3 merged state and Phase 4 (day/night palette) as next
-- [ ] T048 Final parity: `build_models.py` leaves no diff; `luau Tools/Tests/*.spec.luau` all green (CI gate, SC-006/008)
-- [ ] T049 Studio playtest V0+V1+V12 (boot clean; schema reconcile on an existing profile; input-agnostic + safe-area sweep of every new element on phone/PC/gamepad); reset or call out any live-DataStore test data in the PR
+- [x] T046 [P] Update `README.md` with a Retention section (daily reward, quests, restock, night event, tutorial; controls for the new HUD buttons)
+- [x] T047 [P] Update `Docs/HANDOFF.md` to reflect Phase 3 merged state and Phase 4 (day/night palette) as next
+- [x] T048 Final parity: `build_models.py` leaves no diff; `luau Tools/Tests/*.spec.luau` all green (CI gate, SC-006/008)
+- [x] T049 Studio playtest V0+V1+V12 (boot clean; schema reconcile on an existing profile; input-agnostic + safe-area sweep of every new element on phone/PC/gamepad); reset or call out any live-DataStore test data in the PR
 
 ---
 
