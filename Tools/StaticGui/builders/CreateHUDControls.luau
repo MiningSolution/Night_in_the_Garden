@@ -16,6 +16,25 @@
 -- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
 -- module is required directly.
 local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+local Style = Theme.Style
+
+-- Theme helpers: bake the Night (default) colour AND tag the token so the runtime
+-- ThemeController can retint this property on a day/night switch (Theme_<Prop> =
+-- "<Token>"). Non-colour style (outline thickness, corner, fonts) is single-source
+-- from UITheme.Style.
+local function bind(obj, prop, token)
+	obj[prop] = Theme[token]
+	obj:SetAttribute("Theme_" .. prop, token)
+end
+local function strokeOf(parent, token, thickness)
+	local s = Instance.new("UIStroke")
+	s.Thickness = thickness or Style.OutlineThickness
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.Color = Theme[token]
+	s:SetAttribute("Theme_Color", token)
+	s.Parent = parent
+	return s
+end
 
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -56,20 +75,22 @@ local function makeMenuButton(name, emoji, keyLabel, order)
 	local button = Instance.new("TextButton")
 	button.Name = name
 	button.Size = UDim2.new(0, 56, 0, 56) -- >= 44x44 (FR-002)
-	button.BackgroundColor3 = Theme.Control
+	bind(button, "BackgroundColor3", "Control")
 	button.BorderSizePixel = 0
 	button.Text = emoji
 	button.TextSize = 30
-	button.TextColor3 = Theme.TextPrimary
-	button.Font = Enum.Font.GothamBold
+	bind(button, "TextColor3", "TextPrimary")
+	button.Font = Style.DisplayFont
 	button.AutoButtonColor = true
 	button.Selectable = false -- window frames own gamepad selection, not these
 	button.LayoutOrder = order
 	button.Parent = MenuButtons
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
+	corner.CornerRadius = UDim.new(0, Style.CornerRadius)
 	corner.Parent = button
+
+	strokeOf(button, "OutlineDeep")
 
 	-- Key label (PC): shown in KeyboardMouse mode by InputActions.
 	local keyHint = Instance.new("TextLabel")
@@ -77,11 +98,11 @@ local function makeMenuButton(name, emoji, keyLabel, order)
 	keyHint.AnchorPoint = Vector2.new(1, 1)
 	keyHint.Position = UDim2.new(1, -2, 1, -2)
 	keyHint.Size = UDim2.new(0, 20, 0, 20)
-	keyHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	keyHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- neutral key-chip tint (not themed)
 	keyHint.BackgroundTransparency = 0.4
 	keyHint.BorderSizePixel = 0
 	keyHint.Text = keyLabel
-	keyHint.TextColor3 = Theme.TextPrimary
+	keyHint.TextColor3 = Color3.fromRGB(255, 255, 255) -- always white on the dark chip
 	keyHint.TextSize = 18
 	keyHint.Font = Enum.Font.GothamBold
 	keyHint.Visible = true
@@ -136,19 +157,21 @@ local function makeTeleportButton(name, emoji, order)
 	local button = Instance.new("TextButton")
 	button.Name = name
 	button.Size = UDim2.new(0, 52, 0, 52) -- >= 44x44 (FR-013)
-	button.BackgroundColor3 = Theme.Control
+	bind(button, "BackgroundColor3", "Control")
 	button.BorderSizePixel = 0
 	button.Text = emoji
 	button.TextSize = 26
-	button.TextColor3 = Theme.TextPrimary
-	button.Font = Enum.Font.GothamBold
+	bind(button, "TextColor3", "TextPrimary")
+	button.Font = Style.DisplayFont
 	button.AutoButtonColor = true
 	button.LayoutOrder = order
 	button.Parent = TeleportRow
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
+	corner.CornerRadius = UDim.new(0, Style.CornerRadius)
 	corner.Parent = button
+
+	strokeOf(button, "OutlineDeep")
 	return button
 end
 
@@ -172,7 +195,7 @@ for i = 1, 3 do
 	slot.Name = "Slot" .. i
 	slot.Size = UDim2.new(0, 100, 0, 100)
 	slot.Position = UDim2.new(0, (i - 1) * 110, 0, 0)
-	slot.BackgroundColor3 = Theme.SurfaceRaised
+	bind(slot, "BackgroundColor3", "SurfaceRaised")
 	slot.BorderSizePixel = 0
 	slot.Parent = Hotbar
 
@@ -180,10 +203,12 @@ for i = 1, 3 do
 	slotCorner.CornerRadius = UDim.new(0, 10)
 	slotCorner.Parent = slot
 
+	strokeOf(slot, "Outline")
+
 	local slotButton = Instance.new("TextButton")
 	slotButton.Name = "SlotButton"
 	slotButton.Size = UDim2.new(1, 0, 1, 0)
-	slotButton.BackgroundColor3 = Theme.Control
+	bind(slotButton, "BackgroundColor3", "Control")
 	slotButton.BackgroundTransparency = 0.3
 	slotButton.BorderSizePixel = 0
 	slotButton.Text = ""
@@ -208,7 +233,7 @@ for i = 1, 3 do
 	emojiLabel.Name = "EmojiLabel"
 	emojiLabel.Size = UDim2.new(1, 0, 1, 0)
 	emojiLabel.BackgroundTransparency = 1
-	emojiLabel.TextColor3 = Theme.TextMuted
+	bind(emojiLabel, "TextColor3", "TextMuted")
 	emojiLabel.TextSize = 40
 	emojiLabel.Font = Enum.Font.GothamBold
 	emojiLabel.Text = defaultEmojis[i]
@@ -221,7 +246,7 @@ for i = 1, 3 do
 	selectionBorder.AnchorPoint = Vector2.new(0.5, 0.5)
 	selectionBorder.BackgroundTransparency = 1
 	selectionBorder.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-	selectionBorder.ImageColor3 = Theme.Accent
+	bind(selectionBorder, "ImageColor3", "Accent")
 	selectionBorder.ScaleType = Enum.ScaleType.Slice
 	selectionBorder.SliceCenter = Rect.new(8, 8, 8, 8)
 	selectionBorder.Visible = i == 1
@@ -233,11 +258,11 @@ for i = 1, 3 do
 	keybindHint.Size = UDim2.new(0, 30, 0, 25)
 	keybindHint.Position = UDim2.new(0.5, 0, 1, -5)
 	keybindHint.AnchorPoint = Vector2.new(0.5, 1)
-	keybindHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	keybindHint.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- neutral key-chip tint (not themed)
 	keybindHint.BackgroundTransparency = 0.5
 	keybindHint.BorderSizePixel = 0
 	keybindHint.Text = tostring(i)
-	keybindHint.TextColor3 = Theme.TextPrimary
+	keybindHint.TextColor3 = Color3.fromRGB(255, 255, 255) -- always white on the dark chip
 	keybindHint.TextSize = 18
 	keybindHint.Font = Enum.Font.GothamBold
 	keybindHint.Parent = slot

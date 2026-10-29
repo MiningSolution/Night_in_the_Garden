@@ -11,20 +11,22 @@ A named, complete set of colour roles for one day/night phase. Exactly two exist
 |---|---|---|
 | (token key) | `Color3` | One entry per token role (see Token vocabulary). Both palettes define the **same** key set (enforced by `theme.spec.luau`). |
 
-- **Day** — warm "garden" light (owner-confirmed; exact RGBs locked by the mock-up).
-- **Night** — today's dark palette, values unchanged.
+- **Day** — warm "garden" light (approved v2; exact RGBs in the contract).
+- **Night** — deep indigo "moonlit" dark (re-skinned, approved v2; NOT the old flat grey).
 
 ## Token vocabulary (roles)
 
 The single shared vocabulary used by builders (baked) and the runtime switch (attributes). Full
 per-palette values live in [contracts/theme-tokens.md](./contracts/theme-tokens.md).
 
-Surfaces: `Surface`, `SurfaceRaised`, `Header` · Controls: `Control`, `ControlHover` · Semantic:
-`Accent`, `Danger` · Text: `TextPrimary`, `TextMuted` · Currency: `Coins` · Rarity:
-`RarityCommon`, `RarityUncommon`, `RarityRare`, `RarityEpic`, `RarityLegendary` · Backdrop:
-`Backdrop` (+ the existing numeric `BackdropTransparency`, not a palette colour) · Banners:
-`BannerNight` · **New in Phase 4**: `PhaseDay`, `PhaseNight` (day/night indicator colours, migrated
-out of `UIController`), `Scrim` (the small semi-transparent black hint backgrounds).
+Surfaces: `Surface`, `SurfaceRaised` · Controls: `Control`, `ControlHover` · Semantic: `Accent`,
+`AccentDeep`, `Positive`, `Sell`, `Danger` · Text: `TextPrimary`, `TextMuted`, `TextOnBright` ·
+Currency: `Coins` · Rarity: `RarityCommon`, `RarityUncommon`, `RarityRare`, `RarityEpic`,
+`RarityLegendary` · Backdrop: `Backdrop` · Structural (the "juicy" look): `Outline` (card stroke),
+`OutlineDeep` (window stroke), `HeaderTop`/`HeaderBottom` (header gradient stops). Legacy aliases kept
+for un-re-skinned screens: `Header`, `BannerNight`, numeric `BackdropTransparency`. Non-colour **style
+constants** live in `UITheme.Style` (corner radius, outline thickness, shadow offset, display/body
+font) — single source, not per-palette.
 
 ## UITheme module (resolver)
 
@@ -33,10 +35,10 @@ out of `UIController`), `Scrim` (the small semi-transparent black hint backgroun
 | Member | Type | Purpose |
 |---|---|---|
 | `Palettes.Day` / `Palettes.Night` | Palette | The two palettes. |
-| `Default` | string | `"Night"` — the palette baked into the static GUI. |
-| `Get(phase)` | `(string) -> Palette` | The palette for a phase; falls back to `Default` for unknown/transition. |
-| `Resolve(token, phase)` | `(string, string) -> Color3` | `Get(phase)[token]`. |
-| `<Token>` (flat) | `Color3` | Back-compat: each default-palette token exposed flat, so existing `UI_THEME.Surface` / `Theme.Coins` readers are unchanged. |
+| `DefaultPhase` | string | `"Night"` — the palette baked into the static GUI. |
+| `Resolve(token, phase)` | `(string, string) -> Color3` | `(Palettes[phase] or Night)[token]`; nil for an unknown token. |
+| `Style` | table | Non-colour style constants: `CornerRadius`, `OutlineThickness`, `WindowOutlineThickness`, `ButtonShadowOffset`, `DisplayFont`, `BodyFont`, `BackdropTransparency`. |
+| `<Token>` (flat) | `Color3` | Back-compat: each Night token exposed flat, so existing `UI_THEME.Surface` / `Theme.Coins` readers are unchanged. |
 
 ## Themed element binding (attribute)
 

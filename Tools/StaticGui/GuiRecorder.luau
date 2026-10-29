@@ -58,6 +58,12 @@ function R.canon(v): string
     elseif k == "UDim" then return string.format("UDim(%s,%s)", num(v.Scale), num(v.Offset))
     elseif k == "Vector2" then return string.format("Vector2(%s,%s)", num(v.X), num(v.Y))
     elseif k == "Color3" then return string.format("Color3(%s,%s,%s)", num(v.R), num(v.G), num(v.B))
+    elseif k == "ColorSequence" then
+        local ps = {}
+        for _, kp in ipairs(v.Keypoints) do
+            table.insert(ps, num(kp.Time) .. ":" .. R.canon(kp.Value))
+        end
+        return "ColorSequence(" .. table.concat(ps, ",") .. ")"
     elseif k == "Rect" then return string.format("Rect(%s,%s,%s,%s)", num(v.Min.X), num(v.Min.Y), num(v.Max.X), num(v.Max.Y))
     elseif k == "EnumItem" then return string.format("Enum.%s.%s", tostring(v.EnumType), v.Name)
     end
@@ -73,6 +79,12 @@ function R.rojoValue(v)
     elseif k == "UDim" then return { UDim = { v.Scale, v.Offset } }
     elseif k == "Vector2" then return { v.X, v.Y }
     elseif k == "Color3" then return { v.R, v.G, v.B }
+    elseif k == "ColorSequence" then
+        local kps = {}
+        for _, kp in ipairs(v.Keypoints) do
+            table.insert(kps, { time = kp.Time, color = { kp.Value.R, kp.Value.G, kp.Value.B } })
+        end
+        return { ColorSequence = { keypoints = kps } }
     elseif k == "Rect" then return { Rect = { { v.Min.X, v.Min.Y }, { v.Max.X, v.Max.Y } } }
     elseif k == "EnumItem" then return v.Name
     end
@@ -88,7 +100,7 @@ function R.new(realNew)
 
     function Instance.new(className: string)
         local real = realNew and realNew(className) or nil
-        local node = { ClassName = className, Name = className, props = {}, keys = {}, children = {}, real = real }
+        local node = { ClassName = className, Name = className, props = {}, keys = {}, children = {}, attributes = {}, attrKeys = {}, real = real }
         local proxy = setmetatable({}, {
             __index = function(_, key)
                 if key == "Name" then return node.Name end
@@ -101,6 +113,17 @@ function R.new(realNew)
                         end
                         return nil
                     end
+                end
+                if key == "SetAttribute" then
+                    -- record theme tags (Theme_<Prop> = "<Token>") into the model + fingerprint
+                    return function(_, name, value)
+                        if node.attributes[name] == nil then table.insert(node.attrKeys, name) end
+                        node.attributes[name] = value
+                        if real then real:SetAttribute(name, value) end
+                    end
+                end
+                if key == "GetAttribute" then
+                    return function(_, name) return node.attributes[name] end
                 end
                 if node.props[key] ~= nil then return node.props[key] end
                 if real then
@@ -154,6 +177,13 @@ function R.fingerprint(node, useReal: boolean?): string
             local v = (useReal and n.real) and n.real[key] or n.props[key]
             table.insert(parts, key .. "=" .. R.canon(v))
         end
+        -- theme-tag attributes, read back from the real instance in Studio for parity
+        local attrKeys = table.clone(n.attrKeys)
+        table.sort(attrKeys)
+        for _, key in ipairs(attrKeys) do
+            local v = (useReal and n.real) and n.real:GetAttribute(key) or n.attributes[key]
+            table.insert(parts, "@" .. key .. "=" .. R.canon(v))
+        end
         table.insert(lines, path .. "|" .. n.ClassName .. "|" .. table.concat(parts, ";"))
         for i, child in ipairs(n.children) do
             walk(child, path .. "/" .. i .. ":" .. child.Name)
@@ -176,6 +206,12 @@ function R.toModel(node, isRoot: boolean?)
     if #keys > 0 then
         m.properties = {}
         for _, key in ipairs(keys) do m.properties[key] = R.rojoValue(node.props[key]) end
+    end
+    if #node.attrKeys > 0 then
+        local attrKeys = table.clone(node.attrKeys)
+        table.sort(attrKeys)
+        m.attributes = {}
+        for _, key in ipairs(attrKeys) do m.attributes[key] = R.rojoValue(node.attributes[key]) end
     end
     if #node.children > 0 then
         m.children = {}

@@ -6,15 +6,21 @@
 
 **Status**: Draft
 
-**Input**: User description: "Phase 4 — Visual style (day/night design system). A two-palette theme
-system for all UI: a light palette for the day phase and the current dark palette for the night
-phase, resolved from a single source by both the static GUI builders (at generate time) and the
-runtime controllers (live switch). On the day/night phase change (the existing DayNightUpdate event),
-token-driven UI elements retint smoothly from one palette to the other at runtime, without
-regenerating the static GUI. Migrate remaining hard-coded UI colours to theme tokens as screens are
-touched. Produce mock-ups of the key screens in both palettes before implementing. Add press and
-purchase sounds and a window-open animation. Both palettes must keep text and icons readable on a
-phone. Constitution principle V (day/night visual identity via theme tokens) is the driver."
+**Input**: User description: "Phase 4 — Visual style (day/night design system), updated for the
+owner-approved 'juicy' simulator look (Garden_UI_Day_Night_v2 mock-up + handoff). A two-palette theme
+system for all UI resolved from a single source: a cosy warm 'garden' light palette for day and a
+deep indigo 'moonlit' dark palette for night — BOTH phases re-skinned (night moves off the old flat
+grey). Both the static GUI builders (generate time) and the runtime controllers (live switch) read
+the same source; on the DayNightUpdate phase change, token-driven elements retint smoothly without
+regenerating the static GUI. The approved visual language is not flat fills: chunky rounded panels
+with a thick outline and a soft bottom shadow, gradient window headers, puffy 3D gradient buttons, a
+bold rounded display font, and rarity-coloured text — all driven by palette/style tokens so a phase
+switch retints them too. Migrate remaining hard-coded colours to tokens as screens are touched. Add
+press and purchase sounds and a window-open animation. Both palettes must stay phone-readable
+(WCAG-AA body text). In scope: re-skin the existing screens (HUD, shop, inventory, sell, notifications,
+daily reward, quests) in both palettes, the live switch, sounds, and the window-open animation. Out of
+scope: HUD relayout, a second currency, a Spirit Journal screen. Mock-ups already produced and APPROVED
+(the blocking gate is satisfied). Constitution principle V is the driver."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -26,8 +32,8 @@ feedback (a sound, a window that eases open) that the genre's leaders use.
 ### User Story 1 - The interface follows the time of day (Priority: P1)
 
 As a player, when the world turns from day to night (and back), I want the whole interface to shift
-with it — a bright, light look during the day and the familiar dark, moonlit look at night — so the
-game's day/night identity is felt everywhere I look, not just in the sky.
+with it — a warm, sunlit "garden" look during the day and a deep, magical "moonlit" look at night — so
+the game's day/night identity is felt everywhere I look, not just in the sky.
 
 **Why this priority**: This is the headline of the phase and the point of constitution principle V.
 Without it the phase delivers nothing visible. It is also the hardest piece (a live switch over a
@@ -137,10 +143,26 @@ the underlying action, and all respect the game's existing sound setting.
 ### Session 2026-10-29
 
 - Q: What should the DAY (light) palette look like? → A: Warm garden — cream/parchment surfaces, soft
-  green-and-gold accents, warm dark text (cozy "garden" daylight; night palette stays as it is now).
+  green-and-gold accents, warm dark text (cozy "garden" daylight). (Superseded by the 2026-10-29
+  mock-up approval below: night is also re-skinned, to deep indigo "moonlit" tones.)
+- Q: Is the approved visual direction locked? → A: Yes. The owner approved the
+  `Garden_UI_Day_Night_v2.html` mock-up + handoff ("такой стиль очень красивый, основывайся на нём").
+  The approved look is a "juicy" simulator style: chunky rounded panels with a thick outline and soft
+  bottom shadow, gradient headers, puffy 3D gradient buttons, a bold rounded display font, and
+  rarity-coloured text — in both palettes (cosy cream garden by day, deep indigo moonlit by night).
+  Palette + design-language tokens are recorded in `contracts/theme-tokens.md`.
+- Q: Does Phase 4 change night, or only add a day palette? → A: Night is re-skinned too (indigo/navy,
+  not the old flat grey). So the static GUI's default (baked) palette is still Night, but Night's
+  values change; there is an expected large colour/stroke/gradient/font diff across every screen.
+- Q: What is in scope for Phase 4 vs. deferred? → A: In scope — re-skin the EXISTING screens (HUD,
+  shop, inventory, sell, notifications, daily reward, quests) to the approved look in both palettes,
+  the live palette switch, press/purchase sounds, and the window-open animation. Out of scope /
+  deferred — HUD relayout, a second currency, and the proposed Spirit Journal screen (handoff flags
+  these as not approved; they are future features, not this visual-style phase).
 - Q: Which palette is baked into the static GUI by default (as it rests in the repo, before the
-  runtime switch)? → A: Night/dark — keeps the repository look unchanged and the visual diff minimal;
-  the day palette is applied at runtime.
+  runtime switch)? → A: Night — the repo rests in the night look (the game starts at Day, so the
+  client applies Day at runtime on the first `DayNightUpdate`). Note: Night's values themselves change
+  this phase (re-skin above), so the baked colours change even though the default phase does not.
 - Q: Where do the press and purchase sounds come from? → A: The owner will supply the sound asset
   ids. The sound system is wired now (single config source, one volume), and until an id is provided
   that sound plays nothing (fails silently). The window-open animation does not depend on sound and
@@ -155,10 +177,11 @@ the underlying action, and all respect the game's existing sound setting.
 
 **Palette system**
 
-- **FR-001**: The UI MUST define two complete colour palettes — a light palette for the day phase and
-  a dark palette for the night phase — covering every theme role in use (surfaces, headers, controls,
-  control hover, accent/confirm, danger, primary text, muted text, currency, the five rarity tiers,
-  backdrop, and event banners).
+- **FR-001**: The UI MUST define two complete colour palettes — a light "garden" palette for the day
+  phase and a dark "moonlit" palette for the night phase — covering every theme role in use (surfaces,
+  raised surfaces, header gradient stops, controls, control hover, accent/confirm, accent-deep, danger,
+  primary text, muted text, text-on-bright, currency, the five rarity tiers, backdrop, card outline,
+  window outline, and event banners). Night is re-skinned too (indigo/navy), not left as the old grey.
 - **FR-002**: Both palettes MUST live in a single shared source of truth; a colour that belongs to the
   theme MUST NOT be duplicated or hard-coded in builders, GUI text or controllers.
 - **FR-003**: The static GUI (generated once) MUST be produced from that single source, baked with a
@@ -190,6 +213,21 @@ the underlying action, and all respect the game's existing sound setting.
 - **FR-012**: Remaining hard-coded UI colours on every screen this phase touches MUST be migrated to
   theme tokens; a touched screen MUST end with no theme colour hard-coded.
 
+**Visual language (owner-approved "juicy" look)**
+
+- **FR-020**: Panels, cards and tiles MUST use chunky rounded corners, a thick outline, and a soft
+  bottom shadow, so surfaces read as solid "game" objects rather than flat rectangles. Outline and
+  shadow colours MUST be palette tokens (so they retint with the phase), and the corner radius,
+  outline thickness and shadow offset MUST be single-source style constants.
+- **FR-021**: Window headers MUST use a two-stop vertical gradient and primary action buttons MUST use
+  a two-stop vertical gradient with a darker bottom edge (a "3D" puffy look). The gradient stop
+  colours MUST be palette tokens that retint on a phase change.
+- **FR-022**: Primary/display text (titles, button labels, currency) MUST use a bold rounded display
+  font and body text a legible body font, both defined as single-source style constants, applied
+  consistently across every screen this phase touches.
+- **FR-023**: Item rarity MUST be conveyed by a per-palette rarity text/badge colour (not only by the
+  item's own art), with each rarity tier having its own Day and Night colour.
+
 **Feedback — sound & animation**
 
 - **FR-013**: Activating a main on-screen button (menu, teleport, tab, buy, sell, claim, close) MUST
@@ -211,7 +249,9 @@ the underlying action, and all respect the game's existing sound setting.
 
 - **FR-019**: Before the themed UI is implemented, mock-ups of the key screens (HUD, shop, inventory,
   sell stall, notifications/banners, daily reward, quests) in BOTH palettes MUST be produced and
-  approved by the owner, to lock the look before code.
+  approved by the owner, to lock the look before code. **Satisfied (2026-10-29)**: the owner approved
+  `Garden_UI_Day_Night_v2.html` + handoff; the approved palette and style tokens are recorded in
+  `contracts/theme-tokens.md`.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -252,11 +292,17 @@ the underlying action, and all respect the game's existing sound setting.
 - **Phase source**: the day/night phase already exists and is broadcast to every client each second
   (the `DayNightUpdate` event from the existing day/night cycle); this feature consumes it and does
   not change the cycle's timing or server authority.
-- **Day palette look**: warm "garden" daylight — cream/parchment surfaces, soft green-and-gold
-  accents, warm dark text (confirmed with owner). The night palette keeps today's dark look.
-- **Default baked palette**: the static GUI is baked with the night (dark) palette as its default
-  (confirmed with owner), so the repository look is unchanged at rest and the day palette is applied
-  at runtime.
+- **Approved look (both palettes)**: a "juicy" simulator style (chunky rounded panels, thick outlines,
+  soft bottom shadow, gradient headers, 3D gradient buttons, bold rounded display font, rarity-coloured
+  text). Day = warm "garden" daylight (cream/parchment, green-and-gold); Night = deep "moonlit" indigo/
+  navy with blue/gold accents. Values transcribed from the approved `Garden_UI_Day_Night_v2` handoff
+  into `contracts/theme-tokens.md`.
+- **Default baked palette**: the static GUI is baked with the night palette as its default (the game
+  starts in Day, so the client applies Day at runtime on the first `DayNightUpdate`). Night's *values*
+  change this phase (re-skin), so the baked colours change even though the default phase does not — a
+  large static-GUI diff is expected.
+- **Out of scope / deferred**: HUD relayout, a second currency, and the proposed Spirit Journal screen
+  (the handoff flags these as not approved; they are future features, not this visual-style phase).
 - **Transition style**: the colour transition and window-open animation are short (well under ~1 s)
   and eased; precise durations are tuned in implementation and recorded as single-source values.
 - **Contrast bar**: "readable" means WCAG AA (4.5:1) for normal text and clearly distinguishable

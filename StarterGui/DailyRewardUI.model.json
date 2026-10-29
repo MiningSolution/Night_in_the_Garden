@@ -14,7 +14,7 @@
       "className": "TextButton",
       "properties": {
         "AutoButtonColor": false,
-        "BackgroundColor3": [0, 0, 0],
+        "BackgroundColor3": [0.015686, 0.039216, 0.086275],
         "BackgroundTransparency": 0.5,
         "BorderSizePixel": 0,
         "Size": {"UDim2": [[1, 0], [1, 0]]},
@@ -27,7 +27,7 @@
       "className": "Frame",
       "properties": {
         "AnchorPoint": [0.5, 0.5],
-        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BackgroundColor3": [0.066667, 0.121569, 0.231373],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
         "SelectionBehaviorDown": "Stop",
@@ -57,7 +57,7 @@
           "name": "HeaderBar",
           "className": "Frame",
           "properties": {
-            "BackgroundColor3": [0.141176, 0.141176, 0.188235],
+            "BackgroundColor3": [0.082353, 0.215686, 0.407843],
             "BorderSizePixel": 0,
             "Size": {"UDim2": [[1, 0], [0, 50]]}
           },
@@ -78,7 +78,7 @@
                 "Position": {"UDim2": [[0, 20], [0, 0]]},
                 "Size": {"UDim2": [[0.5, 0], [1, 0]]},
                 "Text": "🎁 DAILY REWARD",
-                "TextColor3": [1, 1, 1],
+                "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24,
                 "TextXAlignment": "Left"
               }
@@ -92,7 +92,7 @@
                 "Position": {"UDim2": [[0.5, 0], [0, 0]]},
                 "Size": {"UDim2": [[0.5, -74], [1, 0]]},
                 "Text": "Day 0 / 7",
-                "TextColor3": [0.784314, 0.784314, 0.784314],
+                "TextColor3": [0.72549, 0.788235, 0.87451],
                 "TextSize": 20,
                 "TextXAlignment": "Right"
               }
@@ -103,13 +103,13 @@
               "properties": {
                 "AnchorPoint": [0, 0.5],
                 "AutoButtonColor": false,
-                "BackgroundColor3": [0.862745, 0.313725, 0.313725],
+                "BackgroundColor3": [0.878431, 0.376471, 0.376471],
                 "BorderSizePixel": 0,
                 "Font": "GothamBold",
                 "Position": {"UDim2": [[1, -54], [0.5, 0]]},
                 "Size": {"UDim2": [[0, 44], [0, 44]]},
                 "Text": "X",
-                "TextColor3": [1, 1, 1],
+                "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24
               },
               "children": [
@@ -149,7 +149,7 @@
               "name": "Day1",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 1
               },
@@ -165,7 +165,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -179,7 +179,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 1",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -193,7 +193,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -207,7 +207,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -222,7 +222,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -233,7 +233,7 @@
               "name": "Day2",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 2
               },
@@ -249,7 +249,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -263,7 +263,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 2",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -277,7 +277,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -291,7 +291,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -306,7 +306,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -317,7 +317,7 @@
               "name": "Day3",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 3
               },
@@ -333,7 +333,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -347,7 +347,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 3",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -361,7 +361,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -375,7 +375,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -390,7 +390,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -401,7 +401,7 @@
               "name": "Day4",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 4
               },
@@ -417,7 +417,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -431,7 +431,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 4",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -445,7 +445,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -459,7 +459,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -474,7 +474,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -485,7 +485,7 @@
               "name": "Day5",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 5
               },
@@ -501,7 +501,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -515,7 +515,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 5",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -529,7 +529,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -543,7 +543,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -558,7 +558,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -569,7 +569,7 @@
               "name": "Day6",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 6
               },
@@ -585,7 +585,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -599,7 +599,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 6",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -613,7 +613,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -627,7 +627,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -642,7 +642,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -653,7 +653,7 @@
               "name": "Day7",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "LayoutOrder": 7
               },
@@ -669,7 +669,7 @@
                   "name": "TodayStroke",
                   "className": "UIStroke",
                   "properties": {
-                    "Color": [0.313725, 0.784314, 0.470588],
+                    "Color": [0.086275, 0.419608, 0.701961],
                     "Enabled": false,
                     "Thickness": 2
                   }
@@ -683,7 +683,7 @@
                     "Position": {"UDim2": [[0, 0], [0, 6]]},
                     "Size": {"UDim2": [[1, 0], [0, 22]]},
                     "Text": "Day 7",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -697,7 +697,7 @@
                     "Position": {"UDim2": [[0, 2], [0.5, -6]]},
                     "Size": {"UDim2": [[1, -4], [0, 24]]},
                     "Text": "",
-                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextScaled": false,
                     "TextSize": 18
                   }
@@ -711,7 +711,7 @@
                     "Position": {"UDim2": [[0, 2], [1, -24]]},
                     "Size": {"UDim2": [[1, -4], [0, 20]]},
                     "Text": "",
-                    "TextColor3": [0.313725, 0.588235, 0.941176],
+                    "TextColor3": [0.560784, 0.827451, 1],
                     "TextSize": 16,
                     "Visible": false
                   }
@@ -726,7 +726,7 @@
                     "Position": {"UDim2": [[1, -4], [0, 4]]},
                     "Size": {"UDim2": [[0, 22], [0, 22]]},
                     "Text": "✓",
-                    "TextColor3": [0.313725, 0.784314, 0.470588],
+                    "TextColor3": [0.086275, 0.419608, 0.701961],
                     "TextSize": 20,
                     "Visible": false
                   }
@@ -741,13 +741,13 @@
           "properties": {
             "AnchorPoint": [0, 0],
             "AutoButtonColor": false,
-            "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+            "BackgroundColor3": [0.086275, 0.419608, 0.701961],
             "BorderSizePixel": 0,
             "Font": "GothamBold",
             "Position": {"UDim2": [[0, 20], [1, -56]]},
             "Size": {"UDim2": [[1, -40], [0, 48]]},
             "Text": "CLAIM",
-            "TextColor3": [1, 1, 1],
+            "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 22
           },
           "children": [

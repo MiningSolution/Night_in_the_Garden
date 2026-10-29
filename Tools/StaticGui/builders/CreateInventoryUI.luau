@@ -1,18 +1,19 @@
 --[[
     CreateInventoryUI.lua
     Location: StarterGui (as LocalScript)
-    
+
     PURPOSE:
     Programmatically creates the Inventory UI including:
     - Header bar with title and close button
     - Tab system (Seeds / Items)
     - Scrolling item grid
     - Tooltip for item details
-    
-    INSTALLATION:
-    1. Place this script in StarterGui as a LocalScript
-    2. Run the game once - InventoryUI will be created automatically
-    3. You can disable this script after creation if desired
+
+    Static GUI only (constitution III); interactions (tab switching, hover, close)
+    live in InventoryController, not here. Colours come from UITheme tokens (V) and
+    are tagged with Theme_<Prop> attributes so ThemeController retints them on the
+    day/night switch (feature 004). The approved look adds outlines, a gradient
+    header, rounded corners and the display font.
 ]]
 
 local Players = game:GetService("Players")
@@ -30,6 +31,33 @@ print("🎨 Creating InventoryUI...")
 -- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
 -- module is required directly.
 local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+local Style = Theme.Style
+
+-- Bake the Night (default) colour AND tag the token (Theme_<Prop> = "<Token>") so
+-- ThemeController can retint this property on a day/night switch.
+local function bind(obj, prop, token)
+    obj[prop] = Theme[token]
+    obj:SetAttribute("Theme_" .. prop, token)
+end
+local function strokeOf(parent, token, thickness)
+    local s = Instance.new("UIStroke")
+    s.Thickness = thickness or Style.OutlineThickness
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Color = Theme[token]
+    s:SetAttribute("Theme_Color", token)
+    s.Parent = parent
+    return s
+end
+local function gradientOf(parent, topToken, botToken)
+    parent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    local g = Instance.new("UIGradient")
+    g.Rotation = 90
+    g.Color = ColorSequence.new(Theme[topToken], Theme[botToken])
+    g:SetAttribute("Theme_GradientTop", topToken)
+    g:SetAttribute("Theme_GradientBottom", botToken)
+    g.Parent = parent
+    return g
+end
 
 -- Create main ScreenGui
 local InventoryUI = Instance.new("ScreenGui")
@@ -48,7 +76,7 @@ local Backdrop = Instance.new("TextButton")
 Backdrop.Name = "Backdrop"
 Backdrop.Size = UDim2.new(1, 0, 1, 0)
 Backdrop.Position = UDim2.new(0, 0, 0, 0)
-Backdrop.BackgroundColor3 = Theme.Backdrop
+bind(Backdrop, "BackgroundColor3", "Backdrop")
 Backdrop.BackgroundTransparency = Theme.BackdropTransparency
 Backdrop.BorderSizePixel = 0
 Backdrop.AutoButtonColor = false
@@ -65,7 +93,7 @@ InventoryFrame.Name = "InventoryFrame"
 InventoryFrame.Size = UDim2.new(0, 600, 0, 500)
 InventoryFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 InventoryFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-InventoryFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+bind(InventoryFrame, "BackgroundColor3", "Surface")
 InventoryFrame.BorderSizePixel = 0
 -- US5 (R8): keep gamepad selection navigation inside the open window.
 InventoryFrame.SelectionGroup = true
@@ -76,10 +104,12 @@ InventoryFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 InventoryFrame.Parent = InventoryUI
 
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 frameCorner.Parent = InventoryFrame
 
--- Drop shadow effect
+strokeOf(InventoryFrame, "OutlineDeep", Style.WindowOutlineThickness)
+
+-- Drop shadow effect (neutral soft shadow, not themed)
 local frameShadow = Instance.new("ImageLabel")
 frameShadow.Name = "Shadow"
 frameShadow.Size = UDim2.new(1, 30, 1, 30)
@@ -101,19 +131,19 @@ frameShadow.Parent = InventoryFrame
 local HeaderBar = Instance.new("Frame")
 HeaderBar.Name = "HeaderBar"
 HeaderBar.Size = UDim2.new(1, 0, 0, 50)
-HeaderBar.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 HeaderBar.BorderSizePixel = 0
 HeaderBar.Parent = InventoryFrame
+gradientOf(HeaderBar, "HeaderTop", "HeaderBottom")
 
 local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
+headerCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 headerCorner.Parent = HeaderBar
 
--- Cover bottom corners
+-- Cover bottom corners (matches the gradient's bottom stop)
 local headerCover = Instance.new("Frame")
 headerCover.Size = UDim2.new(1, 0, 0, 12)
 headerCover.Position = UDim2.new(0, 0, 1, -12)
-headerCover.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+bind(headerCover, "BackgroundColor3", "HeaderBottom")
 headerCover.BorderSizePixel = 0
 headerCover.Parent = HeaderBar
 
@@ -124,9 +154,9 @@ TitleLabel.Size = UDim2.new(1, -100, 1, 0)
 TitleLabel.Position = UDim2.new(0, 20, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "📦 INVENTORY"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+bind(TitleLabel, "TextColor3", "TextOnHeader")
 TitleLabel.TextSize = 24
-TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Font = Style.DisplayFont
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = HeaderBar
 
@@ -136,31 +166,24 @@ CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 44, 0, 44) -- >= 44x44 (FR-007)
 CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+bind(CloseButton, "BackgroundColor3", "Danger")
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+bind(CloseButton, "TextColor3", "TextOnAccent")
 CloseButton.TextSize = 24
-CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Font = Style.DisplayFont
 CloseButton.AutoButtonColor = false
 CloseButton.Parent = HeaderBar
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 closeCorner.Parent = CloseButton
-
--- Close button hover effect
-CloseButton.MouseEnter:Connect(function()
-    CloseButton.BackgroundColor3 = Color3.fromRGB(220, 100, 100)
-end)
-
-CloseButton.MouseLeave:Connect(function()
-    CloseButton.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
-end)
 
 --[[
     TAB CONTAINER
-    Seeds and Items tabs
+    Seeds and Items tabs. The active/inactive colours are applied by
+    InventoryController; the static defaults below are Seeds = active (Accent),
+    Items = inactive (Control).
 ]]
 local TabContainer = Instance.new("Frame")
 TabContainer.Name = "TabContainer"
@@ -169,56 +192,41 @@ TabContainer.Position = UDim2.new(0, 20, 0, 60)
 TabContainer.BackgroundTransparency = 1
 TabContainer.Parent = InventoryFrame
 
--- Seeds tab
+-- Seeds tab (active default)
 local SeedsTab = Instance.new("TextButton")
 SeedsTab.Name = "SeedsTab"
 SeedsTab.Size = UDim2.new(0, 140, 1, 0)
 SeedsTab.Position = UDim2.new(0, 0, 0, 0)
-SeedsTab.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+bind(SeedsTab, "BackgroundColor3", "Accent")
 SeedsTab.BorderSizePixel = 0
 SeedsTab.Text = "🌱 Seeds"
-SeedsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+bind(SeedsTab, "TextColor3", "TextOnAccent")
 SeedsTab.TextSize = 20 -- button label >= 20 (FR-005)
-SeedsTab.Font = Enum.Font.GothamBold
+SeedsTab.Font = Style.DisplayFont
 SeedsTab.AutoButtonColor = false
 SeedsTab.Parent = TabContainer
 
 local seedsCorner = Instance.new("UICorner")
-seedsCorner.CornerRadius = UDim.new(0, 8)
+seedsCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 seedsCorner.Parent = SeedsTab
 
--- Items tab
+-- Items tab (inactive default)
 local ItemsTab = Instance.new("TextButton")
 ItemsTab.Name = "ItemsTab"
 ItemsTab.Size = UDim2.new(0, 140, 1, 0)
 ItemsTab.Position = UDim2.new(0, 150, 0, 0)
-ItemsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+bind(ItemsTab, "BackgroundColor3", "Control")
 ItemsTab.BorderSizePixel = 0
 ItemsTab.Text = "📦 Items"
-ItemsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
+bind(ItemsTab, "TextColor3", "TextPrimary")
 ItemsTab.TextSize = 20 -- button label >= 20 (FR-005)
-ItemsTab.Font = Enum.Font.GothamBold
+ItemsTab.Font = Style.DisplayFont
 ItemsTab.AutoButtonColor = false
 ItemsTab.Parent = TabContainer
 
 local itemsCorner = Instance.new("UICorner")
-itemsCorner.CornerRadius = UDim.new(0, 8)
+itemsCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 itemsCorner.Parent = ItemsTab
-
--- Tab switching logic
-SeedsTab.MouseButton1Click:Connect(function()
-    SeedsTab.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-    SeedsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ItemsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    ItemsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
-end)
-
-ItemsTab.MouseButton1Click:Connect(function()
-    ItemsTab.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
-    ItemsTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SeedsTab.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    SeedsTab.TextColor3 = Color3.fromRGB(200, 200, 200)
-end)
 
 --[[
     ITEM GRID
@@ -228,10 +236,11 @@ local ItemGrid = Instance.new("ScrollingFrame")
 ItemGrid.Name = "ItemGrid"
 ItemGrid.Size = UDim2.new(1, -40, 1, -125)
 ItemGrid.Position = UDim2.new(0, 20, 0, 115)
-ItemGrid.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+bind(ItemGrid, "BackgroundColor3", "SurfaceRaised")
+ItemGrid.BackgroundTransparency = 0.5
 ItemGrid.BorderSizePixel = 0
 ItemGrid.ScrollBarThickness = 8
-ItemGrid.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 90)
+bind(ItemGrid, "ScrollBarImageColor3", "Control")
 ItemGrid.CanvasSize = UDim2.new(0, 0, 0, 0)
 ItemGrid.AutomaticCanvasSize = Enum.AutomaticSize.Y
 ItemGrid.Parent = InventoryFrame
@@ -265,17 +274,19 @@ TooltipFrame.Name = "TooltipFrame"
 TooltipFrame.Size = UDim2.new(0, 250, 0, 120)
 TooltipFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 TooltipFrame.AnchorPoint = Vector2.new(0.5, 1)
-TooltipFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+bind(TooltipFrame, "BackgroundColor3", "SurfaceRaised")
 TooltipFrame.BorderSizePixel = 0
 TooltipFrame.Visible = false
 TooltipFrame.ZIndex = 10
 TooltipFrame.Parent = InventoryUI
 
 local tooltipCorner = Instance.new("UICorner")
-tooltipCorner.CornerRadius = UDim.new(0, 8)
+tooltipCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 tooltipCorner.Parent = TooltipFrame
 
--- Tooltip shadow
+strokeOf(TooltipFrame, "Outline")
+
+-- Tooltip shadow (neutral soft shadow, not themed)
 local tooltipShadow = Instance.new("ImageLabel")
 tooltipShadow.Name = "Shadow"
 tooltipShadow.Size = UDim2.new(1, 20, 1, 20)
@@ -304,9 +315,9 @@ TooltipTitle.Name = "TooltipTitle"
 TooltipTitle.Size = UDim2.new(1, 0, 0, 25)
 TooltipTitle.BackgroundTransparency = 1
 TooltipTitle.Text = "Item Name"
-TooltipTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+bind(TooltipTitle, "TextColor3", "TextPrimary")
 TooltipTitle.TextSize = 20 -- title >= 20 (FR-005)
-TooltipTitle.Font = Enum.Font.GothamBold
+TooltipTitle.Font = Style.DisplayFont
 TooltipTitle.TextXAlignment = Enum.TextXAlignment.Left
 TooltipTitle.TextYAlignment = Enum.TextYAlignment.Top
 TooltipTitle.Parent = TooltipFrame
@@ -318,9 +329,9 @@ TooltipDescription.Size = UDim2.new(1, 0, 0, 40)
 TooltipDescription.Position = UDim2.new(0, 0, 0, 30)
 TooltipDescription.BackgroundTransparency = 1
 TooltipDescription.Text = "Item description goes here"
-TooltipDescription.TextColor3 = Color3.fromRGB(180, 180, 180)
+bind(TooltipDescription, "TextColor3", "TextMuted")
 TooltipDescription.TextSize = 18 -- body >= 18 (FR-005)
-TooltipDescription.Font = Enum.Font.Gotham
+TooltipDescription.Font = Style.BodyFont
 TooltipDescription.TextXAlignment = Enum.TextXAlignment.Left
 TooltipDescription.TextYAlignment = Enum.TextYAlignment.Top
 TooltipDescription.TextWrapped = true
@@ -330,7 +341,7 @@ TooltipDescription.Parent = TooltipFrame
 local Separator = Instance.new("Frame")
 Separator.Size = UDim2.new(1, 0, 0, 1)
 Separator.Position = UDim2.new(0, 0, 0, 75)
-Separator.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+bind(Separator, "BackgroundColor3", "Outline")
 Separator.BorderSizePixel = 0
 Separator.Parent = TooltipFrame
 
@@ -341,20 +352,11 @@ TooltipStats.Size = UDim2.new(1, 0, 1, -80)
 TooltipStats.Position = UDim2.new(0, 0, 0, 80)
 TooltipStats.BackgroundTransparency = 1
 TooltipStats.Text = "Quantity: 10\n💰 Sell Value: 15 coins\n🌱 Type: Seed"
-TooltipStats.TextColor3 = Color3.fromRGB(200, 200, 200)
+bind(TooltipStats, "TextColor3", "TextMuted")
 TooltipStats.TextSize = 18 -- body >= 18 (FR-005)
-TooltipStats.Font = Enum.Font.Gotham
+TooltipStats.Font = Style.BodyFont
 TooltipStats.TextXAlignment = Enum.TextXAlignment.Left
 TooltipStats.TextYAlignment = Enum.TextYAlignment.Top
 TooltipStats.Parent = TooltipFrame
 
 print("✅ InventoryUI created successfully!")
-print("   Components:")
-print("   - InventoryFrame (main window)")
-print("   - HeaderBar (title, close button)")
-print("   - TabContainer (Seeds, Items tabs)")
-print("   - ItemGrid (scrolling with grid layout)")
-print("   - TooltipFrame (item details)")
-print("")
-print("🎮 InventoryUI is ready for InventoryController!")
-print("   Press 'I' to toggle inventory")

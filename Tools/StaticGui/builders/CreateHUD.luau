@@ -31,6 +31,25 @@ end
 
 print("🎨 Creating HUD...")
 
+-- Theme tokens (offline: the generator sets UI_THEME; in Studio: required directly).
+local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+local Style = Theme.Style
+-- Bake the Night (default) colour AND tag the token so ThemeController can retint
+-- this property on a day/night switch (Theme_<Prop> = "<Token>").
+local function bind(obj, prop, token)
+    obj[prop] = Theme[token]
+    obj:SetAttribute("Theme_" .. prop, token)
+end
+local function strokeOf(parent, token, thickness)
+    local s = Instance.new("UIStroke")
+    s.Thickness = thickness or Style.OutlineThickness
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Color = Theme[token]
+    s:SetAttribute("Theme_Color", token)
+    s.Parent = parent
+    return s
+end
+
 -- Create main ScreenGui
 local HUD = Instance.new("ScreenGui")
 HUD.Name = "HUD"
@@ -48,13 +67,15 @@ local CurrencyDisplay = Instance.new("Frame")
 CurrencyDisplay.Name = "CurrencyDisplay"
 CurrencyDisplay.Size = UDim2.new(0, 250, 0, 80)
 CurrencyDisplay.Position = UDim2.new(0, 20, 0, 20)
-CurrencyDisplay.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+bind(CurrencyDisplay, "BackgroundColor3", "Surface")
 CurrencyDisplay.BorderSizePixel = 0
 CurrencyDisplay.Parent = HUD
 
 local currencyCorner = Instance.new("UICorner")
-currencyCorner.CornerRadius = UDim.new(0, 12)
+currencyCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 currencyCorner.Parent = CurrencyDisplay
+
+strokeOf(CurrencyDisplay, "Outline")
 
 -- Coins label
 local CoinsLabel = Instance.new("TextLabel")
@@ -63,9 +84,9 @@ CoinsLabel.Size = UDim2.new(1, -20, 0, 30)
 CoinsLabel.Position = UDim2.new(0, 10, 0, 10)
 CoinsLabel.BackgroundTransparency = 1
 CoinsLabel.Text = "💰 Coins: 50"
-CoinsLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+bind(CoinsLabel, "TextColor3", "Coins")
 CoinsLabel.TextSize = 20
-CoinsLabel.Font = Enum.Font.GothamBold
+CoinsLabel.Font = Style.DisplayFont
 CoinsLabel.TextXAlignment = Enum.TextXAlignment.Left
 CoinsLabel.Parent = CurrencyDisplay
 
@@ -76,9 +97,9 @@ DreamSeedsLabel.Size = UDim2.new(1, -20, 0, 30)
 DreamSeedsLabel.Position = UDim2.new(0, 10, 0, 40)
 DreamSeedsLabel.BackgroundTransparency = 1
 DreamSeedsLabel.Text = "🌙 Dreams: 0"
-DreamSeedsLabel.TextColor3 = Color3.fromRGB(150, 180, 255)
+bind(DreamSeedsLabel, "TextColor3", "Dream")
 DreamSeedsLabel.TextSize = 18
-DreamSeedsLabel.Font = Enum.Font.GothamBold
+DreamSeedsLabel.Font = Style.DisplayFont
 DreamSeedsLabel.TextXAlignment = Enum.TextXAlignment.Left
 DreamSeedsLabel.Parent = CurrencyDisplay
 
@@ -90,13 +111,15 @@ local DayNightIndicator = Instance.new("Frame")
 DayNightIndicator.Name = "DayNightIndicator"
 DayNightIndicator.Size = UDim2.new(0, 200, 0, 60)
 DayNightIndicator.Position = UDim2.new(0.5, -100, 0, 20)
-DayNightIndicator.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+bind(DayNightIndicator, "BackgroundColor3", "Surface")
 DayNightIndicator.BorderSizePixel = 0
 DayNightIndicator.Parent = HUD
 
 local dayNightCorner = Instance.new("UICorner")
-dayNightCorner.CornerRadius = UDim.new(0, 12)
+dayNightCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 dayNightCorner.Parent = DayNightIndicator
+
+strokeOf(DayNightIndicator, "Outline")
 
 -- Phase label
 local PhaseLabel = Instance.new("TextLabel")
@@ -115,7 +138,7 @@ local ProgressBarContainer = Instance.new("Frame")
 ProgressBarContainer.Name = "ProgressBarContainer"
 ProgressBarContainer.Size = UDim2.new(1, -20, 0, 12)
 ProgressBarContainer.Position = UDim2.new(0, 10, 1, -17)
-ProgressBarContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+bind(ProgressBarContainer, "BackgroundColor3", "Backdrop")
 ProgressBarContainer.BorderSizePixel = 0
 ProgressBarContainer.Parent = DayNightIndicator
 

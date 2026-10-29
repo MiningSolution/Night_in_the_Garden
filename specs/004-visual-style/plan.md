@@ -10,16 +10,19 @@ Give the interface the game's day/night identity (constitution principle V). Thr
 testable slices:
 
 1. **Two-palette theme + live switch (P1)** — restructure `ReplicatedStorage/UITheme.lua` from a flat
-   dark palette into two complete palettes (**Day** = warm "garden" light, **Night** = today's dark),
-   behind one module that resolves a token to a colour for a given phase. The **static GUI stays baked
-   with the Night palette** (owner's choice: minimal repo diff), so builders keep reading one source.
-   Builders additionally **tag** each themed property of each element with a Roblox **attribute**
-   naming its token (`Theme_<PropertyName> = "<Token>"`), emitted into the `.model.json` by a small
-   generator extension. At runtime a new `ThemeController` listens to the existing `DayNightUpdate`
-   event and, on a Day↔Night change, walks the tagged elements and **tweens** each tagged property to
-   the active palette's colour — no model regeneration, no re-clone (FR-005/006). Dynamically created
-   elements (toasts, cloned rows, shop/sell cards, floating coins) are painted to the current phase on
-   creation (FR-008). A player joining mid-cycle is painted to the current phase as the HUD appears
+   dark palette into two complete palettes (**Day** = warm "garden" light, **Night** = deep "moonlit"
+   indigo — both re-skinned per the approved v2 look), plus non-colour **style constants** (corner
+   radius, outline thickness, shadow offset, display/body font), behind one module that resolves a
+   token to a colour for a given phase. The **static GUI stays baked with the Night palette** (the game
+   starts in Day, so the client applies Day on the first tick), so builders keep reading one source.
+   Builders additionally **tag** each themed property of each element with a Roblox **attribute** naming
+   its token (`Theme_<PropertyName> = "<Token>"`; a `UIStroke` uses `Theme_Color`, a `UIGradient` uses
+   `Theme_GradientTop`/`Theme_GradientBottom`), emitted into the `.model.json` by a small generator
+   extension. At runtime a new `ThemeController` listens to the existing `DayNightUpdate` event and, on
+   a Day↔Night change, walks the tagged elements and **tweens** each tagged colour (rebuilding gradient
+   `ColorSequence`s) to the active palette — no model regeneration, no re-clone (FR-005/006).
+   Dynamically created elements (toasts, cloned rows, shop/sell cards, floating coins) are painted to
+   the current phase on creation (FR-008). A player joining mid-cycle is painted as the HUD appears
    (FR-009).
 2. **Readable, consistent, fully tokenised screens (P2)** — define the Day palette for WCAG-AA
    contrast on a phone, give both palettes distinguishable rarity/semantic hues (FR-010/011), and
@@ -47,7 +50,8 @@ every colour (V).
 changes expected (the phase is already broadcast).
 
 **Primary Dependencies**: Roblox services — `TweenService`, `SoundService`, `RunService`, `Players`,
-`StarterGui`; Rojo 7.7.1; existing client modules (`UIController`, `WindowManager`, `GuiEffects`,
+`StarterGui`; GUI instances `UIStroke`/`UIGradient`/`UICorner` (the "juicy" outline/gradient/rounded
+look) baked by the builders and retinted by `ThemeController`; Rojo 7.7.1; existing client modules (`UIController`, `WindowManager`, `GuiEffects`,
 `ToastQueue`, `StateManager`, `ClientDataCache`, the per-screen controllers) and the existing
 `DayNightUpdate` RemoteEvent fired each second by `DayNightManager`.
 
@@ -75,14 +79,16 @@ must never block/delay/alter an action and must fail silently on a missing sound
 the single volume/setting; the static-GUI parity (generator ⇄ committed `.model.json`) must stay green;
 StreamingEnabled is on (wait for GUIs).
 
-**Scale/Scope**: `UITheme.lua` restructured (two palettes + resolver + back-compat) — the single source
-for colour; 1 new config `ReplicatedStorage/UISound.lua`; 2 new client modules (`ThemeController`,
-`SoundController`); small edits to `WindowManager`/`GuiEffects` (open animation), `UIController`
-(tokenise the day/night indicator; paint-on-join; FloatCoins reads active palette), `ToastQueue` and
-the per-screen controllers (paint dynamic clones, play purchase sound); all 8 builders gain token
-**attribute tags** via a 3-line local helper; a small `GuiRecorder`/`build_models.luau` extension to
-record and emit attributes; 1 new offline test. 3 user stories across P1–P3. One mock-up artifact
-(approval gate). All unknowns resolved in [research.md](./research.md) R1–R10.
+**Scale/Scope**: `UITheme.lua` restructured (two palettes + resolver + style constants + back-compat) —
+the single source for colour and style; 1 new config `ReplicatedStorage/UISound.lua`; 2 new client
+modules (`ThemeController`, `SoundController`); small edits to `WindowManager`/`GuiEffects` (open
+animation), `UIController` (tokenise the day/night indicator; paint-on-join; FloatCoins reads active
+palette), `ToastQueue` and the per-screen controllers (paint dynamic clones, play purchase sound); all
+8 builders gain token **attribute tags** plus the approved **design language** (UIStroke outline +
+bottom-shadow frame, UIGradient on headers/buttons, UICorner, display/body font) — PR1 re-skins HUD/
+HUDControls/Shop/Inventory, PR2 the rest; a small `GuiRecorder`/`build_models.luau` extension to
+record and emit attributes; 1 new offline test. 3 user stories across P1–P3. Mock-up gate already
+approved. All unknowns resolved in [research.md](./research.md) R1–R10.
 
 ## Constitution Check
 
@@ -163,9 +169,12 @@ Tools/StaticGui/
 ├── GuiRecorder.luau                    # CHANGED: record obj:SetAttribute(name,value) into the node;
 │                                       #   emit node attributes in toModel; include them in fingerprint.
 ├── build_models.luau                   # CHANGED: encode() emits the "attributes" map (after properties).
-└── builders/*.luau (all 8)             # CHANGED: a 3-line local themeBind(obj,prop,token) that bakes the
-                                        #   default colour AND tags Theme_<prop>=token; applied to every
-                                        #   themed property; migrate remaining hard-coded theme colours.
+└── builders/*.luau (all 8)             # CHANGED: a local themeBind(obj,prop,token) bakes the default
+                                        #   (Night) colour AND tags Theme_<prop>=token; applied to every
+                                        #   themed property incl. UIStroke (Theme_Color) and UIGradient
+                                        #   (Theme_GradientTop/Bottom). Plus the approved design language:
+                                        #   UIStroke outline + bottom-shadow frame, UIGradient on headers/
+                                        #   buttons, UICorner, display/body font. Migrate hard-coded colours.
 
 StarterGui/*.model.json                 # REGENERATED: now carry the Theme_<Prop> attributes (committed).
 

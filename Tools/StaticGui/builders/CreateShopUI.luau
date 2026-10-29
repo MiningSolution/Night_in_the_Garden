@@ -9,6 +9,11 @@
     UIController.applyLayout (ResponsiveLayout.WINDOWS.Shop), so inner elements use
     relative sizing. Static GUI only (constitution III); colours from UITheme (V);
     tap targets >= 44, text >= 18/20 (IV).
+
+    Feature 004: every themed colour is baked (Night default) AND tagged with a
+    Theme_<Prop> attribute so ThemeController retints it on the day/night switch.
+    The approved "juicy" look adds outlines, a gradient header, a 3D gradient Buy
+    button and the display font.
 ]]
 
 local Players = game:GetService("Players")
@@ -23,6 +28,35 @@ end
 print("🎨 Creating ShopUI (card grid)...")
 
 local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+local Style = Theme.Style
+
+-- Bake the Night (default) colour AND tag the token (Theme_<Prop> = "<Token>") so
+-- ThemeController can retint this property on a day/night switch.
+local function bind(obj, prop, token)
+    obj[prop] = Theme[token]
+    obj:SetAttribute("Theme_" .. prop, token)
+end
+local function strokeOf(parent, token, thickness)
+    local s = Instance.new("UIStroke")
+    s.Thickness = thickness or Style.OutlineThickness
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Color = Theme[token]
+    s:SetAttribute("Theme_Color", token)
+    s.Parent = parent
+    return s
+end
+-- Two-stop vertical gradient; the parent's BackgroundColor3 is set white so the
+-- gradient shows its true colours, and the stops are tagged for the live switch.
+local function gradientOf(parent, topToken, botToken)
+    parent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    local g = Instance.new("UIGradient")
+    g.Rotation = 90
+    g.Color = ColorSequence.new(Theme[topToken], Theme[botToken])
+    g:SetAttribute("Theme_GradientTop", topToken)
+    g:SetAttribute("Theme_GradientBottom", botToken)
+    g.Parent = parent
+    return g
+end
 
 local ShopUI = Instance.new("ScreenGui")
 ShopUI.Name = "ShopUI"
@@ -36,7 +70,7 @@ ShopUI.Parent = playerGui
 local Backdrop = Instance.new("TextButton")
 Backdrop.Name = "Backdrop"
 Backdrop.Size = UDim2.new(1, 0, 1, 0)
-Backdrop.BackgroundColor3 = Theme.Backdrop
+bind(Backdrop, "BackgroundColor3", "Backdrop")
 Backdrop.BackgroundTransparency = Theme.BackdropTransparency
 Backdrop.BorderSizePixel = 0
 Backdrop.AutoButtonColor = false
@@ -49,7 +83,7 @@ ShopFrame.Name = "ShopFrame"
 ShopFrame.Size = UDim2.new(0, 800, 0, 520) -- replaced at runtime by ResponsiveLayout
 ShopFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 ShopFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-ShopFrame.BackgroundColor3 = Theme.Surface
+bind(ShopFrame, "BackgroundColor3", "Surface")
 ShopFrame.BorderSizePixel = 0
 ShopFrame.SelectionGroup = true
 ShopFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
@@ -59,19 +93,21 @@ ShopFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 ShopFrame.Parent = ShopUI
 
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 frameCorner.Parent = ShopFrame
 
--- Header
+strokeOf(ShopFrame, "OutlineDeep", Style.WindowOutlineThickness)
+
+-- Header (gradient bar with a light title)
 local HeaderBar = Instance.new("Frame")
 HeaderBar.Name = "HeaderBar"
 HeaderBar.Size = UDim2.new(1, 0, 0, 50)
-HeaderBar.BackgroundColor3 = Theme.Header
 HeaderBar.BorderSizePixel = 0
 HeaderBar.Parent = ShopFrame
+gradientOf(HeaderBar, "HeaderTop", "HeaderBottom")
 
 local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
+headerCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 headerCorner.Parent = HeaderBar
 
 local TitleLabel = Instance.new("TextLabel")
@@ -80,9 +116,9 @@ TitleLabel.Size = UDim2.new(1, -270, 1, 0)
 TitleLabel.Position = UDim2.new(0, 20, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "🏪 SHOP"
-TitleLabel.TextColor3 = Theme.TextPrimary
+bind(TitleLabel, "TextColor3", "TextOnHeader")
 TitleLabel.TextSize = 24
-TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Font = Style.DisplayFont
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = HeaderBar
 
@@ -91,17 +127,17 @@ CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 44, 0, 44)
 CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-CloseButton.BackgroundColor3 = Theme.Danger
+bind(CloseButton, "BackgroundColor3", "Danger")
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Theme.TextPrimary
+bind(CloseButton, "TextColor3", "TextOnAccent")
 CloseButton.TextSize = 24
-CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Font = Style.DisplayFont
 CloseButton.AutoButtonColor = false
 CloseButton.Parent = HeaderBar
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 closeCorner.Parent = CloseButton
 
 -- Restock countdown (feature 003, US3). ShopController ticks the text from RestockAt.
@@ -112,9 +148,9 @@ RestockLabel.Position = UDim2.new(1, -64, 0, 0)
 RestockLabel.AnchorPoint = Vector2.new(1, 0)
 RestockLabel.BackgroundTransparency = 1
 RestockLabel.Text = "Restock in --:--"
-RestockLabel.TextColor3 = Theme.TextMuted
+bind(RestockLabel, "TextColor3", "TextOnHeader")
 RestockLabel.TextSize = 18
-RestockLabel.Font = Enum.Font.GothamMedium
+RestockLabel.Font = Style.BodyFont
 RestockLabel.TextXAlignment = Enum.TextXAlignment.Right
 RestockLabel.Parent = HeaderBar
 
@@ -131,17 +167,18 @@ local function makeTab(name, text, order)
     tab.Name = name
     tab.Size = UDim2.new(0.32, 0, 1, 0)
     tab.Position = UDim2.new(order * 0.34, 0, 0, 0)
-    tab.BackgroundColor3 = Theme.Control
+    bind(tab, "BackgroundColor3", "Control")
     tab.BorderSizePixel = 0
     tab.Text = text
-    tab.TextColor3 = Theme.TextPrimary
+    bind(tab, "TextColor3", "TextPrimary")
     tab.TextSize = 20
-    tab.Font = Enum.Font.GothamBold
+    tab.Font = Style.DisplayFont
     tab.AutoButtonColor = false
     tab.Parent = TabContainer
     local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 8)
+    c.CornerRadius = UDim.new(0, Style.CornerRadius)
     c.Parent = tab
+    strokeOf(tab, "Outline")
     return tab
 end
 makeTab("seedsTab", "🌱 Seeds", 0)
@@ -153,11 +190,11 @@ local CardsScroll = Instance.new("ScrollingFrame")
 CardsScroll.Name = "CardsScroll"
 CardsScroll.Size = UDim2.new(1, -30, 1, -116)
 CardsScroll.Position = UDim2.new(0, 15, 0, 108)
-CardsScroll.BackgroundColor3 = Theme.SurfaceRaised
+bind(CardsScroll, "BackgroundColor3", "SurfaceRaised")
 CardsScroll.BackgroundTransparency = 0.5
 CardsScroll.BorderSizePixel = 0
 CardsScroll.ScrollBarThickness = 8
-CardsScroll.ScrollBarImageColor3 = Theme.Control
+bind(CardsScroll, "ScrollBarImageColor3", "Control")
 CardsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 CardsScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 CardsScroll.Parent = ShopFrame
@@ -184,15 +221,19 @@ gridPad.Parent = CardsScroll
 local Card = Instance.new("Frame")
 Card.Name = "CardTemplate"
 Card.Size = UDim2.new(0, 160, 0, 216)
-Card.BackgroundColor3 = Theme.SurfaceRaised
+bind(Card, "BackgroundColor3", "SurfaceRaised")
 Card.BorderSizePixel = 0
 Card.Visible = false
 Card.Parent = CardsScroll
 
 local cardCorner = Instance.new("UICorner")
-cardCorner.CornerRadius = UDim.new(0, 8)
+cardCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 cardCorner.Parent = Card
 
+strokeOf(Card, "Outline")
+
+-- Rarity strip: ShopController sets its colour per item (via ThemeController), so it
+-- carries NO static Theme_ tag — the per-item rarity must win over a palette repaint.
 local RarityStrip = Instance.new("Frame")
 RarityStrip.Name = "RarityStrip"
 RarityStrip.Size = UDim2.new(1, 0, 0, 6)
@@ -209,9 +250,9 @@ StockLabel.Position = UDim2.new(1, -6, 0, 12)
 StockLabel.AnchorPoint = Vector2.new(1, 0)
 StockLabel.BackgroundTransparency = 1
 StockLabel.Text = ""
-StockLabel.TextColor3 = Theme.TextMuted
+bind(StockLabel, "TextColor3", "TextMuted")
 StockLabel.TextSize = 16
-StockLabel.Font = Enum.Font.GothamBold
+StockLabel.Font = Style.BodyFont
 StockLabel.TextXAlignment = Enum.TextXAlignment.Right
 StockLabel.Visible = false
 StockLabel.Parent = Card
@@ -231,9 +272,9 @@ FallbackLetter.Name = "FallbackLetter"
 FallbackLetter.Size = UDim2.new(1, 0, 1, 0)
 FallbackLetter.BackgroundTransparency = 1
 FallbackLetter.Text = "?"
-FallbackLetter.TextColor3 = Theme.TextMuted
+bind(FallbackLetter, "TextColor3", "TextMuted")
 FallbackLetter.TextSize = 32
-FallbackLetter.Font = Enum.Font.GothamBold
+FallbackLetter.Font = Style.DisplayFont
 FallbackLetter.Parent = Icon
 
 local NameLabel = Instance.new("TextLabel")
@@ -242,9 +283,9 @@ NameLabel.Size = UDim2.new(1, -12, 0, 32)
 NameLabel.Position = UDim2.new(0, 6, 0, 62)
 NameLabel.BackgroundTransparency = 1
 NameLabel.Text = "Item"
-NameLabel.TextColor3 = Theme.TextPrimary
+bind(NameLabel, "TextColor3", "TextPrimary")
 NameLabel.TextSize = 18
-NameLabel.Font = Enum.Font.GothamBold
+NameLabel.Font = Style.DisplayFont
 NameLabel.TextWrapped = true
 NameLabel.Parent = Card
 
@@ -254,9 +295,9 @@ PriceLabel.Size = UDim2.new(1, -12, 0, 22)
 PriceLabel.Position = UDim2.new(0, 6, 0, 94)
 PriceLabel.BackgroundTransparency = 1
 PriceLabel.Text = "💰 0"
-PriceLabel.TextColor3 = Theme.Coins
+bind(PriceLabel, "TextColor3", "Coins")
 PriceLabel.TextSize = 18
-PriceLabel.Font = Enum.Font.GothamBold
+PriceLabel.Font = Style.DisplayFont
 PriceLabel.Parent = Card
 
 -- Quantity row: x1 / x5 / x10 (each >= 44 tall for a touch target)
@@ -272,16 +313,16 @@ local function makeQty(name, text, order)
     b.Name = name
     b.Size = UDim2.new(0.32, 0, 1, 0)
     b.Position = UDim2.new(order * 0.34, 0, 0, 0)
-    b.BackgroundColor3 = Theme.Control
+    bind(b, "BackgroundColor3", "Control")
     b.BorderSizePixel = 0
     b.Text = text
-    b.TextColor3 = Theme.TextPrimary
+    bind(b, "TextColor3", "TextPrimary")
     b.TextSize = 20 -- buttons >= 20 (FR-017)
-    b.Font = Enum.Font.GothamBold
+    b.Font = Style.DisplayFont
     b.AutoButtonColor = false
     b.Parent = QtyRow
     local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 6)
+    c.CornerRadius = UDim.new(0, 8)
     c.Parent = b
     return b
 end
@@ -289,29 +330,33 @@ makeQty("QtyX1", "x1", 0)
 makeQty("QtyX5", "x5", 1)
 makeQty("QtyX10", "x10", 2)
 
+-- Buy button: the hero action — a 3D gradient (Accent → AccentDeep) with a darker
+-- outline, light label.
 local BuyButton = Instance.new("TextButton")
 BuyButton.Name = "BuyButton"
 BuyButton.Size = UDim2.new(1, -12, 0, 44)
 BuyButton.Position = UDim2.new(0, 6, 0, 168)
-BuyButton.BackgroundColor3 = Theme.Accent
 BuyButton.BorderSizePixel = 0
 BuyButton.Text = "BUY"
-BuyButton.TextColor3 = Theme.TextPrimary
+bind(BuyButton, "TextColor3", "TextOnAccent")
 BuyButton.TextSize = 20
-BuyButton.Font = Enum.Font.GothamBold
+BuyButton.Font = Style.DisplayFont
 BuyButton.AutoButtonColor = false
 BuyButton.Parent = Card
+gradientOf(BuyButton, "Accent", "AccentDeep")
 
 local buyCorner = Instance.new("UICorner")
-buyCorner.CornerRadius = UDim.new(0, 8)
+buyCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 buyCorner.Parent = BuyButton
+
+strokeOf(BuyButton, "AccentDeep")
 
 -- Loading overlay (shown during a purchase request)
 local LoadingOverlay = Instance.new("Frame")
 LoadingOverlay.Name = "LoadingOverlay"
 LoadingOverlay.Size = UDim2.new(1, 0, 1, -50)
 LoadingOverlay.Position = UDim2.new(0, 0, 0, 50)
-LoadingOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+LoadingOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- neutral dim overlay (not themed)
 LoadingOverlay.BackgroundTransparency = 0.7
 LoadingOverlay.BorderSizePixel = 0
 LoadingOverlay.Visible = false
@@ -319,7 +364,7 @@ LoadingOverlay.ZIndex = 100
 LoadingOverlay.Parent = ShopFrame
 
 local loadingCorner = Instance.new("UICorner")
-loadingCorner.CornerRadius = UDim.new(0, 12)
+loadingCorner.CornerRadius = UDim.new(0, Style.CornerRadius)
 loadingCorner.Parent = LoadingOverlay
 
 local LoadingText = Instance.new("TextLabel")
@@ -329,9 +374,9 @@ LoadingText.Position = UDim2.new(0.5, 0, 0.5, 0)
 LoadingText.AnchorPoint = Vector2.new(0.5, 0.5)
 LoadingText.BackgroundTransparency = 1
 LoadingText.Text = "Processing..."
-LoadingText.TextColor3 = Theme.TextPrimary
+bind(LoadingText, "TextColor3", "TextOnHeader") -- light on the dark overlay (both palettes)
 LoadingText.TextSize = 20
-LoadingText.Font = Enum.Font.GothamBold
+LoadingText.Font = Style.DisplayFont
 LoadingText.ZIndex = 101
 LoadingText.Parent = LoadingOverlay
 

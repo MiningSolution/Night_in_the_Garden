@@ -9,21 +9,27 @@ Alternatives considered.
 current flat API as a back-compat shim:
 
 ```lua
-local function rgb(r,g,b) return Color3.fromRGB(r,g,b) end
-local Night = { Surface=rgb(30,30,40), ... , BannerNight=rgb(40,50,92) }  -- today's values, verbatim
-local Day   = { Surface=rgb(...), ... }                                   -- warm garden (seeded by mock-up)
-local UITheme = { Palettes = { Day = Day, Night = Night }, Default = "Night" }
-function UITheme.Get(phase) return UITheme.Palettes[phase] or UITheme.Palettes[UITheme.Default] end
-function UITheme.Resolve(token, phase) return UITheme.Get(phase)[token] end
-for k, v in pairs(UITheme.Get(UITheme.Default)) do if UITheme[k] == nil then UITheme[k] = v end end -- flat back-compat
+local function c(r,g,b) return Color3.fromRGB(r,g,b) end
+local Night = { Surface=c(17,31,59), ..., HeaderTop=c(21,55,104), HeaderBottom=c(11,31,66) } -- indigo "moonlit" (v2)
+local Day   = { Surface=c(255,243,213), ..., HeaderTop=c(35,107,41) }                        -- warm "garden" (v2)
+local UITheme = {}
+for k, v in pairs(Night) do UITheme[k] = v end          -- flat keys = Night (back-compat)
+UITheme.Header, UITheme.BannerNight, UITheme.BackdropTransparency = Night.HeaderTop, c(40,50,92), 0.5 -- legacy aliases
+UITheme.Palettes = { Day = Day, Night = Night }
+UITheme.DefaultPhase = "Night"
+UITheme.Style = { CornerRadius=12, OutlineThickness=2.5, WindowOutlineThickness=3.5, ButtonShadowOffset=4,
+                  DisplayFont=Enum.Font.FredokaOne, BodyFont=Enum.Font.Gotham, BackdropTransparency=0.5 }
+function UITheme.Resolve(token, phase) return (UITheme.Palettes[phase] or Night)[token] end
 return UITheme
 ```
 
-**Rationale**: Both palettes live once (II). Every existing reader keeps working unchanged: builders
-do `UI_THEME.Surface` and controllers do `Theme.Coins` — both now resolve to the **default (Night)**
-palette's value, which is byte-identical to today's colours, so the static GUI regenerates with **no
-colour diff** (owner's "minimal diff" choice). New runtime code uses `Resolve(token, phase)` /
-`Get(phase)`. Night uses the exact current RGBs so nothing shifts at rest.
+**Rationale**: Both palettes live once (II), plus the non-colour style constants (single source for
+corner radius, outline thickness, shadow offset, fonts). Every existing reader keeps working: builders
+do `UI_THEME.Surface` and controllers do `Theme.Coins` — both now resolve to the flat (Night) value,
+so screens not yet re-skinned still render. Unlike the earlier draft, **Night is re-skinned** (indigo,
+per the approved v2 look), so the static GUI *does* regenerate with a large, intentional colour diff;
+legacy aliases (`Header`, `BannerNight`, `BackdropTransparency`) keep un-re-skinned screens coherent in
+the new night palette. New runtime code uses `Resolve(token, phase)` and `UITheme.Style`.
 
 **Alternatives**: (a) Two separate modules `DayTheme`/`NightTheme` — splits the vocabulary, risks key
 drift, breaks the `UI_THEME` global the generator injects. (b) Keep flat + a parallel `DayOverrides`
@@ -98,9 +104,11 @@ known clone sites).
 ## R5. Day palette — "warm garden" direction and contrast (owner-confirmed)
 
 **Decision**: Day = warm, low-saturation parchment/cream surfaces with warm **dark** text and soft
-green/gold accents; Night = today's dark palette unchanged. Exact Day RGBs are locked by the
-**mock-up** (gate, FR-019) and then transcribed into `UITheme.Day`. Both palettes are designed to
-**WCAG-AA 4.5:1** for body text and currency on their own surface, verified by the offline contrast
+green/gold accents; Night = deep indigo/navy "moonlit" surfaces with light text and blue/gold accents
+(re-skinned — NOT the old flat grey). Both palettes' exact RGBs are locked by the **approved v2
+mock-up** (gate, FR-019, now satisfied) and transcribed into `contracts/theme-tokens.md` → `UITheme`.
+Both palettes are designed to **WCAG-AA 4.5:1** for body text and currency on their own surface,
+verified by the offline contrast
 test (R8) and a Studio phone-landscape check. Rarity tiers keep their hue identity in both palettes,
 re-tuned for lightness so they stay distinguishable on a light surface (e.g. Common grey darkens on
 cream; Legendary gold deepens so it reads on cream).

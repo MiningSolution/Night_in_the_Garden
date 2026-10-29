@@ -31,9 +31,9 @@ existing `economy_config` / `responsive_layout` / `retention_config` specs still
 
 ## Studio playtest (V0–V9)
 
-- **V0 — Baseline / no regression**: Play. HUD, shop, inventory, sell, daily-reward, quests,
-  notifications all look exactly as before at **night** (Night is the baked default). No new Output
-  errors or warnings.
+- **V0 — Baked night look**: Play. HUD, shop, inventory, sell, daily-reward, quests and notifications
+  render in the approved **night** palette (deep indigo "moonlit", the baked default) — this is a
+  deliberate re-skin, not the old grey. No new Output errors or warnings; layout unchanged.
 - **V1 — Attributes round-trip (gates everything)**: In Studio, select a themed element in
   `StarterGui` (e.g. `HUDControls.MenuButtons.ShopButton`) and confirm it has the baked attribute
   `Theme_BackgroundColor3 = "Control"` (Properties → Attributes, or `inspect_instance` via MCP). If

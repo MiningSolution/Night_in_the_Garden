@@ -26,12 +26,13 @@ of the project's quality gate, so it is listed as a foundational task, not TDD-f
 
 **Purpose**: Lock the visual design before any themed-UI code (FR-019, owner-confirmed blocking).
 
-- [ ] T001 Produce mock-ups of all seven key screens (HUD, shop, inventory, sell stall,
-  notifications/banners, daily reward, quests) in **both** palettes (warm-garden Day + current Night)
-  as a shareable artifact; present to the owner and get approval. The approved Day colours become the
-  `UITheme.Day` values in T003. **Do not start Phase 3+ themed code until approved.**
+- [X] T001 Produce mock-ups of all seven key screens in **both** palettes; present to the owner and get
+  approval. **DONE (2026-10-29)**: owner approved `Garden_UI_Day_Night_v2.html` + handoff ("такой стиль
+  очень красивый, основывайся на нём"). Approved palette + design-language tokens transcribed into
+  `contracts/theme-tokens.md`. Scope locked: re-skin existing screens in both palettes; night is
+  re-skinned too (indigo). Out of scope: HUD relayout, 2nd currency, Spirit Journal.
 
-**Checkpoint**: Owner has approved the look; Day palette RGBs are locked.
+**Checkpoint**: ✅ Owner approved the look; both palettes' RGBs + style tokens are locked.
 
 ---
 
@@ -39,21 +40,25 @@ of the project's quality gate, so it is listed as a foundational task, not TDD-f
 
 **Purpose**: The single colour source and the build→runtime binding mechanism everything depends on.
 
-- [ ] T002 [P] Extend `Tools/StaticGui/GuiRecorder.luau` to record `obj:SetAttribute(name, value)` into
-  the node (new `attrs`/`attrKeys`; mirror to `real:SetAttribute` in Studio mode), emit an
-  `attributes` map in `R.toModel`, and include attributes in `R.fingerprint` so Studio parity holds.
-- [ ] T003 Restructure `ReplicatedStorage/UITheme.lua` into `Palettes.Day` + `Palettes.Night` (Night =
-  today's RGBs verbatim; Day = the approved mock-up colours from `contracts/theme-tokens.md`, incl. new
-  tokens `PhaseDay`, `PhaseNight`, `Scrim`), plus `Default = "Night"`, `Get(phase)`,
-  `Resolve(token, phase)`, and flat back-compat fields equal to the default palette (depends on T001).
-- [ ] T004 Extend `Tools/StaticGui/build_models.luau` `encode()` to emit the `attributes` key (string
-  values, Rojo implicit form) **after `properties`, before `children`** (depends on T002).
-- [ ] T005 [P] Add `Tools/Tests/theme.spec.luau`: Day/Night define the same token key set; every token
-  is a `Color3`; `Default == "Night"`; flat fields equal `Get("Night")`; every contrast pair in
-  `contracts/theme-tokens.md` is ≥ 4.5:1 in **both** palettes (pure WCAG math, no `game` global)
-  (depends on T003).
+- [X] T002 [P] Extend `Tools/StaticGui/GuiRecorder.luau` to record `obj:SetAttribute(name, value)` into
+  the node (`attributes`/`attrKeys`; mirror to `real:SetAttribute` in Studio mode), emit an
+  `attributes` map in `R.toModel`, and include attributes in `R.fingerprint`. **DONE.**
+- [X] T003 Restructure `ReplicatedStorage/UITheme.lua` into `Palettes.Day` + `Palettes.Night` (both
+  re-skinned per `contracts/theme-tokens.md`: Night = indigo "moonlit", Day = warm "garden"; tokens
+  incl. `Accent`/`AccentDeep`/`Positive`/`Sell`/`TextOnBright`/`Outline`/`OutlineDeep`/`HeaderTop`/
+  `HeaderBottom`), plus `DefaultPhase = "Night"`, `Resolve(token, phase)`, `UITheme.Style` (corner
+  radius, outline thickness, shadow offset, display/body font), and flat back-compat fields = Night
+  (+ legacy `Header`/`BannerNight`/`BackdropTransparency`). **DONE.**
+- [X] T004 Extend `Tools/StaticGui/build_models.luau` `encode()` to emit the `attributes` key **after
+  `properties`, before `children`**. **DONE.**
+- [ ] T005 [P] Add `Tools/Tests/theme.spec.luau`: Day/Night define the same token key set; every colour
+  token is a `Color3`; `DefaultPhase == "Night"`; flat fields equal `Palettes.Night`; `UITheme.Style`
+  present; every contrast pair in `contracts/theme-tokens.md` is ≥ 4.5:1 in **both** palettes and
+  rarity hues are mutually distinguishable (pure WCAG math, no `game` global) (depends on T003).
+  → **Engine agent B.**
 
-**Checkpoint**: `luau Tools/Tests/theme.spec.luau` passes; the generator can carry attributes.
+**Checkpoint**: `luau Tools/Tests/theme.spec.luau` passes; the generator carries attributes (T002/T004
+verified by regenerating and re-running the offline suite during consolidation).
 
 ---
 
@@ -66,25 +71,31 @@ smoothly on `DayNightUpdate`, over the static GUI, with dynamic elements and joi
 with no flash and nothing left in the old palette; closed windows open in the right palette; toasts/
 cards/rows/float coins and a mid-cycle joiner are all painted to the current phase.
 
-- [ ] T006 [US1] Add a 3-line local `themeBind(obj, prop, token)` helper and tag every themed property
-  in `Tools/StaticGui/builders/CreateHUDControls.luau` (`Theme_BackgroundColor3`, `Theme_TextColor3`,
-  `Theme_ImageColor3`); regenerate with `python3 Tools/StaticGui/build_models.py "$(command -v luau)"`
-  and commit `StarterGui/HUDControls.model.json` (depends on T002, T003, T004).
+- [ ] T006 [US1] Add a local `themeBind(obj, prop, token)` helper (bakes the Night colour AND tags
+  `Theme_<prop>=token`) and apply the approved **design language** in
+  `Tools/StaticGui/builders/CreateHUDControls.luau`: tag every themed colour, add `UICorner`
+  (`UITheme.Style.CornerRadius`), `UIStroke` (tagged `Theme_Color = "Outline"`/`"OutlineDeep"`,
+  thickness from Style), a bottom-shadow frame, `UIGradient` on headers/primary buttons (tagged
+  `Theme_GradientTop`/`Theme_GradientBottom`), and the display/body fonts; regenerate and commit
+  `StarterGui/HUDControls.model.json` (depends on T002, T003, T004).
 - [ ] T007 [US1] Verify in Studio (quickstart V1) that the baked `Theme_*` attribute round-trips onto
   the live instance (Properties → Attributes / `inspect_instance`). **Gate**: if attributes are absent,
   implement the `ThemeBindings.lua` fallback from research R2 before continuing (depends on T006).
-- [ ] T008 [US1] Tag the remaining builders and regenerate/commit their models: `CreateHUDControls`
-  (done), and now `builders/` for HUD, `CreateInventoryUI`, `CreateShopUI`, `CreateSellUI`,
-  `CreateNotifications`, `CreateDailyRewardUI`, `CreateQuestsUI` → `StarterGui/*.model.json`
+- [ ] T008 [US1] Apply the same design-language re-skin + tags to the other builders, regenerate and
+  commit their models. **PR1**: `CreateHUD`, `CreateShopUI`, `CreateInventoryUI`. **PR2**:
+  `CreateSellUI`, `CreateNotifications`, `CreateDailyRewardUI`, `CreateQuestsUI` → `StarterGui/*.model.json`
   (depends on T007).
 - [ ] T009 [US1] Create `StarterPlayer/StarterPlayerScripts/Controllers/ThemeController.lua`: subscribe
   to `DayNightUpdate`; hold `currentPhase`; on a Day↔Night change run one `Repaint(phase)` that tweens
-  each `Theme_<Prop>` attribute across the known ScreenGuis to `UITheme.Resolve(token, phase)` (~0.4 s,
-  Quad/Out); `PaintInstant(inst)`/`Paint(root)` apply the current palette without a tween; `Current()`
-  / `CurrentPhase()`; `Initialize()` paints the known GUIs from `StateManager.getDayNight()` on join
-  (FR-005/006/007/009) (depends on T003).
-- [ ] T010 [US1] Boot `ThemeController` from `StarterPlayer/StarterPlayerScripts/ClientMain.client.lua`
-  (after the GUIs exist) so paint-on-join runs before the first `DayNightUpdate` (depends on T009).
+  each `Theme_<Prop>` colour attribute across the known ScreenGuis to `UITheme.Resolve(token, phase)`
+  (~0.4 s, Quad/Out), **including `UIStroke` (`Theme_Color`) and rebuilding `UIGradient` `ColorSequence`s
+  from `Theme_GradientTop`/`Theme_GradientBottom`**; `PaintInstant(inst)`/`Paint(root)` apply the current
+  palette without a tween; `Current()`/`CurrentPhase()`; `Initialize()` paints the known GUIs on join
+  (FR-005/006/007/009) (depends on T003). → **Engine agent A.**
+- [ ] T010 [US1] Boot `ThemeController` from the client bootstrap (`EventHandlers.client.lua` /
+  `ClientMain`) after the GUIs exist, so paint-on-join runs before the first `DayNightUpdate`; the
+  existing `DayNightUpdate` handler also forwards the phase to `ThemeController` (depends on T009).
+  → **Engine agent A** (same file ownership).
 - [ ] T011 [US1] Paint runtime-created elements to the current phase (FR-008): `Utils/ToastQueue.lua`
   (each shown toast), `Controllers/ShopController.lua` (cloned cards), `Controllers/SellController.lua`
   (cloned rows), `Controllers/DailyRewardController.lua` + `Controllers/QuestController.lua` (cloned
@@ -108,11 +119,11 @@ theme `Color3`.
   `theme.spec.luau` (deepen Day text/currency/accents as needed); keep rarity hues mutually
   distinguishable; re-run the test green (edits in `ReplicatedStorage/UITheme.lua`) (depends on T005).
 - [ ] T013 [US2] Migrate remaining hard-coded theme colours on touched screens to tokens (FR-012, R9):
-  in `Controllers/UIController.lua` the day/night indicator colours → `PhaseDay`/`PhaseNight`
-  (resolved via the active palette, not literals); in the builders replace the semi-transparent black
-  hint-chip `Color3` with the `Scrim` token (keep each chip's transparency); leave genuine non-theme
-  tints (e.g. coin-float text stroke) and note them. Regenerate and commit the affected
-  `StarterGui/*.model.json` (depends on T003, T008).
+  in `Controllers/UIController.lua` move the day/night indicator's sun/moon marker colours to
+  single-source constants (sun gold / moon blue are phase-identity markers, kept palette-independent in
+  `UITheme.Style`, not literals in the controller); fold hint-chip backgrounds into the `Backdrop`/
+  surface tokens; leave genuine non-theme tints (e.g. coin-float text stroke) and note them. Regenerate
+  and commit the affected `StarterGui/*.model.json` (depends on T003, T008).
 - [ ] T014 [US2] Studio phone-landscape check (quickstart V2 + owner pass prep): each key screen in both
   palettes — body text, currency, muted labels and the five rarity swatches read clearly; record any
   token that needs a nudge and fix in T012 (depends on T012, T013).
@@ -131,15 +142,15 @@ the press sound and a confirmed buy the purchase sound (rejected buy does not); 
 ids are silent with no errors.
 
 - [ ] T015 [P] [US3] Add `ReplicatedStorage/UISound.lua` = `{ Press = "", Purchase = "", Volume = 0.5 }`
-  (owner-supplied ids; empty = silent) per `contracts/feedback.md`.
+  (owner-supplied ids; empty = silent) per `contracts/feedback.md`. → **Engine agent C.**
 - [ ] T016 [US3] Create `StarterPlayer/StarterPlayerScripts/Controllers/SoundController.lua`:
   `Press()` (rate-limited ~60 ms) and `Purchase()`, one reusable `Sound` under `SoundService`, volume
   from `UISound`, no-op on empty/invalid id (`pcall`) and when the game sound is off; never yields the
-  caller (depends on T015).
+  caller (depends on T015). → **Engine agent C.**
 - [ ] T017 [P] [US3] Add `GuiEffects.openWindow(frame)` (scale ~0.92→1 + fade, ~0.18 s, Quad/Out,
   interactive throughout) in `StarterPlayer/StarterPlayerScripts/Utils/GuiEffects.lua` and call it from
   `WindowManager.Open` after the frame is shown (`StarterPlayer/StarterPlayerScripts/Utils/WindowManager.lua`),
-  leaving the one-window/backdrop/selection logic unchanged (FR-015).
+  leaving the one-window/backdrop/selection logic unchanged (FR-015). → **Engine agent D.**
 - [ ] T018 [US3] Wire feedback: press sound on `Activated` for the menu + teleport buttons
   (`UIController`), window close/backdrop (`WindowManager`), tabs and buy/sell/claim buttons (their
   controllers); **purchase** sound only on the server-confirmed success branch of `BuyItem` in
@@ -196,6 +207,19 @@ Task: "Restructure UITheme.lua into two palettes + resolver (T003)"
 Task: "theme.spec.luau contrast/parity test (T005, after T003)"
 Task: "build_models.luau encode attributes (T004, after T002)"
 ```
+
+## Engine fan-out (4 Sonnet subagents, owner-requested)
+
+The foundational code modules are file-disjoint and run in parallel (one Sonnet subagent each), then
+the parent consolidates (regenerate models, run the offline suite, reconcile) and verifies in Studio:
+
+- **Agent A** — `ThemeController.lua` (T009) + bootstrap wiring (T010).
+- **Agent B** — `Tools/Tests/theme.spec.luau` (T005).
+- **Agent C** — `ReplicatedStorage/UISound.lua` (T015) + `SoundController.lua` (T016).
+- **Agent D** — `GuiEffects.openWindow` + `WindowManager.Open` wiring (T017).
+
+(`UITheme.lua`, `GuiRecorder.luau`, `build_models.luau` are already done by the parent; agents must not
+touch them, the builders, `StarterGui/*.model.json`, or git.)
 
 ## Implementation Strategy
 

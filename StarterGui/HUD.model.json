@@ -11,17 +11,32 @@
       "name": "CurrencyDisplay",
       "className": "Frame",
       "properties": {
-        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BackgroundColor3": [0.066667, 0.121569, 0.231373],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0, 20], [0, 20]]},
         "Size": {"UDim2": [[0, 250], [0, 80]]}
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
       },
       "children": [
         {
           "name": "UICorner",
           "className": "UICorner",
           "properties": {
-            "CornerRadius": {"UDim": [0, 12]}
+            "CornerRadius": {"UDim": [0, 14]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "ApplyStrokeMode": "Border",
+            "Color": [0.25098, 0.368627, 0.517647],
+            "Thickness": 3
+          },
+          "attributes": {
+            "Theme_Color": "Outline"
           }
         },
         {
@@ -33,9 +48,12 @@
             "Position": {"UDim2": [[0, 10], [0, 10]]},
             "Size": {"UDim2": [[1, -20], [0, 30]]},
             "Text": "💰 Coins: 50",
-            "TextColor3": [1, 0.862745, 0.392157],
+            "TextColor3": [1, 0.854902, 0.482353],
             "TextSize": 20,
             "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "Coins"
           }
         },
         {
@@ -47,9 +65,12 @@
             "Position": {"UDim2": [[0, 10], [0, 40]]},
             "Size": {"UDim2": [[1, -20], [0, 30]]},
             "Text": "🌙 Dreams: 0",
-            "TextColor3": [0.588235, 0.705882, 1],
+            "TextColor3": [0.588235, 0.745098, 1],
             "TextSize": 18,
             "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "Dream"
           }
         }
       ]
@@ -58,17 +79,32 @@
       "name": "DayNightIndicator",
       "className": "Frame",
       "properties": {
-        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BackgroundColor3": [0.066667, 0.121569, 0.231373],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0.5, -100], [0, 20]]},
         "Size": {"UDim2": [[0, 200], [0, 60]]}
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
       },
       "children": [
         {
           "name": "UICorner",
           "className": "UICorner",
           "properties": {
-            "CornerRadius": {"UDim": [0, 12]}
+            "CornerRadius": {"UDim": [0, 14]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "ApplyStrokeMode": "Border",
+            "Color": [0.25098, 0.368627, 0.517647],
+            "Thickness": 3
+          },
+          "attributes": {
+            "Theme_Color": "Outline"
           }
         },
         {
@@ -88,10 +124,13 @@
           "name": "ProgressBarContainer",
           "className": "Frame",
           "properties": {
-            "BackgroundColor3": [0.078431, 0.078431, 0.117647],
+            "BackgroundColor3": [0.015686, 0.039216, 0.086275],
             "BorderSizePixel": 0,
             "Position": {"UDim2": [[0, 10], [1, -17]]},
             "Size": {"UDim2": [[1, -20], [0, 12]]}
+          },
+          "attributes": {
+            "Theme_BackgroundColor3": "Backdrop"
           },
           "children": [
             {
