@@ -176,4 +176,73 @@ AnnounceLabel.Font = Enum.Font.GothamBold
 AnnounceLabel.TextWrapped = true
 AnnounceLabel.Parent = AnnounceBanner
 
+-- ── First-session tutorial hint (feature 003, US5) ─────────────────────────────
+-- A small, non-blocking hint panel: an arrow glyph, a step hint, and a Skip button.
+-- TutorialController shows/advances it; it never covers the thumbstick, jump button,
+-- menu column or hotbar, and only SkipButton is interactive.
+local TutorialHint = Instance.new("Frame")
+TutorialHint.Name = "TutorialHint"
+TutorialHint.AnchorPoint = Vector2.new(0.5, 0)
+TutorialHint.Position = UDim2.new(0.5, 0, 0.42, 0)
+TutorialHint.Size = UDim2.new(0.6, 0, 0, 72)
+TutorialHint.BackgroundColor3 = Theme.Surface
+TutorialHint.BackgroundTransparency = 0.05
+TutorialHint.BorderSizePixel = 0
+TutorialHint.Visible = false
+TutorialHint.Parent = Notifications
+
+local thMax = Instance.new("UISizeConstraint")
+thMax.MaxSize = Vector2.new(460, 72)
+thMax.Parent = TutorialHint
+
+local thCorner = Instance.new("UICorner")
+thCorner.CornerRadius = UDim.new(0, 10)
+thCorner.Parent = TutorialHint
+
+local thStroke = Instance.new("UIStroke")
+thStroke.Color = Theme.Accent
+thStroke.Thickness = 2
+thStroke.Parent = TutorialHint
+
+local Arrow = Instance.new("TextLabel")
+Arrow.Name = "Arrow"
+Arrow.Size = UDim2.new(0, 40, 1, 0)
+Arrow.Position = UDim2.new(0, 8, 0, 0)
+Arrow.BackgroundTransparency = 1
+Arrow.Text = "👉"
+Arrow.TextSize = 28
+Arrow.Font = Enum.Font.GothamBold
+Arrow.Parent = TutorialHint
+
+local HintLabel = Instance.new("TextLabel")
+HintLabel.Name = "HintLabel"
+HintLabel.Size = UDim2.new(1, -140, 1, -12)
+HintLabel.Position = UDim2.new(0, 54, 0, 6)
+HintLabel.BackgroundTransparency = 1
+HintLabel.Text = "Welcome! Plant a seed on a plot."
+HintLabel.TextColor3 = Theme.TextPrimary
+HintLabel.TextSize = 18
+HintLabel.Font = Enum.Font.GothamMedium
+HintLabel.TextXAlignment = Enum.TextXAlignment.Left
+HintLabel.TextWrapped = true
+HintLabel.Parent = TutorialHint
+
+local SkipButton = Instance.new("TextButton")
+SkipButton.Name = "SkipButton"
+SkipButton.Size = UDim2.new(0, 76, 0, 44)
+SkipButton.Position = UDim2.new(1, -84, 0.5, 0)
+SkipButton.AnchorPoint = Vector2.new(0, 0.5)
+SkipButton.BackgroundColor3 = Theme.Control
+SkipButton.BorderSizePixel = 0
+SkipButton.Text = "Skip"
+SkipButton.TextColor3 = Theme.TextPrimary
+SkipButton.TextSize = 18
+SkipButton.Font = Enum.Font.GothamBold
+SkipButton.AutoButtonColor = true
+SkipButton.Parent = TutorialHint
+
+local skipCorner = Instance.new("UICorner")
+skipCorner.CornerRadius = UDim.new(0, 8)
+skipCorner.Parent = SkipButton
+
 print("✅ Notifications created successfully!")

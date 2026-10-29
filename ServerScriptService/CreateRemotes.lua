@@ -42,6 +42,7 @@ ensureEvent("ClaimQuest", "RemoteFunction")       -- claim a completed quest's r
 ensureEvent("QuestUpdated", "RemoteEvent")        -- server → client progress/claim push
 ensureEvent("ShopRestocked", "RemoteEvent")       -- server → all clients: restock + new stock
 ensureEvent("ServerAnnounce", "RemoteEvent")      -- server → all clients: night / rare-spirit event
+ensureEvent("SetTutorialDone", "RemoteFunction")  -- mark first-session onboarding complete
 
 -- Data updates (server → client)
 ensureEvent("UpdateCurrency", "RemoteEvent")

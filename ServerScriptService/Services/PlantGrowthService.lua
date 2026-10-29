@@ -45,6 +45,12 @@ local function updatePlayerPlots(plr, dt, phase)
                     local snap = PlayerData.Snapshot(plr)
                     PlotStateUpdated:FireClient(plr, {PlotId=plotId, Success=true, Snapshot=snap})
                 else
+                    -- Feature 003 (US5): persist the "Growing" state (it was only ever
+                    -- sent transiently before, so the stored state stayed "Planted" and
+                    -- watering — which requires plot.State == "Growing" — could never
+                    -- succeed). Planting still rejects non-empty plots and harvest still
+                    -- requires "ReadyToHarvest", so this only unblocks watering.
+                    plot.State = "Growing"
                     local timeRemaining = math.max(0, math.floor(total - plot.GrowthSeconds))
                     local update = {
                         State = "Growing",

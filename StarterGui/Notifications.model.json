@@ -191,6 +191,93 @@
           }
         }
       ]
+    },
+    {
+      "name": "TutorialHint",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [0.5, 0],
+        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BackgroundTransparency": 0.05,
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0.5, 0], [0.42, 0]]},
+        "Size": {"UDim2": [[0.6, 0], [0, 72]]},
+        "Visible": false
+      },
+      "children": [
+        {
+          "name": "UISizeConstraint",
+          "className": "UISizeConstraint",
+          "properties": {"MaxSize": [460, 72]}
+        },
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 10]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "Color": [0.313725, 0.784314, 0.470588],
+            "Thickness": 2
+          }
+        },
+        {
+          "name": "Arrow",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[0, 8], [0, 0]]},
+            "Size": {"UDim2": [[0, 40], [1, 0]]},
+            "Text": "👉",
+            "TextSize": 28
+          }
+        },
+        {
+          "name": "HintLabel",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "GothamMedium",
+            "Position": {"UDim2": [[0, 54], [0, 6]]},
+            "Size": {"UDim2": [[1, -140], [1, -12]]},
+            "Text": "Welcome! Plant a seed on a plot.",
+            "TextColor3": [1, 1, 1],
+            "TextSize": 18,
+            "TextWrapped": true,
+            "TextXAlignment": "Left"
+          }
+        },
+        {
+          "name": "SkipButton",
+          "className": "TextButton",
+          "properties": {
+            "AnchorPoint": [0, 0.5],
+            "AutoButtonColor": true,
+            "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+            "BorderSizePixel": 0,
+            "Font": "GothamBold",
+            "Position": {"UDim2": [[1, -84], [0.5, 0]]},
+            "Size": {"UDim2": [[0, 76], [0, 44]]},
+            "Text": "Skip",
+            "TextColor3": [1, 1, 1],
+            "TextSize": 18
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

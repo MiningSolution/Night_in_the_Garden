@@ -39,6 +39,15 @@ local GetPlayerDataFn = ReplicatedStorage:WaitForChild("GetPlayerData")
 
 local SellController = {}
 
+-- feature 003 (US5): let the onboarding tutorial advance on a sale (decoupled —
+-- lazily required so load order and a missing controller are both safe).
+local function notifyTutorialSell()
+    pcall(function()
+        local tc = Controllers:FindFirstChild("TutorialController")
+        if tc then require(tc).NotifyAction("sell") end
+    end)
+end
+
 local RARITY_TOKEN = {
     Common = Theme.RarityCommon,
     Uncommon = Theme.RarityUncommon,
@@ -155,6 +164,7 @@ local function makeRow(itemId, count)
                 InventoryController.UpdateInventory(result.NewInventory)
                 inventory = result.NewInventory
             end
+            notifyTutorialSell()
             SellController.Render()
         elseif ok and type(result) == "table" then
             UIController.ShowNotification(result.Error or "Could not sell", "error")
@@ -290,6 +300,7 @@ function SellController.Init()
                     InventoryController.UpdateInventory(result.NewInventory)
                     inventory = result.NewInventory
                 end
+                notifyTutorialSell()
             elseif (result.SkippedFavourites or 0) > 0 then
                 UIController.ShowNotification("All sellable crops are favourited (protected)", "info")
             else

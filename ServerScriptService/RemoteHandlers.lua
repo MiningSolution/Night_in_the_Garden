@@ -25,6 +25,7 @@ local ToggleFavourite = RS:WaitForChild("ToggleFavourite")
 local RequestTeleport = RS:WaitForChild("RequestTeleport")
 local GetPlayerData = RS:WaitForChild("GetPlayerData")
 local CollectSpirit = RS:WaitForChild("CollectSpirit")
+local SetTutorialDone = RS:WaitForChild("SetTutorialDone")
 local GetDailyReward = RS:WaitForChild("GetDailyReward")
 local ClaimDailyReward = RS:WaitForChild("ClaimDailyReward")
 local GetQuests = RS:WaitForChild("GetQuests")
@@ -115,7 +116,7 @@ GetPlayerData.OnServerInvoke = function(player)
         if not d then 
             return fail("Data not loaded") 
         end
-        return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats, Favourites=(d.Favourites or {}) })
+        return ok({ Currency=d.Currency, Inventory=d.Inventory, Plots=d.Plots, Stats=d.Stats, Favourites=(d.Favourites or {}), Onboarding=(d.Onboarding or {Done=false, Step=0}) })
     end)
     
     if not success then
@@ -579,6 +580,22 @@ ClaimQuest.OnServerInvoke = function(player, questId)
     end)
     if not success then
         warn("[RemoteHandlers] ClaimQuest error for", player.Name, ":", result)
+        return fail("Internal server error")
+    end
+    return result
+end
+
+-- Feature 003 (US5, FR-011): mark first-session onboarding complete (write-once-true).
+SetTutorialDone.OnServerInvoke = function(player)
+    local success, result = pcall(function()
+        if not rate_ok(player, "SetTutorialDone") then
+            return fail("You're doing that too fast. Please wait a moment.")
+        end
+        PlayerData.SetOnboardingDone(player)
+        return ok()
+    end)
+    if not success then
+        warn("[RemoteHandlers] SetTutorialDone error for", player.Name, ":", result)
         return fail("Internal server error")
     end
     return result
