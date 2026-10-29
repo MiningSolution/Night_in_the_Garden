@@ -45,6 +45,10 @@ local UITheme = {
 	-- Window backdrop (full-screen dim behind an open window)
 	Backdrop = Color3.fromRGB(0, 0, 0),
 	BackdropTransparency = 0.5,
+
+	-- Event banners (feature 003, dark palette; day palette is Phase 4).
+	-- Nightfall banner background; the rare-spirit announcement reuses RarityEpic.
+	BannerNight = Color3.fromRGB(40, 50, 92),
 }
 
 return UITheme

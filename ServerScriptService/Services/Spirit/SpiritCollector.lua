@@ -127,6 +127,12 @@ function M.tryCollect(player, spiritId, spirit, spiritType, isSpiritActive, remo
         PlayerData.IncrementStat(player, "TotalSpiritsCollected", 1)
     end
 
+    -- feature 003 (US2): daily quest progress for catching spirits.
+    local questOk, QuestService = pcall(require, script.Parent.Parent:WaitForChild("QuestService"))
+    if questOk and QuestService then
+        QuestService.Track(player, "catch_spirit", 1)
+    end
+
     -- Mark as collected (cooldown)
     cooldowns[player.UserId] = tick()
 

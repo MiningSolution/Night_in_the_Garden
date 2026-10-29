@@ -1,0 +1,289 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "DisplayOrder": 5,
+    "Enabled": false,
+    "IgnoreGuiInset": false,
+    "ResetOnSpawn": false,
+    "ScreenInsets": "CoreUISafeInsets",
+    "ZIndexBehavior": "Sibling"
+  },
+  "children": [
+    {
+      "name": "Backdrop",
+      "className": "TextButton",
+      "properties": {
+        "AutoButtonColor": false,
+        "BackgroundColor3": [0, 0, 0],
+        "BackgroundTransparency": 0.5,
+        "BorderSizePixel": 0,
+        "Size": {"UDim2": [[1, 0], [1, 0]]},
+        "Text": "",
+        "ZIndex": 0
+      }
+    },
+    {
+      "name": "QuestsFrame",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [0.5, 0.5],
+        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "SelectionBehaviorDown": "Stop",
+        "SelectionBehaviorLeft": "Stop",
+        "SelectionBehaviorRight": "Stop",
+        "SelectionBehaviorUp": "Stop",
+        "SelectionGroup": true,
+        "Size": {"UDim2": [[0.9, 0], [0.8, 0]]}
+      },
+      "children": [
+        {
+          "name": "UISizeConstraint",
+          "className": "UISizeConstraint",
+          "properties": {
+            "MaxSize": [560, 460],
+            "MinSize": [320, 260]
+          }
+        },
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 12]}
+          }
+        },
+        {
+          "name": "HeaderBar",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.141176, 0.141176, 0.188235],
+            "BorderSizePixel": 0,
+            "Size": {"UDim2": [[1, 0], [0, 50]]}
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 12]}
+              }
+            },
+            {
+              "name": "TitleLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 20], [0, 0]]},
+                "Size": {"UDim2": [[1, -74], [1, 0]]},
+                "Text": "📋 DAILY QUESTS",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24,
+                "TextXAlignment": "Left"
+              }
+            },
+            {
+              "name": "CloseButton",
+              "className": "TextButton",
+              "properties": {
+                "AnchorPoint": [0, 0.5],
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.862745, 0.313725, 0.313725],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[1, -54], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 44], [0, 44]]},
+                "Text": "X",
+                "TextColor3": [1, 1, 1],
+                "TextSize": 24
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 8]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "QuestScroll",
+          "className": "ScrollingFrame",
+          "properties": {
+            "AutomaticCanvasSize": "Y",
+            "BackgroundTransparency": 1,
+            "BorderSizePixel": 0,
+            "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
+            "Position": {"UDim2": [[0, 20], [0, 60]]},
+            "ScrollBarImageColor3": [0.235294, 0.235294, 0.27451],
+            "ScrollBarThickness": 8,
+            "Size": {"UDim2": [[1, -40], [1, -70]]}
+          },
+          "children": [
+            {
+              "name": "UIListLayout",
+              "className": "UIListLayout",
+              "properties": {
+                "FillDirection": "Vertical",
+                "Padding": {"UDim": [0, 8]},
+                "SortOrder": "LayoutOrder"
+              }
+            },
+            {
+              "name": "QuestRowTemplate",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[1, -8], [0, 86]]},
+                "Visible": false
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 8]}
+                  }
+                },
+                {
+                  "name": "UIPadding",
+                  "className": "UIPadding",
+                  "properties": {
+                    "PaddingBottom": {"UDim": [0, 8]},
+                    "PaddingLeft": {"UDim": [0, 12]},
+                    "PaddingRight": {"UDim": [0, 12]},
+                    "PaddingTop": {"UDim": [0, 8]}
+                  }
+                },
+                {
+                  "name": "ObjectiveLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamMedium",
+                    "Position": {"UDim2": [[0, 0], [0, 0]]},
+                    "Size": {"UDim2": [[1, -110], [0, 24]]},
+                    "Text": "Objective",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 18,
+                    "TextXAlignment": "Left"
+                  }
+                },
+                {
+                  "name": "RewardLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "Gotham",
+                    "Position": {"UDim2": [[0, 0], [0, 26]]},
+                    "Size": {"UDim2": [[1, -110], [0, 20]]},
+                    "Text": "",
+                    "TextColor3": [1, 0.862745, 0.392157],
+                    "TextSize": 16,
+                    "TextXAlignment": "Left"
+                  }
+                },
+                {
+                  "name": "ProgressBarBG",
+                  "className": "Frame",
+                  "properties": {
+                    "AnchorPoint": [0, 1],
+                    "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+                    "BorderSizePixel": 0,
+                    "Position": {"UDim2": [[0, 0], [1, -14]]},
+                    "Size": {"UDim2": [[1, -110], [0, 14]]}
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 6]}
+                      }
+                    },
+                    {
+                      "name": "ProgressBar",
+                      "className": "Frame",
+                      "properties": {
+                        "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+                        "BorderSizePixel": 0,
+                        "Size": {"UDim2": [[0, 0], [1, 0]]}
+                      },
+                      "children": [
+                        {
+                          "name": "UICorner",
+                          "className": "UICorner",
+                          "properties": {
+                            "CornerRadius": {"UDim": [0, 6]}
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "ProgressLabel",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "0 / 0",
+                        "TextColor3": [1, 1, 1],
+                        "TextSize": 14
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "ClaimButton",
+                  "className": "TextButton",
+                  "properties": {
+                    "Active": false,
+                    "AnchorPoint": [0, 0.5],
+                    "AutoButtonColor": false,
+                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                    "BorderSizePixel": 0,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[1, -96], [0.5, 0]]},
+                    "Size": {"UDim2": [[0, 96], [0, 44]]},
+                    "Text": "CLAIM",
+                    "TextColor3": [1, 1, 1],
+                    "TextSize": 20
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EmptyState",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "Gotham",
+            "Position": {"UDim2": [[0, 20], [0, 70]]},
+            "Size": {"UDim2": [[1, -40], [0, 40]]},
+            "Text": "No quests today — check back tomorrow.",
+            "TextColor3": [0.784314, 0.784314, 0.784314],
+            "TextSize": 18,
+            "TextWrapped": true,
+            "Visible": false
+          }
+        }
+      ]
+    }
+  ]
+}

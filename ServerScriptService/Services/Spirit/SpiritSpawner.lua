@@ -8,6 +8,11 @@ local Debris = game:GetService("Debris")
 local Config = require(script.Parent.SpiritConfig)
 local Types = require(script.Parent.SpiritTypes)
 
+-- feature 003 (US4): announce rare/epic spawns server-wide.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RetentionConfig = require(ReplicatedStorage:WaitForChild("RetentionConfig"))
+local ServerAnnounce = ReplicatedStorage:WaitForChild("ServerAnnounce", 10)
+
 local M = {}
 
 local GRID_SIZE = 50
@@ -283,7 +288,12 @@ function M.spawnOne(onCollectCallback)
     -- TTL cleanup
     Debris:AddItem(model, Config.DespawnAfterSec)
 
-    print(string.format("[SpiritSpawner] Spawned %s @ (%.1f, %.1f, %.1f)", 
+    -- feature 003 (US4): server-wide announcement for a rare/epic spirit (FR-010).
+    if ServerAnnounce and RetentionConfig.AnnounceRarities[spiritType.rarity] then
+        ServerAnnounce:FireAllClients("rare_spirit", spiritType.displayName, spiritType.rarity)
+    end
+
+    print(string.format("[SpiritSpawner] Spawned %s @ (%.1f, %.1f, %.1f)",
         spiritType.id, pos.X, pos.Y, pos.Z))
     
     return id

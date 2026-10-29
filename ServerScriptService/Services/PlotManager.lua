@@ -5,6 +5,7 @@ local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
 local AntiCheat = require(script.Parent:WaitForChild("AntiCheatLogger"))
 local PlantData = require(RS:WaitForChild("PlantData"))
 local GameSettings = require(RS:WaitForChild("GameSettings"))
+local QuestService = require(script.Parent:WaitForChild("QuestService")) -- feature 003 (US2)
 
 local PlotStateChanged = RS:WaitForChild("PlotStateChanged")
 local PlotStateUpdated = RS:WaitForChild("PlotStateUpdated")
@@ -131,6 +132,8 @@ function M.HandleInteraction(player, plotModel, clientToolName)
         plot.GrowthSeconds = 0 -- feature 002: phase-gated growth accumulator (FR-007)
         plot.IsWatered = false
 
+        QuestService.Track(player, "plant", 1) -- feature 003 (US2)
+
         PlotStateChanged:FireClient(player, plotId, plot)
         local snap = PlayerData.Snapshot(player)
         PlotStateUpdated:FireClient(player, {PlotId=plotId, Success=true, Snapshot=snap})
@@ -142,6 +145,7 @@ function M.HandleInteraction(player, plotModel, clientToolName)
         if plot.State ~= "ReadyToHarvest" then return fail("Not ripe") end
         local crop = (plot.PlantId or "carrot").."_crop"
         PlayerData.AddItem(player, crop, 1)
+        QuestService.Track(player, "harvest", 1) -- feature 003 (US2)
 
         -- Temporary harvest effect (non-blocking)
         PlotStateChanged:FireClient(player, plotId, {State="Harvesting", PlantId=plot.PlantId, GrowthProgress=1, IsWatered=false})

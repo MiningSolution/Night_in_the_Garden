@@ -34,6 +34,16 @@ ensureEvent("GetPlayerData", "RemoteFunction")
 -- Spirit system
 ensureEvent("CollectSpirit", "RemoteFunction")
 
+-- Retention system (feature 003)
+ensureEvent("GetDailyReward", "RemoteFunction")   -- read streak state + reward table
+ensureEvent("ClaimDailyReward", "RemoteFunction")  -- claim today's reward (server-decided)
+ensureEvent("GetQuests", "RemoteFunction")        -- read today's quests + progress
+ensureEvent("ClaimQuest", "RemoteFunction")       -- claim a completed quest's reward
+ensureEvent("QuestUpdated", "RemoteEvent")        -- server → client progress/claim push
+ensureEvent("ShopRestocked", "RemoteEvent")       -- server → all clients: restock + new stock
+ensureEvent("ServerAnnounce", "RemoteEvent")      -- server → all clients: night / rare-spirit event
+ensureEvent("SetTutorialDone", "RemoteFunction")  -- mark first-session onboarding complete
+
 -- Data updates (server → client)
 ensureEvent("UpdateCurrency", "RemoteEvent")
 ensureEvent("UpdateInventory", "RemoteEvent")
