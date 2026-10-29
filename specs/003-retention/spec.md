@@ -330,5 +330,9 @@ show again; on a profile that already finished it, confirm it never appears.
   Studio is reset or called out in the PR.
 - **Icons/art**: any new icons follow the Phase 2 fallback convention (emoji/first letter) so the feature
   does not block on art.
+- **Watering fix (incidental)**: the onboarding "water" step requires watering to work, but a
+  pre-existing bug left the stored plot state as `"Planted"` throughout growth (the `"Growing"` state
+  was only ever sent transiently), so watering could never succeed. This feature persists the
+  `"Growing"` state during growth to unblock it; planting and harvest gates are unchanged.
 - **Out of scope**: day/night palette/theme switching (Phase 4); any paid/Robux reward; cross-server
   global stock; leaderboards or social features beyond the per-server announcement.

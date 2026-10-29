@@ -152,6 +152,7 @@ completion/skip; a done profile never sees it (quickstart V11).
 - [x] T043 [US5] `StarterPlayer/StarterPlayerScripts/Controllers/TutorialController.lua`: run only when `Onboarding.Done` is false; step machine `go_to_plot → plant → water → sell` advancing on the same client-visible events (plot/inventory updates); `SkipButton` and completion call `SetTutorialDone`; position the hint per step; never block input
 - [x] T044 [US5] `StarterPlayer/StarterPlayerScripts/ClientMain.client.lua`: boot `TutorialController` (reads onboarding state from the player-data snapshot)
 - [x] T045 [US5] Studio playtest V11 (phone/PC/gamepad): fresh profile guided through plant→water→sell; rejoin shows nothing; skip persists; a done profile never sees it; hint never blocks controls; Output clean; reset the test-profile onboarding flag if written to a live DataStore
+- [x] T045a [US5] Incidental fix (surfaced by the water step): `ServerScriptService/Services/PlantGrowthService.lua` persists `plot.State = "Growing"` during growth — it was only ever sent transiently, so the stored state stayed `"Planted"` and watering (which requires `"Growing"`) could never succeed. Planting still rejects non-empty plots and harvest still requires `"ReadyToHarvest"`, so this only unblocks watering.
 
 **Checkpoint**: onboarding functional and independently testable.
 

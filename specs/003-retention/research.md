@@ -152,9 +152,13 @@ controller listens to the same client-visible state changes the quest events pro
 updates) to advance. Hints are static elements shown/hidden by the controller; they never capture input
 over movement/menu/hotbar.
 
-**Rationale**: a persisted boolean is the minimal "show once" state; `Step` lets a mid-tutorial rejoin
-resume, but completion is the only thing that must persist. Reusing existing client state keeps it
-decoupled from gameplay code.
+**Rationale**: a persisted boolean is the minimal "show once" state; completion is the only thing that
+must persist. Reusing existing client state keeps it decoupled from gameplay code.
+
+**As implemented**: only `Done` is persisted — the controller restarts at step 1 on rejoin rather than
+resuming mid-tutorial. `Step` (and `PlayerDataManager.SetOnboardingStep`) are reserved for a future
+step-resume and are currently unused; this keeps the feature to the minimum the spec requires (FR-011
+only mandates show-once).
 
 **Alternatives considered**: server-driven tutorial state machine (overkill; tutorial is pure
 presentation); no persistence / show every join (fails SC-005). Rejected.

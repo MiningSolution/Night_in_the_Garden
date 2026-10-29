@@ -36,6 +36,10 @@ unknown/out-of-set id; not complete; already claimed; bad type; rate exceeded.
 Sets `Onboarding.Done = true` (write-once-true). Accepts completion or skip. Rejects: rate exceeded;
 data not loaded. Harmless if already done.
 
+The client **reads** onboarding state through the existing `GetPlayerData`, which is extended to
+return `Onboarding = { Done, Step }` alongside its current fields; `TutorialController` uses
+`Onboarding.Done` to decide whether to run (no separate read remote is added).
+
 ## Extended RemoteFunctions
 
 ### `GetShopData(player) → { Success, Config = { buy, sell }, PlayerCoins, Stock, RestockAt, Interval }`

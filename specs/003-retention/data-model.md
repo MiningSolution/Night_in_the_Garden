@@ -22,7 +22,10 @@ Quests = {
 },
 Onboarding = {
     Done = false,      -- true once the tutorial is completed or skipped (show-once gate)
-    Step = 0,          -- 0 = not started; 1..4 = current step while running
+    Step = 0,          -- reserved for a future mid-tutorial resume; NOT persisted today
+                       -- (the tutorial restarts at step 1 on rejoin). Only `Done` is the
+                       -- show-once gate. `PlayerDataManager.SetOnboardingStep` exists but
+                       -- is unused until step-resume is added.
 },
 ```
 
