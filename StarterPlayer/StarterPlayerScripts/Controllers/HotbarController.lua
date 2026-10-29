@@ -206,6 +206,21 @@ function HotbarController.EquipSlot(slotPos)
     equipCurrent(true)
 end
 
+--[[ Equip a hotbar item by its serverTool id (used by the Backpack Equip action).
+     Returns false (and does nothing) when the item is not on the hotbar. ]]
+function HotbarController.EquipByItemName(name)
+    for idx, item in ipairs(items) do
+        if item.serverTool == name then
+            equippedIndex = idx
+            ensureVisible()
+            render()
+            equipCurrent(true)
+            return true
+        end
+    end
+    return false
+end
+
 --[[ Cycle the equipped item through the whole list (L1/R1). ]]
 local function cycle(dir)
     if #items == 0 then return end

@@ -16,7 +16,6 @@
         "BackgroundColor3": [0.015686, 0.039216, 0.086275],
         "BackgroundTransparency": 0.5,
         "BorderSizePixel": 0,
-        "Position": {"UDim2": [[0, 0], [0, 0]]},
         "Size": {"UDim2": [[1, 0], [1, 0]]},
         "Text": "",
         "ZIndex": 0
@@ -64,22 +63,6 @@
           }
         },
         {
-          "name": "Shadow",
-          "className": "ImageLabel",
-          "properties": {
-            "AnchorPoint": [0.5, 0.5],
-            "BackgroundTransparency": 1,
-            "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
-            "ImageColor3": [0, 0, 0],
-            "ImageTransparency": 0.7,
-            "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
-            "ScaleType": "Slice",
-            "Size": {"UDim2": [[1, 30], [1, 30]]},
-            "SliceCenter": {"Rect": [[8, 8], [8, 8]]},
-            "ZIndex": -1
-          }
-        },
-        {
           "name": "HeaderBar",
           "className": "Frame",
           "properties": {
@@ -116,19 +99,6 @@
               }
             },
             {
-              "name": "Frame",
-              "className": "Frame",
-              "properties": {
-                "BackgroundColor3": [0.043137, 0.121569, 0.258824],
-                "BorderSizePixel": 0,
-                "Position": {"UDim2": [[0, 0], [1, -12]]},
-                "Size": {"UDim2": [[1, 0], [0, 12]]}
-              },
-              "attributes": {
-                "Theme_BackgroundColor3": "HeaderBottom"
-              }
-            },
-            {
               "name": "TitleLabel",
               "className": "TextLabel",
               "properties": {
@@ -136,7 +106,7 @@
                 "Font": "GothamBold",
                 "Position": {"UDim2": [[0, 20], [0, 0]]},
                 "Size": {"UDim2": [[1, -100], [1, 0]]},
-                "Text": "📦 INVENTORY",
+                "Text": "🎒 BACKPACK",
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24,
                 "TextXAlignment": "Left"
@@ -181,12 +151,12 @@
           "className": "Frame",
           "properties": {
             "BackgroundTransparency": 1,
-            "Position": {"UDim2": [[0, 20], [0, 60]]},
-            "Size": {"UDim2": [[1, -40], [0, 45]]}
+            "Position": {"UDim2": [[0, 20], [0, 58]]},
+            "Size": {"UDim2": [[1, -40], [0, 44]]}
           },
           "children": [
             {
-              "name": "SeedsTab",
+              "name": "AllTab",
               "className": "TextButton",
               "properties": {
                 "AutoButtonColor": false,
@@ -194,8 +164,8 @@
                 "BorderSizePixel": 0,
                 "Font": "GothamBold",
                 "Position": {"UDim2": [[0, 0], [0, 0]]},
-                "Size": {"UDim2": [[0, 140], [1, 0]]},
-                "Text": "🌱 Seeds",
+                "Size": {"UDim2": [[0.14, 0], [1, 0]]},
+                "Text": "All",
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 20
               },
@@ -210,20 +180,32 @@
                   "properties": {
                     "CornerRadius": {"UDim": [0, 14]}
                   }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
                 }
               ]
             },
             {
-              "name": "ItemsTab",
+              "name": "SeedsTab",
               "className": "TextButton",
               "properties": {
                 "AutoButtonColor": false,
                 "BackgroundColor3": [0.164706, 0.25098, 0.376471],
                 "BorderSizePixel": 0,
                 "Font": "GothamBold",
-                "Position": {"UDim2": [[0, 150], [0, 0]]},
-                "Size": {"UDim2": [[0, 140], [1, 0]]},
-                "Text": "📦 Items",
+                "Position": {"UDim2": [[0.1475, 0], [0, 0]]},
+                "Size": {"UDim2": [[0.21, 0], [1, 0]]},
+                "Text": "🌱 Seeds",
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 20
               },
@@ -237,6 +219,138 @@
                   "className": "UICorner",
                   "properties": {
                     "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ToolsTab",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.164706, 0.25098, 0.376471],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.365, 0], [0, 0]]},
+                "Size": {"UDim2": [[0.21, 0], [1, 0]]},
+                "Text": "🔧 Tools",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 20
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Control",
+                "Theme_TextColor3": "TextPrimary"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "CropsTab",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.164706, 0.25098, 0.376471],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.5825, 0], [0, 0]]},
+                "Size": {"UDim2": [[0.21, 0], [1, 0]]},
+                "Text": "🥕 Crops",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 20
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Control",
+                "Theme_TextColor3": "TextPrimary"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "SpiritsTab",
+              "className": "TextButton",
+              "properties": {
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.164706, 0.25098, 0.376471],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.8, 0], [0, 0]]},
+                "Size": {"UDim2": [[0.22, 0], [1, 0]]},
+                "Text": "👻 Spirits",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 20
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Control",
+                "Theme_TextColor3": "TextPrimary"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 }
               ]
@@ -252,10 +366,10 @@
             "BackgroundTransparency": 0.5,
             "BorderSizePixel": 0,
             "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
-            "Position": {"UDim2": [[0, 20], [0, 115]]},
+            "Position": {"UDim2": [[0, 20], [0, 108]]},
             "ScrollBarImageColor3": [0.164706, 0.25098, 0.376471],
             "ScrollBarThickness": 8,
-            "Size": {"UDim2": [[1, -40], [1, -125]]}
+            "Size": {"UDim2": [[0.62, -20], [1, -116]]}
           },
           "attributes": {
             "Theme_BackgroundColor3": "SurfaceRaised",
@@ -273,8 +387,8 @@
               "name": "UIGridLayout",
               "className": "UIGridLayout",
               "properties": {
-                "CellPadding": {"UDim2": [[0, 10], [0, 10]]},
-                "CellSize": {"UDim2": [[0, 100], [0, 100]]},
+                "CellPadding": {"UDim2": [[0, 8], [0, 8]]},
+                "CellSize": {"UDim2": [[0, 100], [0, 130]]},
                 "HorizontalAlignment": "Left",
                 "SortOrder": "Name"
               }
@@ -283,11 +397,411 @@
               "name": "UIPadding",
               "className": "UIPadding",
               "properties": {
-                "PaddingBottom": {"UDim": [0, 10]},
-                "PaddingLeft": {"UDim": [0, 10]},
-                "PaddingRight": {"UDim": [0, 10]},
-                "PaddingTop": {"UDim": [0, 10]}
+                "PaddingBottom": {"UDim": [0, 8]},
+                "PaddingLeft": {"UDim": [0, 8]},
+                "PaddingRight": {"UDim": [0, 8]},
+                "PaddingTop": {"UDim": [0, 8]}
               }
+            },
+            {
+              "name": "CardTemplate",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[0, 100], [0, 130]]},
+                "Visible": false
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
+                },
+                {
+                  "name": "Icon",
+                  "className": "ImageLabel",
+                  "properties": {
+                    "AnchorPoint": [0.5, 0],
+                    "BackgroundTransparency": 1,
+                    "Image": "",
+                    "Position": {"UDim2": [[0.5, 0], [0, 6]]},
+                    "ScaleType": "Fit",
+                    "Size": {"UDim2": [[0, 48], [0, 48]]}
+                  },
+                  "children": [
+                    {
+                      "name": "FallbackLetter",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "?",
+                        "TextColor3": [0.72549, 0.788235, 0.87451],
+                        "TextSize": 32
+                      },
+                      "attributes": {
+                        "Theme_TextColor3": "TextMuted"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "NameLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 4], [0, 56]]},
+                    "Size": {"UDim2": [[1, -8], [0, 40]]},
+                    "Text": "Item",
+                    "TextColor3": [0.960784, 0.956863, 0.913725],
+                    "TextSize": 18,
+                    "TextTruncate": "AtEnd",
+                    "TextWrapped": true,
+                    "TextYAlignment": "Top"
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextPrimary"
+                  }
+                },
+                {
+                  "name": "QtyLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "AnchorPoint": [1, 0],
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[1, -6], [0, 6]]},
+                    "Size": {"UDim2": [[0, 40], [0, 20]]},
+                    "Text": "x1",
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
+                    "TextSize": 16,
+                    "TextXAlignment": "Right"
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
+                  }
+                },
+                {
+                  "name": "FavouriteMark",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 6], [0, 6]]},
+                    "Size": {"UDim2": [[0, 22], [0, 22]]},
+                    "Text": "★",
+                    "TextColor3": [1, 0.854902, 0.482353],
+                    "TextSize": 18,
+                    "Visible": false
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "RarityLegendary"
+                  }
+                },
+                {
+                  "name": "RarityBadge",
+                  "className": "Frame",
+                  "properties": {
+                    "AnchorPoint": [0.5, 1],
+                    "BackgroundColor3": [0.588235, 0.635294, 0.713725],
+                    "BorderSizePixel": 0,
+                    "Position": {"UDim2": [[0.5, 0], [1, -6]]},
+                    "Size": {"UDim2": [[0, 92], [0, 22]]}
+                  },
+                  "attributes": {
+                    "Theme_BackgroundColor3": "RarityCommon"
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    },
+                    {
+                      "name": "UIStroke",
+                      "className": "UIStroke",
+                      "properties": {
+                        "ApplyStrokeMode": "Border",
+                        "Color": [0.023529, 0.090196, 0.180392],
+                        "Thickness": 2
+                      },
+                      "attributes": {
+                        "Theme_Color": "OutlineDeep"
+                      }
+                    },
+                    {
+                      "name": "BadgeText",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "COMMON",
+                        "TextColor3": [0.960784, 0.956863, 0.913725],
+                        "TextSize": 13
+                      },
+                      "attributes": {
+                        "Theme_TextColor3": "TextOnAccent"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "SlotButton",
+                  "className": "TextButton",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Size": {"UDim2": [[1, 0], [1, 0]]},
+                    "Text": "",
+                    "ZIndex": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "SpiritsEmptyState",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.12549, 0.2, 0.301961],
+            "BackgroundTransparency": 0.5,
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0, 20], [0, 108]]},
+            "Size": {"UDim2": [[0.62, -20], [1, -116]]},
+            "Visible": false
+          },
+          "attributes": {
+            "Theme_BackgroundColor3": "SurfaceRaised"
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "ComingSoonLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 10], [0, 0]]},
+                "Size": {"UDim2": [[1, -20], [1, 0]]},
+                "Text": "👻 Coming soon\nSpirits will appear here.",
+                "TextColor3": [0.72549, 0.788235, 0.87451],
+                "TextSize": 20,
+                "TextWrapped": true
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextMuted"
+              }
+            }
+          ]
+        },
+        {
+          "name": "DetailPanel",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [0.12549, 0.2, 0.301961],
+            "BorderSizePixel": 0,
+            "Position": {"UDim2": [[0.62, 10], [0, 108]]},
+            "Size": {"UDim2": [[0.38, -30], [1, -116]]}
+          },
+          "attributes": {
+            "Theme_BackgroundColor3": "SurfaceRaised"
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 14]}
+              }
+            },
+            {
+              "name": "UIStroke",
+              "className": "UIStroke",
+              "properties": {
+                "ApplyStrokeMode": "Border",
+                "Color": [0.25098, 0.368627, 0.517647],
+                "Thickness": 3
+              },
+              "attributes": {
+                "Theme_Color": "Outline"
+              }
+            },
+            {
+              "name": "SelectedIcon",
+              "className": "ImageLabel",
+              "properties": {
+                "AnchorPoint": [0.5, 0],
+                "BackgroundTransparency": 1,
+                "Image": "",
+                "Position": {"UDim2": [[0.5, 0], [0, 12]]},
+                "ScaleType": "Fit",
+                "Size": {"UDim2": [[0, 80], [0, 80]]}
+              },
+              "children": [
+                {
+                  "name": "FallbackLetter",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Size": {"UDim2": [[1, 0], [1, 0]]},
+                    "Text": "?",
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
+                    "TextSize": 48
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "SelectedName",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 8], [0, 98]]},
+                "Size": {"UDim2": [[1, -16], [0, 48]]},
+                "Text": "Select an item",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 20,
+                "TextTruncate": "AtEnd",
+                "TextWrapped": true
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextPrimary"
+              }
+            },
+            {
+              "name": "SelectedDescription",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "Gotham",
+                "Position": {"UDim2": [[0, 8], [0, 148]]},
+                "Size": {"UDim2": [[1, -16], [1, -226]]},
+                "Text": "Tap an item to see details.",
+                "TextColor3": [0.72549, 0.788235, 0.87451],
+                "TextSize": 18,
+                "TextWrapped": true,
+                "TextXAlignment": "Left",
+                "TextYAlignment": "Top"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextMuted"
+              }
+            },
+            {
+              "name": "FavouriteToggle",
+              "className": "TextButton",
+              "properties": {
+                "AnchorPoint": [1, 0],
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.164706, 0.25098, 0.376471],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[1, -6], [0, 6]]},
+                "Size": {"UDim2": [[0, 44], [0, 44]]},
+                "Text": "☆",
+                "TextColor3": [1, 0.854902, 0.482353],
+                "TextSize": 24
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Control",
+                "Theme_TextColor3": "RarityLegendary"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "ActionButton",
+              "className": "TextButton",
+              "properties": {
+                "AnchorPoint": [0.5, 1],
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.352941, 0.784314, 0.470588],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0.5, 0], [1, -8]]},
+                "Size": {"UDim2": [[1, -16], [0, 48]]},
+                "Text": "Equip",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 20
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Positive",
+                "Theme_TextColor3": "TextOnAccent"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.023529, 0.090196, 0.180392],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "OutlineDeep"
+                  }
+                }
+              ]
             }
           ]
         }
@@ -313,7 +827,7 @@
           "name": "UICorner",
           "className": "UICorner",
           "properties": {
-            "CornerRadius": {"UDim": [0, 14]}
+            "CornerRadius": {"UDim": [0, 8]}
           }
         },
         {
@@ -326,22 +840,6 @@
           },
           "attributes": {
             "Theme_Color": "Outline"
-          }
-        },
-        {
-          "name": "Shadow",
-          "className": "ImageLabel",
-          "properties": {
-            "AnchorPoint": [0.5, 0.5],
-            "BackgroundTransparency": 1,
-            "Image": "rbxasset://textures/ui/GuiImagePlaceholder.png",
-            "ImageColor3": [0, 0, 0],
-            "ImageTransparency": 0.6,
-            "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
-            "ScaleType": "Slice",
-            "Size": {"UDim2": [[1, 20], [1, 20]]},
-            "SliceCenter": {"Rect": [[8, 8], [8, 8]]},
-            "ZIndex": 9
           }
         },
         {
@@ -412,13 +910,13 @@
             "Position": {"UDim2": [[0, 0], [0, 80]]},
             "Size": {"UDim2": [[1, 0], [1, -80]]},
             "Text": "Quantity: 10\n💰 Sell Value: 15 coins\n🌱 Type: Seed",
-            "TextColor3": [0.72549, 0.788235, 0.87451],
+            "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 18,
             "TextXAlignment": "Left",
             "TextYAlignment": "Top"
           },
           "attributes": {
-            "Theme_TextColor3": "TextMuted"
+            "Theme_TextColor3": "TextPrimary"
           }
         }
       ]
