@@ -104,7 +104,7 @@ on Phase 2 (catalog + Snapshot) and US2 (catches recorded).**
 - [x] T025 [US3] In `Tools/StaticGui/builders/CreateInventoryUI.luau`, give the Spirits tab real content: reuse `CardTemplate` for caught spirits in `ItemGrid`; keep `SpiritsEmptyState` only for a genuinely empty collection; change the Spirits detail action to **"Open Journal"**.
 - [x] T026 [US3] In `StarterPlayer/StarterPlayerScripts/Controllers/InventoryController.lua`, render the Spirits tab from the snapshot `SpiritCollection` × `SpiritData` catalog (rarity-badged cards), show the empty state only when none caught, and wire the detail "Open Journal" action to open `SpiritJournalUI`.
 - [x] T027 [US3] Regenerate `StarterGui/*.model.json` (new `SpiritJournalUI.model.json` + updated `InventoryUI.model.json`); run all specs; commit.
-- [ ] T028 [US3] Studio playtest (both palettes): catch spirits → Spirits tab shows cards; open the Journal (discovered vs undiscovered, progress count); rejoin → collection persists (reconcile on an alt/old profile shows empty state cleanly); day↔night cross-fades the Journal; no new Output errors.
+- [x] T028 [US3] Studio playtest (both palettes): catch spirits → Spirits tab shows cards; open the Journal (discovered vs undiscovered, progress count); rejoin → collection persists (reconcile on an alt/old profile shows empty state cleanly); day↔night cross-fades the Journal; no new Output errors.
 
 **Checkpoint**: US3 shippable as PR-C.
 
