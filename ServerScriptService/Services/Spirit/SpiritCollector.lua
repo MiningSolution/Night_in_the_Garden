@@ -6,6 +6,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(script.Parent.SpiritConfig)
 local PlayerData = require(script.Parent.Parent.PlayerDataManager)
+-- feature 006 (US2): net gating + the single-source catch roll.
+local InventoryService = require(script.Parent.Parent.InventoryService)
+local SpiritData = require(ReplicatedStorage:WaitForChild("SpiritData"))
 
 local M = {}
 
@@ -108,21 +111,48 @@ function M.tryCollect(player, spiritId, spirit, spiritType, isSpiritActive, remo
         return false, 0
     end
 
-    -- Calculate and give reward
-    local amount = M.calculateReward(spiritType)
-    local newBalance = PlayerData.AddDreamSeeds(player, amount)
+    -- feature 006 (US2): branch by capture method. Wisps keep proximity collection;
+    -- the new flying creatures require the net and a server-rolled rarity chance.
+    local method = spiritType.captureMethod or "proximity"
+    local amount = 0
 
-    -- Update currency (async)
-    if UpdateCurrency then
-        UpdateCurrency:FireClient(player, "DreamSeeds", newBalance or 0)
+    if method == "net" then
+        -- Must hold the net. No cooldown here — the player just isn't holding the tool.
+        if InventoryService.GetEquipped(player) ~= "net" then
+            if SpiritCollected then
+                SpiritCollected:FireClient(player, spiritType.displayName, spiritType.rarity, 0, "needs_net")
+            end
+            return false, 0
+        end
+        -- An attempt is made (cooldown applies whether it lands or not, anti-spam).
+        cooldowns[player.UserId] = tick()
+        if not SpiritData.rollCatch(spiritType.catchChance, math.random()) then
+            if SpiritCollected then
+                SpiritCollected:FireClient(player, spiritType.displayName, spiritType.rarity, 0, "missed")
+            end
+            return false, 0 -- the creature may remain
+        end
+        -- Caught: a one-time discovery bonus on the FIRST catch of this type.
+        local isFirst = PlayerData.RecordSpiritCaught and PlayerData.RecordSpiritCaught(player, spiritType.id)
+        if isFirst and (spiritType.firstCatchBonus or 0) > 0 then
+            amount = spiritType.firstCatchBonus
+            local newBalance = PlayerData.AddDreamSeeds(player, amount)
+            if UpdateCurrency then UpdateCurrency:FireClient(player, "DreamSeeds", newBalance or 0) end
+        end
+    else
+        -- Proximity wisps: unchanged DreamSeeds reward + record the collection.
+        amount = M.calculateReward(spiritType)
+        local newBalance = PlayerData.AddDreamSeeds(player, amount)
+        if UpdateCurrency then UpdateCurrency:FireClient(player, "DreamSeeds", newBalance or 0) end
+        if PlayerData.RecordSpiritCaught then PlayerData.RecordSpiritCaught(player, spiritType.id) end
+        cooldowns[player.UserId] = tick()
     end
 
-    -- Client feedback with spirit type and amount
+    -- Client feedback for a successful catch/collect.
     if SpiritCollected then
-        SpiritCollected:FireClient(player, spiritType.displayName, spiritType.rarity, amount)
+        SpiritCollected:FireClient(player, spiritType.displayName, spiritType.rarity, amount, "caught")
     end
 
-    -- Stats (optional)
     if PlayerData.IncrementStat then
         PlayerData.IncrementStat(player, "TotalSpiritsCollected", 1)
     end
@@ -133,20 +163,14 @@ function M.tryCollect(player, spiritId, spirit, spiritType, isSpiritActive, remo
         QuestService.Track(player, "catch_spirit", 1)
     end
 
-    -- Mark as collected (cooldown)
-    cooldowns[player.UserId] = tick()
-
-    -- Remove from active list
     if removeSpirit then
         removeSpirit(spiritId)
     end
-
-    -- Cleanup instance
     spirit:Destroy()
 
-    print(string.format("[SpiritCollector] %s collected %s (+%d DreamSeeds)", 
+    print(string.format("[SpiritCollector] %s caught %s (+%d DreamSeeds)",
         player.Name, spiritType.id, amount))
-    
+
     return true, amount
 end
 
