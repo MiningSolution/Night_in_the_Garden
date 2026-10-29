@@ -190,6 +190,28 @@ function M.AddDreamSeeds(player, amount)
     return data.Currency.DreamSeeds
 end
 
+-- feature 006 (US2/US3): record a caught spirit in the player's collection.
+-- Returns true if this is the FIRST catch of that type (for the one-time discovery bonus).
+function M.RecordSpiritCaught(p, typeId)
+    local d = M.Get(p); if not d or type(typeId) ~= "string" then return false end
+    d.SpiritCollection = d.SpiritCollection or {}
+    local rec = d.SpiritCollection[typeId]
+    if not rec or (rec.FirstCaughtAt or 0) == 0 then
+        d.SpiritCollection[typeId] = { Count = ((rec and rec.Count) or 0) + 1, FirstCaughtAt = os.time() }
+        return true
+    end
+    rec.Count = (rec.Count or 0) + 1
+    return false
+end
+
+-- Increment a numeric field under Stats (creates it if missing).
+function M.IncrementStat(p, statName, delta)
+    local d = M.Get(p); if not d or type(statName) ~= "string" then return 0 end
+    d.Stats = d.Stats or {}
+    d.Stats[statName] = (d.Stats[statName] or 0) + (tonumber(delta) or 1)
+    return d.Stats[statName]
+end
+
 -- Plots
 function M.GetPlot(p, plotId)
     local d = M.Get(p); if not d then return nil end

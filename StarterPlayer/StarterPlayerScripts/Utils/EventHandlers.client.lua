@@ -154,35 +154,38 @@ end)
 -- SPIRIT COLLECTION FEEDBACK (NEW)
 -- ========================================
 if SpiritCollected then
-    SpiritCollected.OnClientEvent:Connect(function(spiritName, spiritRarity, amount)
+    SpiritCollected.OnClientEvent:Connect(function(spiritName, spiritRarity, amount, outcome)
+        -- feature 006 (US2): `outcome` distinguishes a successful catch from a missed net
+        -- roll or a no-net attempt (amount can be 0 on a successful repeat catch).
+        outcome = outcome or "caught"
         -- P0-5: Error handling wrapper
         local success, err = pcall(function()
-            print(string.format("👻 Collected %s (%s) for +%d Dream Seeds!", spiritName, spiritRarity, amount))
-            
-            -- Try to get UIController for visual feedback
             local uiSuccess, UIController = pcall(function()
                 return require(script.Parent.Parent.Controllers.UIController)
             end)
-            
-            if uiSuccess and UIController and UIController.ShowNotification then
-                -- Determine icon based on rarity
-                local rarityIcons = {
-                    Common = "👻",
-                    Rare = "✨",
-                    Epic = "🌟"
-                }
-                local icon = rarityIcons[spiritRarity] or "👻"
-                
-                -- Show notification with spirit info
-                UIController.ShowNotification(
-                    string.format("%s +%d 🌙 from %s!", icon, amount, spiritName),
-                    "spirit",
-                    2.5
-                )
-            else
-                -- Fallback: Just print if UIController not available
+            if not (uiSuccess and UIController and UIController.ShowNotification) then
                 warn("⚠️ UIController not available for spirit notification")
+                return
             end
+
+            if outcome == "missed" then
+                UIController.ShowNotification(string.format("💨 %s slipped away!", spiritName), "info", 2)
+                return
+            elseif outcome == "needs_net" then
+                UIController.ShowNotification(string.format("🥅 You need a Net to catch the %s", spiritName), "info", 2.5)
+                return
+            end
+
+            -- Caught (proximity wisp or netted creature).
+            local rarityIcons = { Common = "👻", Uncommon = "🦋", Rare = "✨", Epic = "🌟", Legendary = "🌈" }
+            local icon = rarityIcons[spiritRarity] or "👻"
+            local msg
+            if (tonumber(amount) or 0) > 0 then
+                msg = string.format("%s +%d 🌙 from %s!", icon, amount, spiritName)
+            else
+                msg = string.format("%s Caught a %s!", icon, spiritName)
+            end
+            UIController.ShowNotification(msg, "spirit", 2.5)
         end)
         
         if not success then

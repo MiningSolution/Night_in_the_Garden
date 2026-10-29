@@ -1,32 +1,15 @@
 -- SpiritTypes.lua
--- P2-1: Spirit type definitions with weights for random spawn
+-- P2-1: Spirit type definitions with weights for random spawn.
+-- feature 006 (Stage 2): the catalog now lives in ReplicatedStorage/SpiritData (single
+-- source shared with the client Journal). This module keeps the server-side spawn helpers.
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SpiritData = require(ReplicatedStorage:WaitForChild("SpiritData"))
 
 local M = {}
 
--- Types of spirits (weights for random spawn)
-M.Types = {
-    { 
-        id = "wisp_common", 
-        displayName = "Wisp", 
-        rarity = "Common", 
-        weight = 70, 
-        reward = 0 -- 0 means use config range
-    },
-    { 
-        id = "wisp_rare", 
-        displayName = "Bright Wisp", 
-        rarity = "Rare", 
-        weight = 25, 
-        reward = 0 
-    },
-    { 
-        id = "wisp_epic", 
-        displayName = "Ancient Wisp", 
-        rarity = "Epic", 
-        weight = 5, 
-        reward = 0 
-    },
-}
+-- Read the type list from the single-source catalog.
+M.Types = SpiritData.Types
 
 --[[
     Choose a random spirit type based on weights
@@ -34,20 +17,20 @@ M.Types = {
 ]]
 function M.ChooseRandom()
     local total = 0
-    for _, t in ipairs(M.Types) do 
-        total = total + (t.weight or 1) 
+    for _, t in ipairs(M.Types) do
+        total = total + (t.weight or 1)
     end
-    
+
     local roll = math.random(1, total)
     local acc = 0
-    
+
     for _, t in ipairs(M.Types) do
         acc = acc + (t.weight or 1)
-        if roll <= acc then 
-            return t 
+        if roll <= acc then
+            return t
         end
     end
-    
+
     -- Fallback to first type
     return M.Types[1]
 end
@@ -58,13 +41,7 @@ end
     @return table - Spirit type or nil
 ]]
 function M.FindById(typeId)
-    for _, t in ipairs(M.Types) do
-        if t.id == typeId then
-            return t
-        end
-    end
-    return nil
+    return SpiritData.FindById(typeId)
 end
 
 return M
-

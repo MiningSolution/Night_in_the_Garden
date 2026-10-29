@@ -27,9 +27,11 @@ local M = {
         RewardMin = 1,                    -- минимальное количество DreamSeeds за сбор
         RewardMax = 3,                    -- максимальное количество DreamSeeds
         Colors = {
-            Common = Color3.fromRGB(160, 200, 255),
-            Rare   = Color3.fromRGB(180, 120, 255),
-            Epic   = Color3.fromRGB(255, 200, 120),
+            Common    = Color3.fromRGB(160, 200, 255),
+            Uncommon  = Color3.fromRGB(120, 220, 140), -- feature 006: Moonmoth tier
+            Rare      = Color3.fromRGB(180, 120, 255),
+            Epic      = Color3.fromRGB(255, 200, 120),
+            Legendary = Color3.fromRGB(255, 220, 120),
         },
     },
     

@@ -242,7 +242,8 @@ local function buildSpiritModel(spiritType)
     -- ProximityPrompt (server-owned)
     local prompt = Instance.new("ProximityPrompt")
     prompt.Name = "CollectPrompt"
-    prompt.ActionText = "Soothe Spirit"
+    -- feature 006 (US2): the new flying creatures are netted; wisps are soothed.
+    prompt.ActionText = (spiritType.captureMethod == "net") and "Catch" or "Soothe Spirit"
     prompt.ObjectText = spiritType.displayName .. " (" .. spiritType.rarity .. ")"
     prompt.MaxActivationDistance = 12
     prompt.HoldDuration = 0.35

@@ -6,8 +6,10 @@
 -- inventory keys for the night plants / Dreamroot / items.
 -- SchemaVersion 3 (feature 003): adds DailyReward, Quests and Onboarding for the
 -- retention loop. All additive; reconcile fills them into existing profiles.
+-- SchemaVersion 4 (feature 006): adds SpiritCollection (per-player caught-spirit record)
+-- and Stats.TotalSpiritsCollected. Additive; reconcile backfills existing profiles.
 return {
-    SchemaVersion = 3,
+    SchemaVersion = 4,
     Currency = { Coins = 50, DreamSeeds = 0 },
     Inventory = {
         -- seeds
@@ -39,7 +41,10 @@ return {
         Plot2 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },
         Plot3 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },
     },
-    Stats = { Level=1, XP=0, TotalHarvests=0, TotalEarnings=0, PlayTimeSeconds=0 },
+    -- Per-player spirit collection (feature 006, US3). [spiritTypeId] = { Count, FirstCaughtAt }.
+    -- Absent / FirstCaughtAt == 0 means undiscovered. The Journal reads this against SpiritData.
+    SpiritCollection = {},
+    Stats = { Level=1, XP=0, TotalHarvests=0, TotalEarnings=0, PlayTimeSeconds=0, TotalSpiritsCollected=0 },
     Settings = { MusicEnabled=true, SFXEnabled=true, UIScale=1.0 },
     LastLogin = 0, TotalLogins = 0, CreatedAt = 0
 }

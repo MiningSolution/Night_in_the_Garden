@@ -23,8 +23,10 @@ local SpiritCfg = GameSettings.SpiritSettings or {
     RewardMax = 3,
     Colors = {
         Common = Color3.fromRGB(160, 200, 255),
+        Uncommon = Color3.fromRGB(120, 220, 140),
         Rare = Color3.fromRGB(180, 120, 255),
         Epic = Color3.fromRGB(255, 200, 120),
+        Legendary = Color3.fromRGB(255, 220, 120),
     }
 }
 
