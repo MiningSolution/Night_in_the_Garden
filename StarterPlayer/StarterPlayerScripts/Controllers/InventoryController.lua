@@ -52,8 +52,16 @@ end
 local PlantData = ReplicatedStorage:FindFirstChild("PlantData") and require(ReplicatedStorage.PlantData)
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
 local ItemEmoji = require(ReplicatedStorage:WaitForChild("ItemEmoji")) -- feature 005: emoji icon fallback
+local SpiritData = require(ReplicatedStorage:WaitForChild("SpiritData")) -- feature 006 (US3): spirit catalog
 
 -- Optional collaborators (lazy + pcall so load order / a missing module is safe)
+local function getSpiritJournalController()
+    local m = script.Parent:FindFirstChild("SpiritJournalController")
+    if not m then return nil end
+    local ok, sj = pcall(require, m)
+    return ok and sj or nil
+end
+
 local function getThemeController()
     local m = script.Parent:FindFirstChild("ThemeController")
     if not m then return nil end
@@ -91,6 +99,7 @@ local currentTab = "All"
 local cachedInventory = {} -- P1-2: synced from StateManager
 local selectedItem = nil -- itemName of the selected card
 local favourites = {} -- [itemId] = true (server-owned set; mirrored from GetPlayerData/ToggleFavourite)
+local spiritCollection = {} -- feature 006 (US3): [typeId] = {Count, FirstCaughtAt}; mirrored from GetPlayerData
 
 -- Item categories
 local SEED_KEYWORDS = {"seed", "carrot", "tomato", "wheat", "pumpkin", "moonflower", "starberry"}
@@ -327,10 +336,34 @@ function InventoryController.RefreshGrid()
     end
 
     local isSpirits = currentTab == "Spirits"
-    if spiritsEmpty then spiritsEmpty.Visible = isSpirits end
-    itemGrid.Visible = not isSpirits
+    if isSpirits then
+        -- feature 006 (US3): render caught spirits as cards (empty state only when none).
+        for _, child in ipairs(itemGrid:GetChildren()) do
+            if child:GetAttribute("ItemName") then child:Destroy() end
+        end
+        local caught = {}
+        for typeId, rec in pairs(spiritCollection) do
+            if (rec.Count or 0) > 0 and (rec.FirstCaughtAt or 0) > 0 then
+                local st = SpiritData.FindById(typeId)
+                if st then caught[#caught + 1] = { st = st, rec = rec } end
+            end
+        end
+        table.sort(caught, function(a, b) return a.st.id < b.st.id end)
+        for _, c in ipairs(caught) do
+            InventoryController.CreateSpiritCard(c.st, c.rec)
+        end
+        local any = #caught > 0
+        if spiritsEmpty then spiritsEmpty.Visible = not any end
+        itemGrid.Visible = any
+        selectedItem = nil -- spirits aren't selectable items; the detail shows "Open Journal"
+        RefreshDetail()
+        return
+    end
 
-    -- Filter items by current tab (Spirits shows no items this stage)
+    if spiritsEmpty then spiritsEmpty.Visible = false end
+    itemGrid.Visible = true
+
+    -- Filter items by current tab
     local displayItems = {}
     if not isSpirits then
         for itemName, quantity in pairs(cachedInventory) do
@@ -380,6 +413,45 @@ end
 -- Back-compat name for the previous code-built slot API.
 InventoryController.CreateSlot = InventoryController.CreateCard
 
+--[[ feature 006 (US3): a card for a CAUGHT spirit on the Spirits tab. Reuses the
+     Backpack CardTemplate; name/rarity/count come from the single-source SpiritData.
+     Tapping it opens the Spirit Journal. Spirits are not selectable items (no detail). ]]
+function InventoryController.CreateSpiritCard(spiritType, record)
+    local card = cardTemplate:Clone()
+    card.Name = "Card_spirit_" .. spiritType.id
+    card.Visible = true
+    card:SetAttribute("ItemName", "spirit_" .. spiritType.id) -- so the grid cleanup handles it
+    card.Parent = itemGrid
+
+    local glyph = ItemEmoji.get(spiritType.id)
+    applyIcon(card:FindFirstChild("Icon"), "", (glyph ~= "" and glyph) or spiritType.displayName, spiritType.id)
+
+    local nameLabel = card:FindFirstChild("NameLabel")
+    if nameLabel then nameLabel.Text = spiritType.displayName end
+    local qty = card:FindFirstChild("QtyLabel")
+    if qty then qty.Text = "x" .. tostring((record and record.Count) or 1) end
+    local fav = card:FindFirstChild("FavouriteMark")
+    if fav then fav.Visible = false end
+
+    local badge = card:FindFirstChild("RarityBadge", true)
+    if badge then
+        badge:SetAttribute("Theme_BackgroundColor3", "Rarity" .. spiritType.rarity)
+        local badgeText = badge:FindFirstChild("BadgeText")
+        if badgeText then badgeText.Text = string.upper(spiritType.rarity) end
+    end
+
+    paint(card)
+
+    local button = card:FindFirstChild("SlotButton")
+    if button then
+        button.Activated:Connect(function()
+            local sj = getSpiritJournalController()
+            if sj then sj.Open() end
+        end)
+    end
+    return card
+end
+
 --[[ Detail panel ]]
 
 local function setActionButton(button, text, enabled)
@@ -406,13 +478,13 @@ function RefreshDetail()
         if selIcon then applyIcon(selIcon, "", "?") end
         if selName then selName.Text = (currentTab == "Spirits") and "Spirits" or "Select an item" end
         if selDesc then
-            selDesc.Text = (currentTab == "Spirits") and "The spirit journal is coming soon." or "Tap an item to see details."
+            selDesc.Text = (currentTab == "Spirits") and "Open the Spirit Journal to see every spirit you've met." or "Tap an item to see details."
         end
         if favToggle then favToggle.Visible = false end
         if actionButton then
             if currentTab == "Spirits" then
                 actionButton.Visible = true
-                setActionButton(actionButton, "View journal", false) -- placeholder (FR-018)
+                setActionButton(actionButton, "Open Journal", true) -- feature 006 (US3): FR-012 entry point
             else
                 actionButton.Visible = false
             end
@@ -453,12 +525,14 @@ function InventoryController.LoadFavourites()
         local ok, result = pcall(function() return fn:InvokeServer() end)
         if ok and type(result) == "table" and result.Success then
             favourites = result.Favourites or {}
+            spiritCollection = result.SpiritCollection or {} -- feature 006 (US3)
             if itemGrid then
                 for _, child in ipairs(itemGrid:GetChildren()) do
                     local name = child:GetAttribute("ItemName")
                     if name then updateFavouriteMark(child, name) end
                 end
             end
+            if currentTab == "Spirits" then InventoryController.RefreshGrid() end
             RefreshDetail()
         end
     end)
@@ -466,7 +540,14 @@ end
 
 local actionBusy = false
 local function onActionClicked()
-    if not selectedItem or actionBusy then return end
+    if actionBusy then return end
+    -- feature 006 (US3): on the Spirits tab the action opens the Spirit Journal.
+    if currentTab == "Spirits" then
+        local sj = getSpiritJournalController()
+        if sj then sj.Open() end
+        return
+    end
+    if not selectedItem then return end
     local itemName = selectedItem
     local category = CategoryOf(itemName)
 
@@ -636,6 +717,11 @@ function InventoryController.SwitchTab(tabName)
     currentTab = tabName
     paintTabs(currentTab)
     InventoryController.RefreshGrid()
+    -- feature 006 (US3): re-fetch the spirit collection when opening the Spirits tab,
+    -- then RefreshGrid again from the fresh data (LoadFavourites refreshes on complete).
+    if tabName == "Spirits" then
+        InventoryController.LoadFavourites()
+    end
 end
 
 --[[

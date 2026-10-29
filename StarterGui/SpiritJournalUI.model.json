@@ -1,0 +1,406 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "Enabled": false,
+    "IgnoreGuiInset": false,
+    "ResetOnSpawn": false,
+    "ScreenInsets": "CoreUISafeInsets",
+    "ZIndexBehavior": "Sibling"
+  },
+  "children": [
+    {
+      "name": "Backdrop",
+      "className": "TextButton",
+      "properties": {
+        "AutoButtonColor": false,
+        "BackgroundColor3": [0.015686, 0.039216, 0.086275],
+        "BackgroundTransparency": 0.5,
+        "BorderSizePixel": 0,
+        "Size": {"UDim2": [[1, 0], [1, 0]]},
+        "Text": "",
+        "ZIndex": 0
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Backdrop"
+      }
+    },
+    {
+      "name": "JournalFrame",
+      "className": "Frame",
+      "properties": {
+        "AnchorPoint": [0.5, 0.5],
+        "BackgroundColor3": [0.066667, 0.121569, 0.231373],
+        "BorderSizePixel": 0,
+        "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
+        "SelectionBehaviorDown": "Stop",
+        "SelectionBehaviorLeft": "Stop",
+        "SelectionBehaviorRight": "Stop",
+        "SelectionBehaviorUp": "Stop",
+        "SelectionGroup": true,
+        "Size": {"UDim2": [[0.9, 0], [0.85, 0]]}
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
+      },
+      "children": [
+        {
+          "name": "UICorner",
+          "className": "UICorner",
+          "properties": {
+            "CornerRadius": {"UDim": [0, 14]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "ApplyStrokeMode": "Border",
+            "Color": [0.023529, 0.090196, 0.180392],
+            "Thickness": 4
+          },
+          "attributes": {
+            "Theme_Color": "OutlineDeep"
+          }
+        },
+        {
+          "name": "UISizeConstraint",
+          "className": "UISizeConstraint",
+          "properties": {
+            "MaxSize": [620, 520],
+            "MinSize": [320, 280]
+          }
+        },
+        {
+          "name": "HeaderBar",
+          "className": "Frame",
+          "properties": {
+            "BackgroundColor3": [1, 1, 1],
+            "BorderSizePixel": 0,
+            "Size": {"UDim2": [[1, 0], [0, 50]]}
+          },
+          "children": [
+            {
+              "name": "UIGradient",
+              "className": "UIGradient",
+              "properties": {
+                "Color": {
+                  "ColorSequence": {"keypoints": [{
+                      "color": [0.082353, 0.215686, 0.407843],
+                      "time": 0
+                    }, {
+                      "color": [0.043137, 0.121569, 0.258824],
+                      "time": 1
+                    }]}
+                },
+                "Rotation": 90
+              },
+              "attributes": {
+                "Theme_GradientBottom": "HeaderBottom",
+                "Theme_GradientTop": "HeaderTop"
+              }
+            },
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 14]}
+              }
+            },
+            {
+              "name": "TitleLabel",
+              "className": "TextLabel",
+              "properties": {
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[0, 20], [0, 0]]},
+                "Size": {"UDim2": [[1, -220], [1, 0]]},
+                "Text": "🔮 SPIRIT JOURNAL",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 24,
+                "TextXAlignment": "Left"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextOnHeader"
+              }
+            },
+            {
+              "name": "ProgressLabel",
+              "className": "TextLabel",
+              "properties": {
+                "AnchorPoint": [1, 0],
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[1, -64], [0, 0]]},
+                "Size": {"UDim2": [[0, 150], [1, 0]]},
+                "Text": "0 / 0 discovered",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 18,
+                "TextXAlignment": "Right"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextOnHeader"
+              }
+            },
+            {
+              "name": "CloseButton",
+              "className": "TextButton",
+              "properties": {
+                "AnchorPoint": [0, 0.5],
+                "AutoButtonColor": false,
+                "BackgroundColor3": [0.878431, 0.376471, 0.376471],
+                "BorderSizePixel": 0,
+                "Font": "GothamBold",
+                "Position": {"UDim2": [[1, -54], [0.5, 0]]},
+                "Size": {"UDim2": [[0, 44], [0, 44]]},
+                "Text": "X",
+                "TextColor3": [0.960784, 0.956863, 0.913725],
+                "TextSize": 24
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Danger",
+                "Theme_TextColor3": "TextOnAccent"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EntryScroll",
+          "className": "ScrollingFrame",
+          "properties": {
+            "AutomaticCanvasSize": "Y",
+            "BackgroundColor3": [0.12549, 0.2, 0.301961],
+            "BackgroundTransparency": 0.5,
+            "BorderSizePixel": 0,
+            "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
+            "Position": {"UDim2": [[0, 20], [0, 60]]},
+            "ScrollBarImageColor3": [0.164706, 0.25098, 0.376471],
+            "ScrollBarThickness": 8,
+            "Size": {"UDim2": [[1, -40], [1, -70]]}
+          },
+          "attributes": {
+            "Theme_BackgroundColor3": "SurfaceRaised",
+            "Theme_ScrollBarImageColor3": "Control"
+          },
+          "children": [
+            {
+              "name": "UICorner",
+              "className": "UICorner",
+              "properties": {
+                "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "UIGridLayout",
+              "className": "UIGridLayout",
+              "properties": {
+                "CellPadding": {"UDim2": [[0, 10], [0, 10]]},
+                "CellSize": {"UDim2": [[0, 120], [0, 140]]},
+                "HorizontalAlignment": "Left",
+                "SortOrder": "LayoutOrder"
+              }
+            },
+            {
+              "name": "UIPadding",
+              "className": "UIPadding",
+              "properties": {
+                "PaddingBottom": {"UDim": [0, 10]},
+                "PaddingLeft": {"UDim": [0, 10]},
+                "PaddingRight": {"UDim": [0, 10]},
+                "PaddingTop": {"UDim": [0, 10]}
+              }
+            },
+            {
+              "name": "EntryTemplate",
+              "className": "Frame",
+              "properties": {
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
+                "BorderSizePixel": 0,
+                "Size": {"UDim2": [[0, 120], [0, 140]]},
+                "Visible": false
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
+              "children": [
+                {
+                  "name": "UICorner",
+                  "className": "UICorner",
+                  "properties": {
+                    "CornerRadius": {"UDim": [0, 14]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
+                  }
+                },
+                {
+                  "name": "Icon",
+                  "className": "ImageLabel",
+                  "properties": {
+                    "AnchorPoint": [0.5, 0],
+                    "BackgroundTransparency": 1,
+                    "Image": "",
+                    "Position": {"UDim2": [[0.5, 0], [0, 8]]},
+                    "ScaleType": "Fit",
+                    "Size": {"UDim2": [[0, 52], [0, 52]]}
+                  },
+                  "children": [
+                    {
+                      "name": "FallbackLetter",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "?",
+                        "TextColor3": [0.72549, 0.788235, 0.87451],
+                        "TextSize": 34
+                      },
+                      "attributes": {
+                        "Theme_TextColor3": "TextMuted"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "NameLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "GothamBold",
+                    "Position": {"UDim2": [[0, 4], [0, 62]]},
+                    "Size": {"UDim2": [[1, -8], [0, 20]]},
+                    "Text": "???",
+                    "TextColor3": [0.960784, 0.956863, 0.913725],
+                    "TextSize": 16,
+                    "TextTruncate": "AtEnd"
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextPrimary"
+                  }
+                },
+                {
+                  "name": "CountLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "Gotham",
+                    "Position": {"UDim2": [[0, 4], [0, 82]]},
+                    "Size": {"UDim2": [[1, -8], [0, 18]]},
+                    "Text": "",
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
+                    "TextSize": 14
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
+                  }
+                },
+                {
+                  "name": "FirstCaughtLabel",
+                  "className": "TextLabel",
+                  "properties": {
+                    "BackgroundTransparency": 1,
+                    "Font": "Gotham",
+                    "Position": {"UDim2": [[0, 4], [0, 100]]},
+                    "Size": {"UDim2": [[1, -8], [0, 16]]},
+                    "Text": "",
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
+                    "TextSize": 12
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
+                  }
+                },
+                {
+                  "name": "RarityBadge",
+                  "className": "Frame",
+                  "properties": {
+                    "AnchorPoint": [0.5, 1],
+                    "BackgroundColor3": [0.588235, 0.635294, 0.713725],
+                    "BorderSizePixel": 0,
+                    "Position": {"UDim2": [[0.5, 0], [1, -6]]},
+                    "Size": {"UDim2": [[0, 108], [0, 20]]}
+                  },
+                  "attributes": {
+                    "Theme_BackgroundColor3": "RarityCommon"
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    },
+                    {
+                      "name": "UIStroke",
+                      "className": "UIStroke",
+                      "properties": {
+                        "ApplyStrokeMode": "Border",
+                        "Color": [0.023529, 0.090196, 0.180392],
+                        "Thickness": 2
+                      },
+                      "attributes": {
+                        "Theme_Color": "OutlineDeep"
+                      }
+                    },
+                    {
+                      "name": "BadgeText",
+                      "className": "TextLabel",
+                      "properties": {
+                        "BackgroundTransparency": 1,
+                        "Font": "GothamBold",
+                        "Size": {"UDim2": [[1, 0], [1, 0]]},
+                        "Text": "COMMON",
+                        "TextColor3": [0.960784, 0.956863, 0.913725],
+                        "TextSize": 12
+                      },
+                      "attributes": {
+                        "Theme_TextColor3": "TextOnAccent"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EmptyState",
+          "className": "TextLabel",
+          "properties": {
+            "BackgroundTransparency": 1,
+            "Font": "Gotham",
+            "Position": {"UDim2": [[0, 20], [0, 70]]},
+            "Size": {"UDim2": [[1, -40], [0, 40]]},
+            "Text": "No spirits known yet.",
+            "TextColor3": [0.72549, 0.788235, 0.87451],
+            "TextSize": 18,
+            "TextWrapped": true,
+            "Visible": false
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextMuted"
+          }
+        }
+      ]
+    }
+  ]
+}
