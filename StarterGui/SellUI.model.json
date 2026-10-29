@@ -19,6 +19,9 @@
         "Size": {"UDim2": [[1, 0], [1, 0]]},
         "Text": "",
         "ZIndex": 0
+      },
+      "attributes": {
+        "Theme_BackgroundColor3": "Backdrop"
       }
     },
     {
@@ -36,6 +39,9 @@
         "SelectionGroup": true,
         "Size": {"UDim2": [[0.9, 0], [0.9, 0]]}
       },
+      "attributes": {
+        "Theme_BackgroundColor3": "Surface"
+      },
       "children": [
         {
           "name": "UISizeConstraint",
@@ -49,23 +55,55 @@
           "name": "UICorner",
           "className": "UICorner",
           "properties": {
-            "CornerRadius": {"UDim": [0, 12]}
+            "CornerRadius": {"UDim": [0, 14]}
+          }
+        },
+        {
+          "name": "UIStroke",
+          "className": "UIStroke",
+          "properties": {
+            "ApplyStrokeMode": "Border",
+            "Color": [0.023529, 0.090196, 0.180392],
+            "Thickness": 4
+          },
+          "attributes": {
+            "Theme_Color": "OutlineDeep"
           }
         },
         {
           "name": "HeaderBar",
           "className": "Frame",
           "properties": {
-            "BackgroundColor3": [0.082353, 0.215686, 0.407843],
+            "BackgroundColor3": [1, 1, 1],
             "BorderSizePixel": 0,
             "Size": {"UDim2": [[1, 0], [0, 50]]}
           },
           "children": [
             {
+              "name": "UIGradient",
+              "className": "UIGradient",
+              "properties": {
+                "Color": {
+                  "ColorSequence": {"keypoints": [{
+                      "color": [0.082353, 0.215686, 0.407843],
+                      "time": 0
+                    }, {
+                      "color": [0.043137, 0.121569, 0.258824],
+                      "time": 1
+                    }]}
+                },
+                "Rotation": 90
+              },
+              "attributes": {
+                "Theme_GradientBottom": "HeaderBottom",
+                "Theme_GradientTop": "HeaderTop"
+              }
+            },
+            {
               "name": "UICorner",
               "className": "UICorner",
               "properties": {
-                "CornerRadius": {"UDim": [0, 12]}
+                "CornerRadius": {"UDim": [0, 14]}
               }
             },
             {
@@ -80,6 +118,9 @@
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24,
                 "TextXAlignment": "Left"
+              },
+              "attributes": {
+                "Theme_TextColor3": "TextOnHeader"
               }
             },
             {
@@ -96,6 +137,10 @@
                 "Text": "X",
                 "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24
+              },
+              "attributes": {
+                "Theme_BackgroundColor3": "Danger",
+                "Theme_TextColor3": "TextOnAccent"
               },
               "children": [
                 {
@@ -114,13 +159,16 @@
           "className": "TextLabel",
           "properties": {
             "BackgroundTransparency": 1,
-            "Font": "GothamMedium",
+            "Font": "GothamBold",
             "Position": {"UDim2": [[0, 20], [0, 58]]},
             "Size": {"UDim2": [[1, -40], [0, 30]]},
             "Text": "Sell all total: 0 coins",
-            "TextColor3": [0.72549, 0.788235, 0.87451],
+            "TextColor3": [1, 0.854902, 0.482353],
             "TextSize": 20,
             "TextXAlignment": "Left"
+          },
+          "attributes": {
+            "Theme_TextColor3": "Coins"
           }
         },
         {
@@ -136,6 +184,10 @@
             "ScrollBarImageColor3": [0.164706, 0.25098, 0.376471],
             "ScrollBarThickness": 8,
             "Size": {"UDim2": [[1, -40], [1, -160]]}
+          },
+          "attributes": {
+            "Theme_BackgroundColor3": "SurfaceRaised",
+            "Theme_ScrollBarImageColor3": "Control"
           },
           "children": [
             {
@@ -173,12 +225,27 @@
                 "Size": {"UDim2": [[1, -12], [0, 56]]},
                 "Visible": false
               },
+              "attributes": {
+                "Theme_BackgroundColor3": "SurfaceRaised"
+              },
               "children": [
                 {
                   "name": "UICorner",
                   "className": "UICorner",
                   "properties": {
-                    "CornerRadius": {"UDim": [0, 6]}
+                    "CornerRadius": {"UDim": [0, 10]}
+                  }
+                },
+                {
+                  "name": "UIStroke",
+                  "className": "UIStroke",
+                  "properties": {
+                    "ApplyStrokeMode": "Border",
+                    "Color": [0.25098, 0.368627, 0.517647],
+                    "Thickness": 3
+                  },
+                  "attributes": {
+                    "Theme_Color": "Outline"
                   }
                 },
                 {
@@ -189,7 +256,16 @@
                     "BorderSizePixel": 0,
                     "Position": {"UDim2": [[0, 6], [0, 6]]},
                     "Size": {"UDim2": [[0, 6], [1, -12]]}
-                  }
+                  },
+                  "children": [
+                    {
+                      "name": "UICorner",
+                      "className": "UICorner",
+                      "properties": {
+                        "CornerRadius": {"UDim": [0, 3]}
+                      }
+                    }
+                  ]
                 },
                 {
                   "name": "Icon",
@@ -213,6 +289,9 @@
                         "Text": "?",
                         "TextColor3": [0.72549, 0.788235, 0.87451],
                         "TextSize": 24
+                      },
+                      "attributes": {
+                        "Theme_TextColor3": "TextMuted"
                       }
                     }
                   ]
@@ -222,13 +301,16 @@
                   "className": "TextLabel",
                   "properties": {
                     "BackgroundTransparency": 1,
-                    "Font": "GothamMedium",
+                    "Font": "GothamBold",
                     "Position": {"UDim2": [[0, 70], [0, 0]]},
                     "Size": {"UDim2": [[0, 170], [1, 0]]},
                     "Text": "Crop",
                     "TextColor3": [0.960784, 0.956863, 0.913725],
                     "TextSize": 18,
                     "TextXAlignment": "Left"
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextPrimary"
                   }
                 },
                 {
@@ -242,6 +324,9 @@
                     "Text": "x0",
                     "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "TextMuted"
                   }
                 },
                 {
@@ -253,9 +338,12 @@
                     "Position": {"UDim2": [[0, 294], [0, 0]]},
                     "Size": {"UDim2": [[0, 58], [1, 0]]},
                     "Text": "0 ea",
-                    "TextColor3": [0.72549, 0.788235, 0.87451],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextSize": 18,
                     "TextXAlignment": "Left"
+                  },
+                  "attributes": {
+                    "Theme_TextColor3": "Coins"
                   }
                 },
                 {
@@ -270,8 +358,12 @@
                     "Position": {"UDim2": [[1, -150], [0.5, 0]]},
                     "Size": {"UDim2": [[0, 44], [0, 44]]},
                     "Text": "☆",
-                    "TextColor3": [0.960784, 0.956863, 0.913725],
+                    "TextColor3": [1, 0.854902, 0.482353],
                     "TextSize": 24
+                  },
+                  "attributes": {
+                    "Theme_BackgroundColor3": "Control",
+                    "Theme_TextColor3": "RarityLegendary"
                   },
                   "children": [
                     {
@@ -279,6 +371,18 @@
                       "className": "UICorner",
                       "properties": {
                         "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    },
+                    {
+                      "name": "UIStroke",
+                      "className": "UIStroke",
+                      "properties": {
+                        "ApplyStrokeMode": "Border",
+                        "Color": [0.25098, 0.368627, 0.517647],
+                        "Thickness": 3
+                      },
+                      "attributes": {
+                        "Theme_Color": "Outline"
                       }
                     }
                   ]
@@ -289,7 +393,7 @@
                   "properties": {
                     "AnchorPoint": [0, 0.5],
                     "AutoButtonColor": false,
-                    "BackgroundColor3": [0.086275, 0.419608, 0.701961],
+                    "BackgroundColor3": [0.839216, 0.54902, 0.235294],
                     "BorderSizePixel": 0,
                     "Font": "GothamBold",
                     "Position": {"UDim2": [[1, -98], [0.5, 0]]},
@@ -298,12 +402,28 @@
                     "TextColor3": [0.960784, 0.956863, 0.913725],
                     "TextSize": 20
                   },
+                  "attributes": {
+                    "Theme_BackgroundColor3": "Sell",
+                    "Theme_TextColor3": "TextOnAccent"
+                  },
                   "children": [
                     {
                       "name": "UICorner",
                       "className": "UICorner",
                       "properties": {
                         "CornerRadius": {"UDim": [0, 8]}
+                      }
+                    },
+                    {
+                      "name": "UIStroke",
+                      "className": "UIStroke",
+                      "properties": {
+                        "ApplyStrokeMode": "Border",
+                        "Color": [0.023529, 0.090196, 0.180392],
+                        "Thickness": 3
+                      },
+                      "attributes": {
+                        "Theme_Color": "OutlineDeep"
                       }
                     }
                   ]
@@ -325,6 +445,9 @@
             "TextSize": 18,
             "TextWrapped": true,
             "Visible": false
+          },
+          "attributes": {
+            "Theme_TextColor3": "TextMuted"
           }
         },
         {
@@ -333,7 +456,7 @@
           "properties": {
             "AnchorPoint": [0, 0],
             "AutoButtonColor": false,
-            "BackgroundColor3": [0.086275, 0.419608, 0.701961],
+            "BackgroundColor3": [0.839216, 0.54902, 0.235294],
             "BorderSizePixel": 0,
             "Font": "GothamBold",
             "Position": {"UDim2": [[0, 20], [1, -56]]},
@@ -342,12 +465,28 @@
             "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 22
           },
+          "attributes": {
+            "Theme_BackgroundColor3": "Sell",
+            "Theme_TextColor3": "TextOnAccent"
+          },
           "children": [
             {
               "name": "UICorner",
               "className": "UICorner",
               "properties": {
                 "CornerRadius": {"UDim": [0, 8]}
+              }
+            },
+            {
+              "name": "UIStroke",
+              "className": "UIStroke",
+              "properties": {
+                "ApplyStrokeMode": "Border",
+                "Color": [0.023529, 0.090196, 0.180392],
+                "Thickness": 3
+              },
+              "attributes": {
+                "Theme_Color": "OutlineDeep"
               }
             }
           ]

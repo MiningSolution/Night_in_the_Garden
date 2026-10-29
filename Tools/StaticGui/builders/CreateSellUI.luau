@@ -1,14 +1,15 @@
 --[[
     CreateSellUI.lua
-    Location: StarterGui (as LocalScript) — feature 002, User Story 1
+    Location: StarterGui (as LocalScript) — feature 002, re-skinned feature 006 (US4)
 
-    Builds the SellUI ScreenGui: a single-window modal opened at the seller's
-    stall. Shows the player's sellable crops, each crop's sell value, a running
-    coin total, a per-row favourite (star) toggle and "Sell" button, and a
-    "Sell all" footer. SellController attaches behaviour and clones SellRowTemplate
-    per sellable crop (constitution III: a static template cloned at runtime, never
-    a screen built in Lua). Colours from UITheme (V); tap targets >= 44; body text
-    >= 18, titles/buttons >= 20 (IV).
+    Builds the SellUI ScreenGui: a single-window modal opened at the seller's stall.
+    Shows the player's sellable crops, each crop's sell value, a running coin total, a
+    per-row favourite (star) toggle and "Sell" button, and a "Sell all" footer.
+    SellController attaches behaviour and clones SellRowTemplate per sellable crop
+    (constitution III). Feature 006 (US4): re-skinned to the cosy-garden concept — every
+    themed colour is tagged with a Theme_<Prop> attribute so ThemeController retints it on
+    the day/night switch (V, both palettes). Element names/structure are unchanged so
+    SellController keeps working; tap targets >= 44, body >= 18, titles/buttons >= 20 (IV).
 ]]
 
 local Players = game:GetService("Players")
@@ -22,9 +23,39 @@ end
 
 print("🎨 Creating SellUI...")
 
--- Theme tokens: offline the generator sets the global UI_THEME; in Studio the
--- module is required directly.
 local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+local Style = Theme.Style
+
+-- Bake the Night (default) colour AND tag the token so ThemeController retints it.
+local function bind(obj, prop, token)
+    obj[prop] = Theme[token]
+    obj:SetAttribute("Theme_" .. prop, token)
+end
+local function strokeOf(parent, token, thickness)
+    local s = Instance.new("UIStroke")
+    s.Thickness = thickness or Style.OutlineThickness
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Color = Theme[token]
+    s:SetAttribute("Theme_Color", token)
+    s.Parent = parent
+    return s
+end
+local function gradientOf(parent, topToken, botToken)
+    parent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    local g = Instance.new("UIGradient")
+    g.Rotation = 90
+    g.Color = ColorSequence.new(Theme[topToken], Theme[botToken])
+    g:SetAttribute("Theme_GradientTop", topToken)
+    g:SetAttribute("Theme_GradientBottom", botToken)
+    g.Parent = parent
+    return g
+end
+local function corner(parent, r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, r or Style.CornerRadius)
+    c.Parent = parent
+    return c
+end
 
 local SellUI = Instance.new("ScreenGui")
 SellUI.Name = "SellUI"
@@ -35,11 +66,10 @@ SellUI.IgnoreGuiInset = false
 SellUI.Enabled = false
 SellUI.Parent = playerGui
 
--- Full-screen dim backdrop; tapping it closes the window (WindowManager wires it).
 local Backdrop = Instance.new("TextButton")
 Backdrop.Name = "Backdrop"
 Backdrop.Size = UDim2.new(1, 0, 1, 0)
-Backdrop.BackgroundColor3 = Theme.Backdrop
+bind(Backdrop, "BackgroundColor3", "Backdrop")
 Backdrop.BackgroundTransparency = Theme.BackdropTransparency
 Backdrop.BorderSizePixel = 0
 Backdrop.AutoButtonColor = false
@@ -49,41 +79,33 @@ Backdrop.Parent = SellUI
 
 local SellFrame = Instance.new("Frame")
 SellFrame.Name = "SellFrame"
--- Scale to the viewport but cap the size, so it fits a landscape phone (~375 tall)
--- without needing ResponsiveLayout (IV: content stays inside the safe area).
 SellFrame.Size = UDim2.new(0.9, 0, 0.9, 0)
 SellFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 SellFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-SellFrame.BackgroundColor3 = Theme.Surface
+bind(SellFrame, "BackgroundColor3", "Surface")
 SellFrame.BorderSizePixel = 0
 
 local sizeConstraint = Instance.new("UISizeConstraint")
 sizeConstraint.MaxSize = Vector2.new(560, 480)
 sizeConstraint.MinSize = Vector2.new(320, 260)
 sizeConstraint.Parent = SellFrame
--- Gamepad: keep selection navigation inside the open window (R8).
 SellFrame.SelectionGroup = true
 SellFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
 SellFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
 SellFrame.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop
 SellFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 SellFrame.Parent = SellUI
+corner(SellFrame)
+strokeOf(SellFrame, "OutlineDeep", Style.WindowOutlineThickness)
 
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
-frameCorner.Parent = SellFrame
-
--- Header
+-- Header (cosy-garden gradient)
 local HeaderBar = Instance.new("Frame")
 HeaderBar.Name = "HeaderBar"
 HeaderBar.Size = UDim2.new(1, 0, 0, 50)
-HeaderBar.BackgroundColor3 = Theme.Header
 HeaderBar.BorderSizePixel = 0
 HeaderBar.Parent = SellFrame
-
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
-headerCorner.Parent = HeaderBar
+gradientOf(HeaderBar, "HeaderTop", "HeaderBottom")
+corner(HeaderBar)
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "TitleLabel"
@@ -91,9 +113,9 @@ TitleLabel.Size = UDim2.new(1, -110, 1, 0)
 TitleLabel.Position = UDim2.new(0, 20, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "💰 SELL"
-TitleLabel.TextColor3 = Theme.TextPrimary
+bind(TitleLabel, "TextColor3", "TextOnHeader")
 TitleLabel.TextSize = 24
-TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Font = Style.DisplayFont
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = HeaderBar
 
@@ -102,49 +124,41 @@ CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 44, 0, 44)
 CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-CloseButton.BackgroundColor3 = Theme.Danger
+bind(CloseButton, "BackgroundColor3", "Danger")
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Theme.TextPrimary
+bind(CloseButton, "TextColor3", "TextOnAccent")
 CloseButton.TextSize = 24
-CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Font = Style.DisplayFont
 CloseButton.AutoButtonColor = false
 CloseButton.Parent = HeaderBar
+corner(CloseButton, 8)
 
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = CloseButton
-
--- Running total line
 local TotalLabel = Instance.new("TextLabel")
 TotalLabel.Name = "TotalLabel"
 TotalLabel.Size = UDim2.new(1, -40, 0, 30)
 TotalLabel.Position = UDim2.new(0, 20, 0, 58)
 TotalLabel.BackgroundTransparency = 1
 TotalLabel.Text = "Sell all total: 0 coins"
-TotalLabel.TextColor3 = Theme.TextMuted
+bind(TotalLabel, "TextColor3", "Coins")
 TotalLabel.TextSize = 20
-TotalLabel.Font = Enum.Font.GothamMedium
+TotalLabel.Font = Style.DisplayFont
 TotalLabel.TextXAlignment = Enum.TextXAlignment.Left
 TotalLabel.Parent = SellFrame
 
--- Scrolling list of sellable crops
 local ItemsScroll = Instance.new("ScrollingFrame")
 ItemsScroll.Name = "ItemsScroll"
 ItemsScroll.Size = UDim2.new(1, -40, 1, -160)
 ItemsScroll.Position = UDim2.new(0, 20, 0, 94)
-ItemsScroll.BackgroundColor3 = Theme.SurfaceRaised
+bind(ItemsScroll, "BackgroundColor3", "SurfaceRaised")
 ItemsScroll.BackgroundTransparency = 0.4
 ItemsScroll.BorderSizePixel = 0
 ItemsScroll.ScrollBarThickness = 8
-ItemsScroll.ScrollBarImageColor3 = Theme.Control
+bind(ItemsScroll, "ScrollBarImageColor3", "Control")
 ItemsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 ItemsScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 ItemsScroll.Parent = SellFrame
-
-local scrollCorner = Instance.new("UICorner")
-scrollCorner.CornerRadius = UDim.new(0, 8)
-scrollCorner.Parent = ItemsScroll
+corner(ItemsScroll, 8)
 
 local listLayout = Instance.new("UIListLayout")
 listLayout.FillDirection = Enum.FillDirection.Vertical
@@ -159,16 +173,15 @@ listPadding.PaddingLeft = UDim.new(0, 6)
 listPadding.PaddingRight = UDim.new(0, 6)
 listPadding.Parent = ItemsScroll
 
--- Empty state (shown when nothing is sellable)
 local EmptyState = Instance.new("TextLabel")
 EmptyState.Name = "EmptyState"
 EmptyState.Size = UDim2.new(1, -40, 0, 40)
 EmptyState.Position = UDim2.new(0, 20, 0, 150)
 EmptyState.BackgroundTransparency = 1
 EmptyState.Text = "Nothing to sell — harvest some crops first."
-EmptyState.TextColor3 = Theme.TextMuted
+bind(EmptyState, "TextColor3", "TextMuted")
 EmptyState.TextSize = 18
-EmptyState.Font = Enum.Font.Gotham
+EmptyState.Font = Style.BodyFont
 EmptyState.TextWrapped = true
 EmptyState.Visible = false
 EmptyState.Parent = SellFrame
@@ -177,16 +190,14 @@ EmptyState.Parent = SellFrame
 local Row = Instance.new("Frame")
 Row.Name = "SellRowTemplate"
 Row.Size = UDim2.new(1, -12, 0, 56)
-Row.BackgroundColor3 = Theme.SurfaceRaised
+bind(Row, "BackgroundColor3", "SurfaceRaised")
 Row.BorderSizePixel = 0
 Row.Visible = false
 Row.Parent = ItemsScroll
+corner(Row, 10)
+strokeOf(Row, "Outline")
 
-local rowCorner = Instance.new("UICorner")
-rowCorner.CornerRadius = UDim.new(0, 6)
-rowCorner.Parent = Row
-
--- rarity colour strip on the left edge
+-- rarity colour strip on the left edge (SellController sets the per-rarity colour)
 local RarityStrip = Instance.new("Frame")
 RarityStrip.Name = "RarityStrip"
 RarityStrip.Size = UDim2.new(0, 6, 1, -12)
@@ -194,6 +205,7 @@ RarityStrip.Position = UDim2.new(0, 6, 0, 6)
 RarityStrip.BackgroundColor3 = Theme.RarityCommon
 RarityStrip.BorderSizePixel = 0
 RarityStrip.Parent = Row
+corner(RarityStrip, 3)
 
 local Icon = Instance.new("ImageLabel")
 Icon.Name = "Icon"
@@ -205,15 +217,14 @@ Icon.Image = ""
 Icon.ScaleType = Enum.ScaleType.Fit
 Icon.Parent = Row
 
--- fallback glyph when no icon image is set (US8 keeps this consistent)
 local FallbackLetter = Instance.new("TextLabel")
 FallbackLetter.Name = "FallbackLetter"
 FallbackLetter.Size = UDim2.new(1, 0, 1, 0)
 FallbackLetter.BackgroundTransparency = 1
 FallbackLetter.Text = "?"
-FallbackLetter.TextColor3 = Theme.TextMuted
+bind(FallbackLetter, "TextColor3", "TextMuted")
 FallbackLetter.TextSize = 24
-FallbackLetter.Font = Enum.Font.GothamBold
+FallbackLetter.Font = Style.DisplayFont
 FallbackLetter.Parent = Icon
 
 local NameLabel = Instance.new("TextLabel")
@@ -222,9 +233,9 @@ NameLabel.Size = UDim2.new(0, 170, 1, 0)
 NameLabel.Position = UDim2.new(0, 70, 0, 0)
 NameLabel.BackgroundTransparency = 1
 NameLabel.Text = "Crop"
-NameLabel.TextColor3 = Theme.TextPrimary
+bind(NameLabel, "TextColor3", "TextPrimary")
 NameLabel.TextSize = 18
-NameLabel.Font = Enum.Font.GothamMedium
+NameLabel.Font = Style.DisplayFont
 NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 NameLabel.Parent = Row
 
@@ -234,9 +245,9 @@ CountLabel.Size = UDim2.new(0, 46, 1, 0)
 CountLabel.Position = UDim2.new(0, 246, 0, 0)
 CountLabel.BackgroundTransparency = 1
 CountLabel.Text = "x0"
-CountLabel.TextColor3 = Theme.TextMuted
+bind(CountLabel, "TextColor3", "TextMuted")
 CountLabel.TextSize = 18
-CountLabel.Font = Enum.Font.Gotham
+CountLabel.Font = Style.BodyFont
 CountLabel.Parent = Row
 
 local ValueLabel = Instance.new("TextLabel")
@@ -246,9 +257,9 @@ ValueLabel.Position = UDim2.new(0, 294, 0, 0)
 ValueLabel.TextXAlignment = Enum.TextXAlignment.Left
 ValueLabel.BackgroundTransparency = 1
 ValueLabel.Text = "0 ea"
-ValueLabel.TextColor3 = Theme.TextMuted
+bind(ValueLabel, "TextColor3", "Coins")
 ValueLabel.TextSize = 18
-ValueLabel.Font = Enum.Font.Gotham
+ValueLabel.Font = Style.BodyFont
 ValueLabel.Parent = Row
 
 local StarToggle = Instance.new("TextButton")
@@ -256,54 +267,47 @@ StarToggle.Name = "StarToggle"
 StarToggle.Size = UDim2.new(0, 44, 0, 44)
 StarToggle.Position = UDim2.new(1, -150, 0.5, 0)
 StarToggle.AnchorPoint = Vector2.new(0, 0.5)
-StarToggle.BackgroundColor3 = Theme.Control
+bind(StarToggle, "BackgroundColor3", "Control")
 StarToggle.BorderSizePixel = 0
 StarToggle.Text = "☆"
-StarToggle.TextColor3 = Theme.TextPrimary
+bind(StarToggle, "TextColor3", "RarityLegendary")
 StarToggle.TextSize = 24
-StarToggle.Font = Enum.Font.GothamBold
+StarToggle.Font = Style.DisplayFont
 StarToggle.AutoButtonColor = false
 StarToggle.Parent = Row
-
-local starCorner = Instance.new("UICorner")
-starCorner.CornerRadius = UDim.new(0, 8)
-starCorner.Parent = StarToggle
+corner(StarToggle, 8)
+strokeOf(StarToggle, "Outline")
 
 local SellOneButton = Instance.new("TextButton")
 SellOneButton.Name = "SellOneButton"
 SellOneButton.Size = UDim2.new(0, 90, 0, 44)
 SellOneButton.Position = UDim2.new(1, -98, 0.5, 0)
 SellOneButton.AnchorPoint = Vector2.new(0, 0.5)
-SellOneButton.BackgroundColor3 = Theme.Accent
+bind(SellOneButton, "BackgroundColor3", "Sell")
 SellOneButton.BorderSizePixel = 0
 SellOneButton.Text = "Sell"
-SellOneButton.TextColor3 = Theme.TextPrimary
+bind(SellOneButton, "TextColor3", "TextOnAccent")
 SellOneButton.TextSize = 20
-SellOneButton.Font = Enum.Font.GothamBold
+SellOneButton.Font = Style.DisplayFont
 SellOneButton.AutoButtonColor = false
 SellOneButton.Parent = Row
+corner(SellOneButton, 8)
+strokeOf(SellOneButton, "OutlineDeep")
 
-local sellOneCorner = Instance.new("UICorner")
-sellOneCorner.CornerRadius = UDim.new(0, 8)
-sellOneCorner.Parent = SellOneButton
-
--- Footer: Sell all
 local SellAllButton = Instance.new("TextButton")
 SellAllButton.Name = "SellAllButton"
 SellAllButton.Size = UDim2.new(1, -40, 0, 48)
 SellAllButton.Position = UDim2.new(0, 20, 1, -56)
 SellAllButton.AnchorPoint = Vector2.new(0, 0)
-SellAllButton.BackgroundColor3 = Theme.Accent
+bind(SellAllButton, "BackgroundColor3", "Sell")
 SellAllButton.BorderSizePixel = 0
 SellAllButton.Text = "SELL ALL"
-SellAllButton.TextColor3 = Theme.TextPrimary
+bind(SellAllButton, "TextColor3", "TextOnAccent")
 SellAllButton.TextSize = 22
-SellAllButton.Font = Enum.Font.GothamBold
+SellAllButton.Font = Style.DisplayFont
 SellAllButton.AutoButtonColor = false
 SellAllButton.Parent = SellFrame
-
-local sellAllCorner = Instance.new("UICorner")
-sellAllCorner.CornerRadius = UDim.new(0, 8)
-sellAllCorner.Parent = SellAllButton
+corner(SellAllButton, 8)
+strokeOf(SellAllButton, "OutlineDeep")
 
 print("✅ SellUI created successfully!")

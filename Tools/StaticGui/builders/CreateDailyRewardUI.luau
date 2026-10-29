@@ -1,12 +1,13 @@
 --[[
     CreateDailyRewardUI.lua
-    Location: StarterGui (generated into StarterGui/DailyRewardUI.model.json) — feature 003, US1
+    Location: StarterGui (generated into StarterGui/DailyRewardUI.model.json) — feature 003, US1.
+    Re-skinned feature 006 (US4): cosy-garden concept, theme-tagged for both palettes.
 
-    Builds the DailyRewardUI ScreenGui: a single-window modal showing the 7-day
-    streak track. DailyRewardController fills each day's coins/seeds and state from
-    RetentionConfig at runtime (constitution II: no reward number is baked into the
-    GUI text here) and wires ClaimButton -> ClaimDailyReward. Colours from UITheme
-    (V); tap targets >= 44; body text >= 18, titles/buttons >= 20 (IV).
+    Builds the DailyRewardUI ScreenGui: a single-window modal showing the 7-day streak
+    track. DailyRewardController fills each day's coins/seeds and state from RetentionConfig
+    at runtime (constitution II) and wires ClaimButton -> ClaimDailyReward. Element
+    names/structure are unchanged so the controller keeps working; every themed colour is
+    tagged with Theme_<Prop> so ThemeController retints it on day/night (V). >= 44 / >= 18 (IV).
 ]]
 
 local Players = game:GetService("Players")
@@ -21,6 +22,37 @@ end
 print("🎨 Creating DailyRewardUI...")
 
 local Theme = UI_THEME or require(game:GetService("ReplicatedStorage"):WaitForChild("UITheme"))
+local Style = Theme.Style
+
+local function bind(obj, prop, token)
+    obj[prop] = Theme[token]
+    obj:SetAttribute("Theme_" .. prop, token)
+end
+local function strokeOf(parent, token, thickness)
+    local s = Instance.new("UIStroke")
+    s.Thickness = thickness or Style.OutlineThickness
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Color = Theme[token]
+    s:SetAttribute("Theme_Color", token)
+    s.Parent = parent
+    return s
+end
+local function gradientOf(parent, topToken, botToken)
+    parent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    local g = Instance.new("UIGradient")
+    g.Rotation = 90
+    g.Color = ColorSequence.new(Theme[topToken], Theme[botToken])
+    g:SetAttribute("Theme_GradientTop", topToken)
+    g:SetAttribute("Theme_GradientBottom", botToken)
+    g.Parent = parent
+    return g
+end
+local function roundCorner(parent, r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, r or Style.CornerRadius)
+    c.Parent = parent
+    return c
+end
 
 local DailyRewardUI = Instance.new("ScreenGui")
 DailyRewardUI.Name = "DailyRewardUI"
@@ -35,7 +67,7 @@ DailyRewardUI.Parent = playerGui
 local Backdrop = Instance.new("TextButton")
 Backdrop.Name = "Backdrop"
 Backdrop.Size = UDim2.new(1, 0, 1, 0)
-Backdrop.BackgroundColor3 = Theme.Backdrop
+bind(Backdrop, "BackgroundColor3", "Backdrop")
 Backdrop.BackgroundTransparency = Theme.BackdropTransparency
 Backdrop.BorderSizePixel = 0
 Backdrop.AutoButtonColor = false
@@ -48,36 +80,29 @@ RewardFrame.Name = "RewardFrame"
 RewardFrame.Size = UDim2.new(0.95, 0, 0.7, 0)
 RewardFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 RewardFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-RewardFrame.BackgroundColor3 = Theme.Surface
+bind(RewardFrame, "BackgroundColor3", "Surface")
 RewardFrame.BorderSizePixel = 0
 
 local sizeConstraint = Instance.new("UISizeConstraint")
 sizeConstraint.MaxSize = Vector2.new(680, 380)
 sizeConstraint.MinSize = Vector2.new(320, 240)
 sizeConstraint.Parent = RewardFrame
--- Gamepad: keep selection navigation inside the open window.
 RewardFrame.SelectionGroup = true
 RewardFrame.SelectionBehaviorUp = Enum.SelectionBehavior.Stop
 RewardFrame.SelectionBehaviorDown = Enum.SelectionBehavior.Stop
 RewardFrame.SelectionBehaviorLeft = Enum.SelectionBehavior.Stop
 RewardFrame.SelectionBehaviorRight = Enum.SelectionBehavior.Stop
 RewardFrame.Parent = DailyRewardUI
+roundCorner(RewardFrame)
+strokeOf(RewardFrame, "OutlineDeep", Style.WindowOutlineThickness)
 
-local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0, 12)
-frameCorner.Parent = RewardFrame
-
--- Header
 local HeaderBar = Instance.new("Frame")
 HeaderBar.Name = "HeaderBar"
 HeaderBar.Size = UDim2.new(1, 0, 0, 50)
-HeaderBar.BackgroundColor3 = Theme.Header
 HeaderBar.BorderSizePixel = 0
 HeaderBar.Parent = RewardFrame
-
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
-headerCorner.Parent = HeaderBar
+gradientOf(HeaderBar, "HeaderTop", "HeaderBottom")
+roundCorner(HeaderBar)
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "TitleLabel"
@@ -85,9 +110,9 @@ TitleLabel.Size = UDim2.new(0.5, 0, 1, 0)
 TitleLabel.Position = UDim2.new(0, 20, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "🎁 DAILY REWARD"
-TitleLabel.TextColor3 = Theme.TextPrimary
+bind(TitleLabel, "TextColor3", "TextOnHeader")
 TitleLabel.TextSize = 24
-TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Font = Style.DisplayFont
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = HeaderBar
 
@@ -97,9 +122,9 @@ StreakLabel.Size = UDim2.new(0.5, -74, 1, 0)
 StreakLabel.Position = UDim2.new(0.5, 0, 0, 0)
 StreakLabel.BackgroundTransparency = 1
 StreakLabel.Text = "Day 0 / 7"
-StreakLabel.TextColor3 = Theme.TextMuted
+bind(StreakLabel, "TextColor3", "TextOnHeader")
 StreakLabel.TextSize = 20
-StreakLabel.Font = Enum.Font.GothamMedium
+StreakLabel.Font = Style.DisplayFont
 StreakLabel.TextXAlignment = Enum.TextXAlignment.Right
 StreakLabel.Parent = HeaderBar
 
@@ -108,20 +133,16 @@ CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 44, 0, 44)
 CloseButton.Position = UDim2.new(1, -54, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-CloseButton.BackgroundColor3 = Theme.Danger
+bind(CloseButton, "BackgroundColor3", "Danger")
 CloseButton.BorderSizePixel = 0
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Theme.TextPrimary
+bind(CloseButton, "TextColor3", "TextOnAccent")
 CloseButton.TextSize = 24
-CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Font = Style.DisplayFont
 CloseButton.AutoButtonColor = false
 CloseButton.Parent = HeaderBar
+roundCorner(CloseButton, 8)
 
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
-closeCorner.Parent = CloseButton
-
--- Track of 7 day cells, laid out in a row (controller fills amounts + state).
 local TrackRow = Instance.new("Frame")
 TrackRow.Name = "TrackRow"
 TrackRow.Size = UDim2.new(1, -40, 1, -124)
@@ -138,25 +159,23 @@ trackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 trackLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 trackLayout.Parent = TrackRow
 
--- One day cell. DayNumber is the position on the track (not a balance number);
--- CoinsLabel / SeedsLabel are placeholders filled by the controller from config.
+-- One day cell (DayNumber = track position, not a balance; CoinsLabel/SeedsLabel filled by controller).
 local function makeDayCell(i)
     local cell = Instance.new("Frame")
     cell.Name = "Day" .. i
-    cell.BackgroundColor3 = Theme.SurfaceRaised
+    bind(cell, "BackgroundColor3", "SurfaceRaised")
     cell.BorderSizePixel = 0
     cell.LayoutOrder = i
     cell.Parent = TrackRow
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = cell
+    roundCorner(cell, 10)
+    strokeOf(cell, "Outline")
 
     -- "today" highlight stroke (controller shows/hides by setting Enabled).
     local stroke = Instance.new("UIStroke")
     stroke.Name = "TodayStroke"
     stroke.Color = Theme.Accent
-    stroke.Thickness = 2
+    stroke:SetAttribute("Theme_Color", "Accent")
+    stroke.Thickness = 3
     stroke.Enabled = false
     stroke.Parent = cell
 
@@ -166,9 +185,9 @@ local function makeDayCell(i)
     dayLabel.Position = UDim2.new(0, 0, 0, 6)
     dayLabel.BackgroundTransparency = 1
     dayLabel.Text = "Day " .. i
-    dayLabel.TextColor3 = Theme.TextMuted
+    bind(dayLabel, "TextColor3", "TextMuted")
     dayLabel.TextSize = 18
-    dayLabel.Font = Enum.Font.GothamMedium
+    dayLabel.Font = Style.DisplayFont
     dayLabel.Parent = cell
 
     local coinsLabel = Instance.new("TextLabel")
@@ -178,9 +197,9 @@ local function makeDayCell(i)
     coinsLabel.AnchorPoint = Vector2.new(0, 0.5)
     coinsLabel.BackgroundTransparency = 1
     coinsLabel.Text = ""
-    coinsLabel.TextColor3 = Theme.Coins
+    bind(coinsLabel, "TextColor3", "Coins")
     coinsLabel.TextSize = 18
-    coinsLabel.Font = Enum.Font.GothamBold
+    coinsLabel.Font = Style.DisplayFont
     coinsLabel.TextScaled = false
     coinsLabel.Parent = cell
 
@@ -190,9 +209,9 @@ local function makeDayCell(i)
     seedsLabel.Position = UDim2.new(0, 2, 1, -24)
     seedsLabel.BackgroundTransparency = 1
     seedsLabel.Text = ""
-    seedsLabel.TextColor3 = Theme.RarityRare
+    bind(seedsLabel, "TextColor3", "Dream")
     seedsLabel.TextSize = 16
-    seedsLabel.Font = Enum.Font.GothamMedium
+    seedsLabel.Font = Style.DisplayFont
     seedsLabel.Visible = false
     seedsLabel.Parent = cell
 
@@ -204,9 +223,9 @@ local function makeDayCell(i)
     check.AnchorPoint = Vector2.new(1, 0)
     check.BackgroundTransparency = 1
     check.Text = "✓"
-    check.TextColor3 = Theme.Accent
+    bind(check, "TextColor3", "Positive")
     check.TextSize = 20
-    check.Font = Enum.Font.GothamBold
+    check.Font = Style.DisplayFont
     check.Visible = false
     check.Parent = cell
 end
@@ -215,23 +234,20 @@ for i = 1, 7 do
     makeDayCell(i)
 end
 
--- Footer: claim
 local ClaimButton = Instance.new("TextButton")
 ClaimButton.Name = "ClaimButton"
 ClaimButton.Size = UDim2.new(1, -40, 0, 48)
 ClaimButton.Position = UDim2.new(0, 20, 1, -56)
 ClaimButton.AnchorPoint = Vector2.new(0, 0)
-ClaimButton.BackgroundColor3 = Theme.Accent
+bind(ClaimButton, "BackgroundColor3", "Positive")
 ClaimButton.BorderSizePixel = 0
 ClaimButton.Text = "CLAIM"
-ClaimButton.TextColor3 = Theme.TextPrimary
+bind(ClaimButton, "TextColor3", "TextOnAccent")
 ClaimButton.TextSize = 22
-ClaimButton.Font = Enum.Font.GothamBold
+ClaimButton.Font = Style.DisplayFont
 ClaimButton.AutoButtonColor = false
 ClaimButton.Parent = RewardFrame
-
-local claimCorner = Instance.new("UICorner")
-claimCorner.CornerRadius = UDim.new(0, 8)
-claimCorner.Parent = ClaimButton
+roundCorner(ClaimButton, 8)
+strokeOf(ClaimButton, "OutlineDeep")
 
 print("✅ DailyRewardUI created successfully!")
