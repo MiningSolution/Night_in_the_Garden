@@ -17,6 +17,9 @@ UDim = { new = function(s, o) return kind("UDim", { Scale = s, Offset = o }) end
 Vector2 = { new = function(x, y) return kind("Vector2", { X = x, Y = y }) end }
 Rect = { new = function(a, b, c, d) return kind("Rect", { Min = { X = a, Y = b }, Max = { X = c, Y = d } }) end }
 Color3 = { fromRGB = function(r, g, b) return kind("Color3", { R = r / 255, G = g / 255, B = b / 255 }) end }
+ColorSequence = { new = function(a, b)
+    return kind("ColorSequence", { Keypoints = { { Time = 0, Value = a }, { Time = 1, Value = b } } })
+end }
 Enum = setmetatable({}, { __index = function(_, enumType)
     return setmetatable({}, { __index = function(_, name)
         return kind("EnumItem", { EnumType = enumType, Name = name })
@@ -57,6 +60,7 @@ local function encode(v, indent)
         if v.name ~= nil then table.insert(keys, "name") end
         if v.className ~= nil then table.insert(keys, "className") end
         if v.properties ~= nil then table.insert(keys, "properties") end
+        if v.attributes ~= nil then table.insert(keys, "attributes") end
         if v.children ~= nil then table.insert(keys, "children") end
         if #keys == 0 then
             for k in pairs(v) do table.insert(keys, k) end

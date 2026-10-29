@@ -1,21 +1,21 @@
 --[[
     InventoryController.lua
     Location: StarterPlayer/StarterPlayerScripts/Controllers/
-    
-    PURPOSE:
-    Manages the inventory UI including:
-    - Inventory grid display with item slots
-    - Item tooltips on hover
-    - Tab switching (Seeds/Items)
-    - Item slot creation and styling
-    - Quantity badges
-    - Integration with ClientDataCache
-    
+
+    PURPOSE (feature 005, US3 - redesigned Backpack):
+    - Card grid cloned from the static InventoryUI.ItemGrid.CardTemplate (never built in code)
+    - Five category tabs: All / Seeds / Tools / Crops / Spirits (Spirits = placeholder)
+    - Detail panel for the selected card with one context action by category:
+        Equip (Seeds/Tools) -> HotbarController.EquipByItemName (existing EquipTool path)
+        Go to sell (Crops)  -> teleport to the stall + open the Sell window
+        View journal (Spirits) -> disabled placeholder this stage
+    - Favourite toggle for sellable crops via the existing ToggleFavourite RemoteFunction
+    - Every clone is painted through ThemeController (R9) so the grid follows day/night
+
     DEPENDENCIES:
-    - InventoryUI ScreenGui (with InventoryFrame)
-    - PlantData module (ReplicatedStorage)
-    - ShopConfig module (ReplicatedStorage)
-    - ClientDataCache module
+    - InventoryUI ScreenGui (static GUI, see Tools/StaticGui/builders/CreateInventoryUI.luau)
+    - PlantData / ShopConfig modules (ReplicatedStorage)
+    - StateManager (inventory), ThemeController, HotbarController, WindowManager
 ]]
 
 local Players = game:GetService("Players")
@@ -23,7 +23,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
 local Debounce = require(script.Parent.Parent.Utils.Debounce)
-local GuiEffects = require(script.Parent.Parent.Utils:WaitForChild("GuiEffects"))
 local Constants = require(ReplicatedStorage:WaitForChild("Constants"))
 
 local InventoryController = {}
@@ -32,16 +31,18 @@ local InventoryController = {}
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Wait for UI elements with timeout
 -- Static GUI (P2-3) is cloned into PlayerGui when the character first spawns,
 -- which can take longer than any fixed timeout on a slow join: wait for it.
 local inventoryUI = playerGui:WaitForChild("InventoryUI")
-local inventoryFrame, itemGrid, tooltipFrame
+local inventoryFrame, itemGrid, tooltipFrame, cardTemplate, detailPanel, spiritsEmpty
 
 if inventoryUI then
     inventoryFrame = inventoryUI:WaitForChild("InventoryFrame", 5)
     if inventoryFrame then
         itemGrid = inventoryFrame:WaitForChild("ItemGrid", 5)
+        detailPanel = inventoryFrame:FindFirstChild("DetailPanel")
+        spiritsEmpty = inventoryFrame:FindFirstChild("SpiritsEmptyState")
+        cardTemplate = itemGrid and itemGrid:FindFirstChild("CardTemplate")
         -- TooltipFrame sits directly under InventoryUI (sibling of InventoryFrame)
         tooltipFrame = inventoryUI:FindFirstChild("TooltipFrame") or inventoryFrame:FindFirstChild("TooltipFrame")
     end
@@ -50,23 +51,54 @@ end
 -- Load configurations
 local PlantData = ReplicatedStorage:FindFirstChild("PlantData") and require(ReplicatedStorage.PlantData)
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
+local ItemEmoji = require(ReplicatedStorage:WaitForChild("ItemEmoji")) -- feature 005: emoji icon fallback
+
+-- Optional collaborators (lazy + pcall so load order / a missing module is safe)
+local function getThemeController()
+    local m = script.Parent:FindFirstChild("ThemeController")
+    if not m then return nil end
+    local ok, tc = pcall(require, m)
+    return ok and tc or nil
+end
+
+local function getHotbarController()
+    local m = script.Parent:FindFirstChild("HotbarController")
+    if not m then return nil end
+    local ok, hc = pcall(require, m)
+    return ok and hc or nil
+end
+
+local function notify(text, kind)
+    local m = script.Parent:FindFirstChild("UIController")
+    if not m then return end
+    local ok, UIController = pcall(require, m)
+    if ok and UIController and UIController.ShowNotification then
+        UIController.ShowNotification(text, kind or "info", 2)
+    end
+end
+
+-- Paint a single instance or subtree with the active palette (R9).
+local function paint(inst)
+    local tc = getThemeController()
+    if tc then
+        tc.Paint(inst) -- walks the subtree including inst itself
+    end
+end
 
 -- State
-local currentTab = "Seeds" -- "Seeds" or "Items"
-local cachedInventory = {} -- P1-2: Will be synced from StateManager
+local TAB_NAMES = { "All", "Seeds", "Tools", "Crops", "Spirits" }
+local currentTab = "All"
+local cachedInventory = {} -- P1-2: synced from StateManager
+local selectedItem = nil -- itemName of the selected card
+local favourites = {} -- [itemId] = true (server-owned set; mirrored from GetPlayerData/ToggleFavourite)
 
 -- Item categories
 local SEED_KEYWORDS = {"seed", "carrot", "tomato", "wheat", "pumpkin", "moonflower", "starberry"}
 local TOOL_KEYWORDS = {"watering_can", "lantern", "net", "scarecrow"}
 
---[[
-    Check if item is a seed
-    @param itemName (string) - Name of the item
-    @return boolean
-]]
-local function IsSeed(itemName)
+local function matchesAny(itemName, keywords)
     local lowerName = itemName:lower()
-    for _, keyword in ipairs(SEED_KEYWORDS) do
+    for _, keyword in ipairs(keywords) do
         if lowerName:find(keyword) then
             return true
         end
@@ -74,347 +106,429 @@ local function IsSeed(itemName)
     return false
 end
 
---[[
-    Check if item is a tool
-    @param itemName (string) - Name of the item
-    @return boolean
-]]
+--[[ Grown crops: id ends in "_crop" or is a sellable crop in ShopConfig.sell
+     (only crops are sellable - ShopConfig.CanSell). Checked BEFORE seeds because
+     crop ids contain plant names that are also seed keywords (e.g. carrot_crop). ]]
+local function IsCrop(itemName)
+    if itemName:sub(-5) == "_crop" then return true end
+    return ShopConfig ~= nil and ShopConfig.CanSell ~= nil and ShopConfig.CanSell(itemName) == true
+end
+
+local function IsSeed(itemName)
+    if IsCrop(itemName) then return false end
+    return itemName:sub(-5) == "_seed" or matchesAny(itemName, SEED_KEYWORDS)
+end
+
 local function IsTool(itemName)
-    local lowerName = itemName:lower()
-    for _, keyword in ipairs(TOOL_KEYWORDS) do
-        if lowerName:find(keyword) then
-            return true
-        end
+    if IsCrop(itemName) or itemName:sub(-5) == "_seed" then return false end
+    return matchesAny(itemName, TOOL_KEYWORDS)
+end
+
+--[[ Category of an item: "Seeds" | "Tools" | "Crops" | "Items" (other consumables,
+     shown only under All). Spirits have no items yet (FR-017). ]]
+local function CategoryOf(itemName)
+    if IsCrop(itemName) then return "Crops" end
+    if IsSeed(itemName) then return "Seeds" end
+    if IsTool(itemName) then return "Tools" end
+    return "Items"
+end
+
+local function RarityOf(itemName)
+    local tier = ShopConfig and ShopConfig.GetRarity and ShopConfig.GetRarity(itemName) or "Common"
+    if tier ~= "Common" and tier ~= "Uncommon" and tier ~= "Rare" and tier ~= "Epic" and tier ~= "Legendary" then
+        tier = "Common"
     end
-    return false
+    return tier
 end
 
 --[[
     Get item display data (name, icon, description)
     @param itemName (string) - Internal item name
-    @return table with displayName, icon, description
+    @return table with displayName, icon, description, sellValue
 ]]
 local function GetItemDisplayData(itemName)
     -- Try to get from PlantData first
     if PlantData then
         local plantId = itemName:gsub("_seed", ""):gsub("_crop", "")
         local plantInfo = PlantData[plantId]
-        
+
         if plantInfo then
+            local iconId = plantInfo.icon
+            if itemName:sub(-5) == "_seed" then
+                iconId = plantInfo.seedIcon or iconId
+            elseif itemName:sub(-5) == "_crop" then
+                iconId = plantInfo.cropIcon or iconId
+            end
+            local suffix = itemName:sub(-5) == "_seed" and " Seed" or ""
             return {
-                displayName = plantInfo.displayName or itemName,
-                icon = plantInfo.icon or "rbxassetid://0",
+                displayName = (plantInfo.displayName or itemName) .. suffix,
+                icon = iconId or "",
                 description = plantInfo.description or "No description available",
                 sellValue = plantInfo.sellValue or 0
             }
         end
     end
-    
+
+    -- Tools / items defined in ShopConfig.buy
+    if ShopConfig and ShopConfig.buy then
+        for _, category in ipairs({ "tools", "items" }) do
+            local row = ShopConfig.buy[category] and ShopConfig.buy[category][itemName]
+            if row then
+                return {
+                    displayName = row.displayName or itemName,
+                    icon = row.icon or "",
+                    description = "A useful item for your garden",
+                    sellValue = 0
+                }
+            end
+        end
+    end
+
     -- Fallback: Generate from item name
     local displayName = itemName:gsub("_", " ")
     displayName = displayName:gsub("(%a)([%w_']*)", function(first, rest)
         return first:upper() .. rest:lower()
     end)
-    
+
     return {
         displayName = displayName,
-        icon = "rbxassetid://0",
+        icon = "",
         description = "A useful item for your garden",
         sellValue = 0
     }
 end
 
---[[
-    Update existing slot instead of recreating (P1-4: Performance optimization)
-    @param slot (Frame) - Existing slot frame
-    @param itemName (string) - Item name
-    @param quantity (number) - Item quantity
-]]
-local function UpdateSlot(slot, itemName, quantity)
-    -- Update quantity badge
-    local qtyBadge = slot:FindFirstChild("QuantityBadge")
-    
-    if quantity > 1 then
-        if not qtyBadge then
-            -- Create badge if needed
-            qtyBadge = Instance.new("Frame")
-            qtyBadge.Name = "QuantityBadge"
-            qtyBadge.Size = UDim2.new(0, 35, 0, 18)
-            qtyBadge.Position = UDim2.new(1, -3, 1, -3)
-            qtyBadge.AnchorPoint = Vector2.new(1, 1)
-            qtyBadge.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            qtyBadge.BackgroundTransparency = 0.4
-            qtyBadge.BorderSizePixel = 0
-            qtyBadge.Parent = slot
-            
-            local badgeCorner = Instance.new("UICorner")
-            badgeCorner.CornerRadius = UDim.new(0, 4)
-            badgeCorner.Parent = qtyBadge
-            
-            local qtyLabel = Instance.new("TextLabel")
-            qtyLabel.Size = UDim2.new(1, 0, 1, 0)
-            qtyLabel.BackgroundTransparency = 1
-            qtyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            qtyLabel.TextSize = 12
-            qtyLabel.Font = Enum.Font.GothamBold
-            qtyLabel.Parent = qtyBadge
-        end
-        
-        local qtyLabel = qtyBadge:FindFirstChild("TextLabel")
-        if qtyLabel then
-            qtyLabel.Text = "×" .. quantity
-        end
+local function hasIcon(iconId)
+    return type(iconId) == "string" and iconId ~= "" and iconId ~= "rbxassetid://0" and iconId ~= "rbxassetid://placeholder"
+end
+
+-- Fill an ImageLabel + its FallbackLetter child from an icon id / display name.
+local function applyIcon(iconLabel, iconId, displayName, itemId)
+    if not iconLabel then return end
+    local fallback = iconLabel:FindFirstChild("FallbackLetter")
+    if hasIcon(iconId) then
+        iconLabel.Image = iconId
+        if fallback then fallback.Visible = false end
     else
-        -- Remove badge if quantity is 1 or less
-        if qtyBadge then
-            qtyBadge:Destroy()
+        iconLabel.Image = ""
+        if fallback then
+            -- Feature 005 (US4 interim): item emoji when there is no image icon,
+            -- else the first letter of the name.
+            local emoji = itemId and ItemEmoji.get(itemId) or ""
+            fallback.Text = (emoji ~= "" and emoji) or displayName:sub(1, 1):upper()
+            fallback.Visible = true
         end
     end
-    
-    -- Update item name if changed
-    local nameLabel = slot:FindFirstChild("ItemName")
-    if nameLabel then
-        local itemData = GetItemDisplayData(itemName)
-        nameLabel.Text = itemData.displayName
+end
+
+--[[ Selection ring: tag the card stroke with the Accent/Outline token and repaint
+     it so it stays theme-driven. ]]
+local function setCardSelected(card, selected)
+    local stroke = card:FindFirstChildOfClass("UIStroke")
+    if not stroke then return end
+    stroke:SetAttribute("Theme_Color", selected and "Accent" or "Outline")
+    local tc = getThemeController()
+    if tc then tc.PaintInstant(stroke) end
+end
+
+-- Show/hide the favourite star on crop cards.
+local function updateFavouriteMark(card, itemName)
+    local mark = card:FindFirstChild("FavouriteMark")
+    if mark then
+        mark.Visible = favourites[itemName] == true
     end
+end
+
+--[[
+    Update an existing card in place (P1-4: incremental)
+    @param card (Frame) - clone of CardTemplate
+]]
+local function UpdateCard(card, itemName, quantity)
+    local itemData = GetItemDisplayData(itemName)
+    local nameLabel = card:FindFirstChild("NameLabel")
+    if nameLabel then nameLabel.Text = itemData.displayName end
+    local qtyLabel = card:FindFirstChild("QtyLabel")
+    if qtyLabel then
+        qtyLabel.Text = "x" .. quantity
+        qtyLabel.Visible = quantity > 1
+    end
+    updateFavouriteMark(card, itemName)
+end
+
+local RefreshDetail -- forward declaration
+
+local function SelectItem(itemName)
+    selectedItem = itemName
+    if itemGrid then
+        for _, child in ipairs(itemGrid:GetChildren()) do
+            local name = child:GetAttribute("ItemName")
+            if name then
+                setCardSelected(child, name == itemName)
+            end
+        end
+    end
+    RefreshDetail()
+end
+
+--[[
+    Create one card by cloning the static CardTemplate (never built in code).
+    @return Frame
+]]
+function InventoryController.CreateCard(itemName, quantity)
+    local itemData = GetItemDisplayData(itemName)
+    local card = cardTemplate:Clone()
+    card.Name = "Card_" .. itemName -- GridLayout sorts by Name
+    card.Visible = true
+    card:SetAttribute("ItemName", itemName)
+    card.Parent = itemGrid
+
+    applyIcon(card:FindFirstChild("Icon"), itemData.icon, itemData.displayName, itemName)
+
+    -- Rarity badge: tier colour via the Theme_ token (repaints on day/night) + tier text
+    -- so rarity is never colour-only (FR-025).
+    local tier = RarityOf(itemName)
+    local badge = card:FindFirstChild("RarityBadge", true)
+    if badge then
+        badge:SetAttribute("Theme_BackgroundColor3", "Rarity" .. tier)
+        local badgeText = badge:FindFirstChild("BadgeText")
+        if badgeText then badgeText.Text = string.upper(tier) end
+    end
+
+    UpdateCard(card, itemName, quantity)
+
+    -- Paint the whole clone with the active palette (R9); then the selection state.
+    paint(card)
+    setCardSelected(card, itemName == selectedItem)
+
+    local button = card:FindFirstChild("SlotButton")
+    if button then
+        button.MouseEnter:Connect(function()
+            InventoryController.ShowTooltip(itemName, card)
+        end)
+        button.MouseLeave:Connect(function()
+            InventoryController.HideTooltip()
+        end)
+        button.Activated:Connect(function()
+            SelectItem(itemName)
+        end)
+    end
+
+    return card
 end
 
 --[[
     Refresh inventory grid based on current tab
-    P1-4: Optimized to use incremental updates instead of full recreation
+    P1-4: incremental create/update/destroy keyed on the ItemName attribute
 ]]
 function InventoryController.RefreshGrid()
-    if not itemGrid then
-        warn("⚠️ ItemGrid not found in InventoryUI")
+    if not itemGrid or not cardTemplate then
+        warn("⚠️ ItemGrid / CardTemplate not found in InventoryUI")
         return
     end
-    
-    print("🔄 Refreshing inventory grid (incremental, Tab: " .. currentTab .. ")...")
-    
-    -- Filter items by current tab
+
+    local isSpirits = currentTab == "Spirits"
+    if spiritsEmpty then spiritsEmpty.Visible = isSpirits end
+    itemGrid.Visible = not isSpirits
+
+    -- Filter items by current tab (Spirits shows no items this stage)
     local displayItems = {}
-    
-    for itemName, quantity in pairs(cachedInventory) do
-        if quantity > 0 then
-            if currentTab == "Seeds" and IsSeed(itemName) then
-                table.insert(displayItems, {name = itemName, qty = quantity})
-            elseif currentTab == "Items" and not IsSeed(itemName) then
+    if not isSpirits then
+        for itemName, quantity in pairs(cachedInventory) do
+            if quantity > 0 and (currentTab == "All" or CategoryOf(itemName) == currentTab) then
                 table.insert(displayItems, {name = itemName, qty = quantity})
             end
         end
     end
-    
-    -- Sort items alphabetically
+
     table.sort(displayItems, function(a, b)
         return a.name < b.name
     end)
-    
-    -- P1-4: Get existing slots (incremental update)
-    local existingSlots = {}
+
+    -- Existing cards keyed on the stored item name
+    local existing = {}
     for _, child in ipairs(itemGrid:GetChildren()) do
-        if child:IsA("Frame") and child.Name == "ItemSlot" then
-            local itemNameAttr = child:GetAttribute("ItemName")
-            if itemNameAttr then
-                existingSlots[itemNameAttr] = child
-            end
+        local itemNameAttr = child:GetAttribute("ItemName")
+        if itemNameAttr then
+            existing[itemNameAttr] = child
         end
     end
-    
-    -- P1-4: Update/create slots incrementally
-    local usedSlots = {}
-    
-    for i, item in ipairs(displayItems) do
-        local existingSlot = existingSlots[item.name]
-        
-        if existingSlot then
-            -- Update existing slot
-            UpdateSlot(existingSlot, item.name, item.qty)
-            usedSlots[item.name] = true
+
+    local used = {}
+    for _, item in ipairs(displayItems) do
+        local card = existing[item.name]
+        if card then
+            UpdateCard(card, item.name, item.qty)
         else
-            -- Create new slot
-            local slot = InventoryController.CreateSlot(item.name, item.qty)
-            slot:SetAttribute("ItemName", item.name) -- Store item name for future lookups
-            slot.Parent = itemGrid
-            usedSlots[item.name] = true
+            InventoryController.CreateCard(item.name, item.qty)
+        end
+        used[item.name] = true
+    end
+
+    for itemName, card in pairs(existing) do
+        if not used[itemName] then
+            card:Destroy()
         end
     end
-    
-    -- P1-4: Remove slots that are no longer needed
-    for itemName, slot in pairs(existingSlots) do
-        if not usedSlots[itemName] then
-            slot:Destroy()
-        end
+
+    -- Drop the selection when its card is no longer in the current view
+    if selectedItem and not used[selectedItem] then
+        selectedItem = nil
     end
-    
-    print(string.format("✅ Grid refreshed: %d items displayed (incremental update)", #displayItems))
+    RefreshDetail()
 end
 
---[[
-    Create inventory slot UI element
-    @param itemName (string) - Name of the item
-    @param quantity (number) - Quantity of the item
-    @return Frame - The created slot
-]]
-function InventoryController.CreateSlot(itemName, quantity)
-    local itemData = GetItemDisplayData(itemName)
-    
-    -- Main slot frame
-    local slot = Instance.new("Frame")
-    slot.Name = "ItemSlot"
-    slot.Size = UDim2.new(0, 100, 0, 100)
-    slot.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    slot.BorderSizePixel = 0
-    
-    -- Rounded corners
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = slot
-    
-    -- Item icon
-    local icon = Instance.new("ImageLabel")
-    icon.Name = "ItemIcon"
-    icon.Size = UDim2.new(0, 70, 0, 70)
-    icon.Position = UDim2.new(0.5, 0, 0.4, 0)
-    icon.AnchorPoint = Vector2.new(0.5, 0.5)
-    icon.BackgroundTransparency = 1
-    icon.Image = itemData.icon
-    icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-    icon.ScaleType = Enum.ScaleType.Fit
-    icon.Parent = slot
-    
-    -- If no icon available, show first letter
-    if itemData.icon == "rbxassetid://0" or itemData.icon == "rbxassetid://placeholder" then
-        icon.Image = ""
-        
-        local iconText = Instance.new("TextLabel")
-        iconText.Size = UDim2.new(1, 0, 1, 0)
-        iconText.BackgroundTransparency = 1
-        iconText.Text = itemData.displayName:sub(1, 1):upper()
-        iconText.TextColor3 = Color3.fromRGB(150, 150, 150)
-        iconText.TextSize = 40
-        iconText.Font = Enum.Font.GothamBold
-        iconText.Parent = icon
+-- Back-compat name for the previous code-built slot API.
+InventoryController.CreateSlot = InventoryController.CreateCard
+
+--[[ Detail panel ]]
+
+local function setActionButton(button, text, enabled)
+    button.Text = text
+    button.Active = enabled
+    button.AutoButtonColor = false
+    button:SetAttribute("Theme_BackgroundColor3", enabled and "Positive" or "Control")
+    button:SetAttribute("Theme_TextColor3", enabled and "TextOnAccent" or "TextMuted")
+    local tc = getThemeController()
+    if tc then tc.PaintInstant(button) end
+end
+
+function RefreshDetail()
+    if not detailPanel then return end
+    local selIcon = detailPanel:FindFirstChild("SelectedIcon")
+    local selName = detailPanel:FindFirstChild("SelectedName")
+    local selDesc = detailPanel:FindFirstChild("SelectedDescription")
+    local favToggle = detailPanel:FindFirstChild("FavouriteToggle")
+    local actionButton = detailPanel:FindFirstChild("ActionButton")
+
+    local qty = selectedItem and cachedInventory[selectedItem] or 0
+    if not selectedItem or qty <= 0 then
+        selectedItem = nil
+        if selIcon then applyIcon(selIcon, "", "?") end
+        if selName then selName.Text = (currentTab == "Spirits") and "Spirits" or "Select an item" end
+        if selDesc then
+            selDesc.Text = (currentTab == "Spirits") and "The spirit journal is coming soon." or "Tap an item to see details."
+        end
+        if favToggle then favToggle.Visible = false end
+        if actionButton then
+            if currentTab == "Spirits" then
+                actionButton.Visible = true
+                setActionButton(actionButton, "View journal", false) -- placeholder (FR-018)
+            else
+                actionButton.Visible = false
+            end
+        end
+        return
     end
-    
-    -- Item name label (bottom of slot)
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "ItemName"
-    nameLabel.Size = UDim2.new(1, -10, 0, 20)
-    nameLabel.Position = UDim2.new(0.5, 0, 1, -22)
-    nameLabel.AnchorPoint = Vector2.new(0.5, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = itemData.displayName
-    nameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    nameLabel.TextSize = 18 -- body >= 18, no TextScaled in windows (FR-005)
-    nameLabel.Font = Enum.Font.Gotham
-    nameLabel.TextScaled = false
-    nameLabel.TextWrapped = false
-    nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    nameLabel.Parent = slot
-    
-    -- Quantity badge (bottom-right corner)
-    if quantity > 1 then
-        local badge = Instance.new("Frame")
-        badge.Name = "QuantityBadge"
-        badge.Size = UDim2.new(0, 35, 0, 18)
-        badge.Position = UDim2.new(1, -3, 1, -3)
-        badge.AnchorPoint = Vector2.new(1, 1)
-        badge.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        badge.BackgroundTransparency = 0.4
-        badge.BorderSizePixel = 0
-        badge.Parent = slot
-        
-        local badgeCorner = Instance.new("UICorner")
-        badgeCorner.CornerRadius = UDim.new(0, 4)
-        badgeCorner.Parent = badge
-        
-        local qtyLabel = Instance.new("TextLabel")
-        qtyLabel.Size = UDim2.new(1, 0, 1, 0)
-        qtyLabel.BackgroundTransparency = 1
-        qtyLabel.Text = "×" .. quantity
-        qtyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        qtyLabel.TextSize = 12
-        qtyLabel.Font = Enum.Font.GothamBold
-        qtyLabel.Parent = badge
+
+    local itemData = GetItemDisplayData(selectedItem)
+    local category = CategoryOf(selectedItem)
+    if selIcon then applyIcon(selIcon, itemData.icon, itemData.displayName, selectedItem) end
+    if selName then selName.Text = string.format("%s  x%d", itemData.displayName, qty) end
+    if selDesc then selDesc.Text = string.upper(RarityOf(selectedItem)) .. " - " .. itemData.description end
+
+    -- Favourites only exist for sellable crops (the server rejects anything else).
+    if favToggle then
+        favToggle.Visible = category == "Crops"
+        favToggle.Text = favourites[selectedItem] and "★" or "☆"
     end
-    
-    -- Hover effect frame
-    local hoverFrame = Instance.new("Frame")
-    hoverFrame.Name = "HoverHighlight"
-    hoverFrame.Size = UDim2.new(1, 0, 1, 0)
-    hoverFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    hoverFrame.BackgroundTransparency = 1
-    hoverFrame.BorderSizePixel = 0
-    hoverFrame.ZIndex = 2
-    hoverFrame.Parent = slot
-    
-    local hoverCorner = Instance.new("UICorner")
-    hoverCorner.CornerRadius = UDim.new(0, 8)
-    hoverCorner.Parent = hoverFrame
-    
-    -- Interactive button (for hover detection)
-    local button = Instance.new("TextButton")
-    button.Name = "SlotButton"
-    button.Size = UDim2.new(1, 0, 1, 0)
-    button.BackgroundTransparency = 1
-    button.Text = ""
-    button.ZIndex = 3
-    button.Parent = slot
-    
-    -- Hover events
-    button.MouseEnter:Connect(function()
-        InventoryController.ShowTooltip(itemName, slot)
-        
-        -- Highlight effect
-        local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(hoverFrame, tweenInfo, {
-            BackgroundTransparency = 0.85
-        }):Play()
-        TweenService:Create(slot, tweenInfo, {
-            BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-        }):Play()
+
+    if actionButton then
+        if category == "Seeds" or category == "Tools" then
+            actionButton.Visible = true
+            setActionButton(actionButton, "Equip", true)
+        elseif category == "Crops" then
+            actionButton.Visible = true
+            setActionButton(actionButton, "Go to sell", true)
+        else
+            actionButton.Visible = false -- other consumables have no action yet
+        end
+    end
+end
+
+-- Mirror the server-owned favourites set (read-only fetch through GetPlayerData).
+function InventoryController.LoadFavourites()
+    task.spawn(function()
+        local fn = ReplicatedStorage:FindFirstChild("GetPlayerData")
+        if not fn then return end
+        local ok, result = pcall(function() return fn:InvokeServer() end)
+        if ok and type(result) == "table" and result.Success then
+            favourites = result.Favourites or {}
+            if itemGrid then
+                for _, child in ipairs(itemGrid:GetChildren()) do
+                    local name = child:GetAttribute("ItemName")
+                    if name then updateFavouriteMark(child, name) end
+                end
+            end
+            RefreshDetail()
+        end
     end)
-    
-    button.MouseLeave:Connect(function()
-        InventoryController.HideTooltip()
-        
-        -- Remove highlight
-        local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(hoverFrame, tweenInfo, {
-            BackgroundTransparency = 1
-        }):Play()
-        TweenService:Create(slot, tweenInfo, {
-            BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-        }):Play()
+end
+
+local actionBusy = false
+local function onActionClicked()
+    if not selectedItem or actionBusy then return end
+    local itemName = selectedItem
+    local category = CategoryOf(itemName)
+
+    if category == "Seeds" or category == "Tools" then
+        -- Equip through the hotbar so the HUD strip shows it selected (EquipTool path).
+        local hotbar = getHotbarController()
+        local equipped = hotbar and hotbar.EquipByItemName and hotbar.EquipByItemName(itemName)
+        if not equipped then
+            notify("That item isn't on your hotbar", "info")
+        end
+    elseif category == "Crops" then
+        -- Same flow as the SELL nav button: go to the stall, then open the Sell window.
+        actionBusy = true
+        task.spawn(function()
+            local RequestTeleport = ReplicatedStorage:FindFirstChild("RequestTeleport")
+            local ok = RequestTeleport ~= nil and pcall(function() RequestTeleport:InvokeServer("stall") end)
+            if ok then
+                local wm = script.Parent.Parent.Utils:FindFirstChild("WindowManager")
+                if wm then require(wm).Open("Sell") end
+            end
+            actionBusy = false
+        end)
+    end
+end
+
+local function onFavouriteClicked()
+    if not selectedItem or CategoryOf(selectedItem) ~= "Crops" then return end
+    local itemName = selectedItem
+    task.spawn(function()
+        local fn = ReplicatedStorage:FindFirstChild("ToggleFavourite")
+        if not fn then return end
+        local ok, result = pcall(function() return fn:InvokeServer(itemName) end)
+        if ok and type(result) == "table" and result.Success then
+            favourites = result.Favourites or favourites
+            favourites[itemName] = result.IsFavourite or nil
+            if itemGrid then
+                for _, child in ipairs(itemGrid:GetChildren()) do
+                    local name = child:GetAttribute("ItemName")
+                    if name then updateFavouriteMark(child, name) end
+                end
+            end
+            RefreshDetail()
+        end
     end)
-    
-    -- Click event (for future use - equip, use, etc.)
-    button.MouseButton1Click:Connect(function()
-        print("🖱️ Clicked item:", itemData.displayName)
-        -- TODO: Implement item actions (equip, use, sell)
-    end)
-    
-    return slot
 end
 
 --[[
     Show tooltip for an item
     @param itemName (string) - Name of the item
-    @param parentSlot (Frame) - The slot frame to position tooltip near
+    @param parentSlot (Frame) - The card frame to position tooltip near
 ]]
 function InventoryController.ShowTooltip(itemName, parentSlot)
     if not tooltipFrame then
-        warn("⚠️ TooltipFrame not found")
         return
     end
-    
+
     local itemData = GetItemDisplayData(itemName)
     local quantity = cachedInventory[itemName] or 0
-    
+
     -- Get sell price
     local sellPrice = 0
     if ShopConfig then
-        -- Try different categories
         sellPrice = ShopConfig.GetSellPrice("crops", itemName)
         if sellPrice == 0 then
             sellPrice = ShopConfig.GetSellPrice("items", itemName)
@@ -423,54 +537,53 @@ function InventoryController.ShowTooltip(itemName, parentSlot)
             sellPrice = ShopConfig.GetSellPrice("night_resources", itemName)
         end
     end
-    
-    -- Update tooltip content
+
     local titleLabel = tooltipFrame:FindFirstChild("TooltipTitle")
     local descLabel = tooltipFrame:FindFirstChild("TooltipDescription")
     local statsLabel = tooltipFrame:FindFirstChild("TooltipStats")
-    
+
     if titleLabel then
         titleLabel.Text = itemData.displayName
     end
-    
+
     if descLabel then
         descLabel.Text = itemData.description
     end
-    
+
     if statsLabel then
         local statsText = string.format("Quantity: %d", quantity)
-        
+
         if sellPrice > 0 then
             statsText = statsText .. string.format("\n💰 Sell Value: %d coins", sellPrice)
         end
-        
-        -- Add item type
-        if IsSeed(itemName) then
+
+        local category = CategoryOf(itemName)
+        if category == "Seeds" then
             statsText = statsText .. "\n🌱 Type: Seed"
-        elseif IsTool(itemName) then
+        elseif category == "Tools" then
             statsText = statsText .. "\n🔧 Type: Tool"
+        elseif category == "Crops" then
+            statsText = statsText .. "\n🥕 Type: Crop"
         else
             statsText = statsText .. "\n📦 Type: Item"
         end
-        
+
         statsLabel.Text = statsText
     end
-    
-    -- Position tooltip near slot
+
+    -- Position tooltip above the card
     local slotPosition = parentSlot.AbsolutePosition
     local slotSize = parentSlot.AbsoluteSize
-    
-    -- Calculate position (above the slot)
+
     local tooltipX = slotPosition.X + slotSize.X / 2
     local tooltipY = slotPosition.Y - 10
-    
+
     tooltipFrame.Position = UDim2.new(0, tooltipX, 0, tooltipY)
     tooltipFrame.AnchorPoint = Vector2.new(0.5, 1)
-    
-    -- Animate in
+
     tooltipFrame.Visible = true
     tooltipFrame.Size = UDim2.new(0, 0, 0, 0)
-    
+
     local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     TweenService:Create(tooltipFrame, tweenInfo, {
         Size = UDim2.new(0, 250, 0, 120)
@@ -482,45 +595,45 @@ end
 ]]
 function InventoryController.HideTooltip()
     if not tooltipFrame then return end
-    
-    -- Animate out
+
     local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
     local tween = TweenService:Create(tooltipFrame, tweenInfo, {
         Size = UDim2.new(0, 0, 0, 0)
     })
     tween:Play()
-    
+
     tween.Completed:Connect(function()
         tooltipFrame.Visible = false
     end)
 end
 
---[[
-    Switch inventory tab
-    @param tabName (string) - "Seeds" or "Items"
-]]
--- Highlight the active tab (moved here from CreateInventoryUI in P2-3)
+-- Highlight the active tab with theme tokens (retints on day/night, FR-022).
 local function paintTabs(activeTab)
     local tabContainer = inventoryFrame and inventoryFrame:FindFirstChild("TabContainer")
     if not tabContainer then return end
-    for _, name in ipairs({ "Seeds", "Items" }) do
+    local tc = getThemeController()
+    for _, name in ipairs(TAB_NAMES) do
         local tab = tabContainer:FindFirstChild(name .. "Tab")
         if tab then
             local active = name == activeTab
-            tab.BackgroundColor3 = active and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(60, 60, 70)
-            tab.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
+            tab:SetAttribute("Theme_BackgroundColor3", active and "Accent" or "Control")
+            tab:SetAttribute("Theme_TextColor3", active and "TextOnAccent" or "TextPrimary")
+            if tc then tc.PaintInstant(tab) end
         end
     end
 end
 
+--[[
+    Switch inventory tab
+    @param tabName (string) - "All" | "Seeds" | "Tools" | "Crops" | "Spirits"
+]]
 function InventoryController.SwitchTab(tabName)
-    if tabName ~= "Seeds" and tabName ~= "Items" then
+    if not table.find(TAB_NAMES, tabName) then
         warn("⚠️ Invalid tab name:", tabName)
         return
     end
-    
+
     currentTab = tabName
-    print("📑 Switched to tab:", currentTab)
     paintTabs(currentTab)
     InventoryController.RefreshGrid()
 end
@@ -534,15 +647,9 @@ function InventoryController.UpdateInventory(newInventory)
         warn("⚠️ Invalid inventory data received")
         return
     end
-    
+
     cachedInventory = newInventory
-    
-    -- Count items (dictionary-style table)
-    local itemCount = 0
-    for _ in pairs(newInventory) do itemCount = itemCount + 1 end
-    
-    print("💾 Inventory cache updated:", itemCount, "items")
-    
+
     -- Refresh display if inventory is open
     if inventoryUI and inventoryUI.Enabled then
         InventoryController.RefreshGrid()
@@ -565,9 +672,7 @@ end
 function InventoryController.AddItem(itemName, quantity)
     quantity = quantity or 1
     cachedInventory[itemName] = (cachedInventory[itemName] or 0) + quantity
-    
-    print(string.format("➕ Added %dx %s to inventory", quantity, itemName))
-    
+
     if inventoryUI and inventoryUI.Enabled then
         InventoryController.RefreshGrid()
     end
@@ -581,25 +686,23 @@ end
 ]]
 function InventoryController.RemoveItem(itemName, quantity)
     quantity = quantity or 1
-    
+
     local current = cachedInventory[itemName] or 0
     if current < quantity then
         warn(string.format("⚠️ Not enough %s (have %d, need %d)", itemName, current, quantity))
         return false
     end
-    
+
     cachedInventory[itemName] = current - quantity
-    
+
     if cachedInventory[itemName] <= 0 then
         cachedInventory[itemName] = nil
     end
-    
-    print(string.format("➖ Removed %dx %s from inventory", quantity, itemName))
-    
+
     if inventoryUI and inventoryUI.Enabled then
         InventoryController.RefreshGrid()
     end
-    
+
     return true
 end
 
@@ -608,51 +711,54 @@ end
     Sets up tab buttons, connections, and StateManager subscription
 ]]
 function InventoryController.Initialize()
-    print("========================================")
     print("📦 Initializing InventoryController...")
-    print("========================================")
-    
+
     if not inventoryFrame then
         warn("⚠️ InventoryFrame not found - controller in limited mode")
         return
     end
-    
+
     -- P1-2: Subscribe to StateManager changes
     StateManager.subscribe(function(state, oldState, action)
-        -- Handle inventory updates
         if action.type == "UPDATE_INVENTORY" or action.type == "APPLY_SNAPSHOT" then
             local newInventory = state.player.inventory or {}
             InventoryController.UpdateInventory(newInventory)
         end
     end)
-    
+
     -- Load initial inventory from StateManager
     cachedInventory = StateManager.getInventory()
-    
-    -- Setup tab buttons (P2-5: Debounced)
+
+    -- Tab buttons (P2-5: Debounced)
     local tabContainer = inventoryFrame:FindFirstChild("TabContainer")
     if tabContainer then
-        local seedsTab = tabContainer:FindFirstChild("SeedsTab")
-        local itemsTab = tabContainer:FindFirstChild("ItemsTab")
-        
         local debouncedSwitchTab = Debounce.create(function(tabName)
             InventoryController.SwitchTab(tabName)
         end, Constants.ANIMATION.FAST_TWEEN_DURATION)
-        
-        if seedsTab then
-            seedsTab.MouseButton1Click:Connect(function()
-                debouncedSwitchTab("Seeds")
-            end)
-        end
-        
-        if itemsTab then
-            itemsTab.MouseButton1Click:Connect(function()
-                debouncedSwitchTab("Items")
-            end)
+
+        for _, name in ipairs(TAB_NAMES) do
+            local tab = tabContainer:FindFirstChild(name .. "Tab")
+            if tab then
+                tab.Activated:Connect(function()
+                    debouncedSwitchTab(name)
+                end)
+            end
         end
     end
-    
-    -- Setup close button (P2-5: Debounced)
+
+    -- Detail panel buttons
+    if detailPanel then
+        local actionButton = detailPanel:FindFirstChild("ActionButton")
+        if actionButton then
+            actionButton.Activated:Connect(onActionClicked)
+        end
+        local favToggle = detailPanel:FindFirstChild("FavouriteToggle")
+        if favToggle then
+            favToggle.Activated:Connect(onFavouriteClicked)
+        end
+    end
+
+    -- Close button (P2-5: Debounced)
     local headerBar = inventoryFrame:FindFirstChild("HeaderBar")
     if headerBar then
         local closeButton = headerBar:FindFirstChild("CloseButton")
@@ -661,26 +767,16 @@ function InventoryController.Initialize()
                 local UIController = require(script.Parent.UIController)
                 UIController.ToggleInventory()
             end, Constants.ANIMATION.FAST_TWEEN_DURATION)
-            
+
             closeButton.MouseButton1Click:Connect(debouncedClose)
-            GuiEffects.hoverColor(closeButton, Color3.fromRGB(200, 80, 80), Color3.fromRGB(220, 100, 100))
         end
     end
-    
-    -- Initial grid refresh
+
+    paintTabs(currentTab)
+    InventoryController.LoadFavourites()
     InventoryController.RefreshGrid()
-    
-    -- Count items
-    local itemCount = 0
-    for _ in pairs(cachedInventory) do itemCount = itemCount + 1 end
-    
-    print("✅ Tab buttons configured")
-    print("✅ Close button configured")
-    print("✅ StateManager subscription active")
-    print(string.format("📊 Cached items: %d", itemCount))
-    print("========================================")
+
     print("✨ InventoryController ready!")
-    print("========================================")
 end
 
 -- Auto-initialize

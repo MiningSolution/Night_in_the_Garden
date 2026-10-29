@@ -13,7 +13,7 @@
       "className": "TextButton",
       "properties": {
         "AutoButtonColor": false,
-        "BackgroundColor3": [0, 0, 0],
+        "BackgroundColor3": [0.015686, 0.039216, 0.086275],
         "BackgroundTransparency": 0.5,
         "BorderSizePixel": 0,
         "Size": {"UDim2": [[1, 0], [1, 0]]},
@@ -26,7 +26,7 @@
       "className": "Frame",
       "properties": {
         "AnchorPoint": [0.5, 0.5],
-        "BackgroundColor3": [0.117647, 0.117647, 0.156863],
+        "BackgroundColor3": [0.066667, 0.121569, 0.231373],
         "BorderSizePixel": 0,
         "Position": {"UDim2": [[0.5, 0], [0.5, 0]]},
         "SelectionBehaviorDown": "Stop",
@@ -56,7 +56,7 @@
           "name": "HeaderBar",
           "className": "Frame",
           "properties": {
-            "BackgroundColor3": [0.141176, 0.141176, 0.188235],
+            "BackgroundColor3": [0.082353, 0.215686, 0.407843],
             "BorderSizePixel": 0,
             "Size": {"UDim2": [[1, 0], [0, 50]]}
           },
@@ -77,7 +77,7 @@
                 "Position": {"UDim2": [[0, 20], [0, 0]]},
                 "Size": {"UDim2": [[1, -110], [1, 0]]},
                 "Text": "💰 SELL",
-                "TextColor3": [1, 1, 1],
+                "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24,
                 "TextXAlignment": "Left"
               }
@@ -88,13 +88,13 @@
               "properties": {
                 "AnchorPoint": [0, 0.5],
                 "AutoButtonColor": false,
-                "BackgroundColor3": [0.862745, 0.313725, 0.313725],
+                "BackgroundColor3": [0.878431, 0.376471, 0.376471],
                 "BorderSizePixel": 0,
                 "Font": "GothamBold",
                 "Position": {"UDim2": [[1, -54], [0.5, 0]]},
                 "Size": {"UDim2": [[0, 44], [0, 44]]},
                 "Text": "X",
-                "TextColor3": [1, 1, 1],
+                "TextColor3": [0.960784, 0.956863, 0.913725],
                 "TextSize": 24
               },
               "children": [
@@ -118,7 +118,7 @@
             "Position": {"UDim2": [[0, 20], [0, 58]]},
             "Size": {"UDim2": [[1, -40], [0, 30]]},
             "Text": "Sell all total: 0 coins",
-            "TextColor3": [0.784314, 0.784314, 0.784314],
+            "TextColor3": [0.72549, 0.788235, 0.87451],
             "TextSize": 20,
             "TextXAlignment": "Left"
           }
@@ -128,12 +128,12 @@
           "className": "ScrollingFrame",
           "properties": {
             "AutomaticCanvasSize": "Y",
-            "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+            "BackgroundColor3": [0.12549, 0.2, 0.301961],
             "BackgroundTransparency": 0.4,
             "BorderSizePixel": 0,
             "CanvasSize": {"UDim2": [[0, 0], [0, 0]]},
             "Position": {"UDim2": [[0, 20], [0, 94]]},
-            "ScrollBarImageColor3": [0.235294, 0.235294, 0.27451],
+            "ScrollBarImageColor3": [0.164706, 0.25098, 0.376471],
             "ScrollBarThickness": 8,
             "Size": {"UDim2": [[1, -40], [1, -160]]}
           },
@@ -168,7 +168,7 @@
               "name": "SellRowTemplate",
               "className": "Frame",
               "properties": {
-                "BackgroundColor3": [0.156863, 0.156863, 0.196078],
+                "BackgroundColor3": [0.12549, 0.2, 0.301961],
                 "BorderSizePixel": 0,
                 "Size": {"UDim2": [[1, -12], [0, 56]]},
                 "Visible": false
@@ -185,7 +185,7 @@
                   "name": "RarityStrip",
                   "className": "Frame",
                   "properties": {
-                    "BackgroundColor3": [0.666667, 0.666667, 0.705882],
+                    "BackgroundColor3": [0.588235, 0.635294, 0.713725],
                     "BorderSizePixel": 0,
                     "Position": {"UDim2": [[0, 6], [0, 6]]},
                     "Size": {"UDim2": [[0, 6], [1, -12]]}
@@ -211,7 +211,7 @@
                         "Font": "GothamBold",
                         "Size": {"UDim2": [[1, 0], [1, 0]]},
                         "Text": "?",
-                        "TextColor3": [0.784314, 0.784314, 0.784314],
+                        "TextColor3": [0.72549, 0.788235, 0.87451],
                         "TextSize": 24
                       }
                     }
@@ -226,7 +226,7 @@
                     "Position": {"UDim2": [[0, 70], [0, 0]]},
                     "Size": {"UDim2": [[0, 170], [1, 0]]},
                     "Text": "Crop",
-                    "TextColor3": [1, 1, 1],
+                    "TextColor3": [0.960784, 0.956863, 0.913725],
                     "TextSize": 18,
                     "TextXAlignment": "Left"
                   }
@@ -240,7 +240,7 @@
                     "Position": {"UDim2": [[0, 246], [0, 0]]},
                     "Size": {"UDim2": [[0, 46], [1, 0]]},
                     "Text": "x0",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18
                   }
                 },
@@ -253,7 +253,7 @@
                     "Position": {"UDim2": [[0, 294], [0, 0]]},
                     "Size": {"UDim2": [[0, 58], [1, 0]]},
                     "Text": "0 ea",
-                    "TextColor3": [0.784314, 0.784314, 0.784314],
+                    "TextColor3": [0.72549, 0.788235, 0.87451],
                     "TextSize": 18,
                     "TextXAlignment": "Left"
                   }
@@ -264,13 +264,13 @@
                   "properties": {
                     "AnchorPoint": [0, 0.5],
                     "AutoButtonColor": false,
-                    "BackgroundColor3": [0.235294, 0.235294, 0.27451],
+                    "BackgroundColor3": [0.164706, 0.25098, 0.376471],
                     "BorderSizePixel": 0,
                     "Font": "GothamBold",
                     "Position": {"UDim2": [[1, -150], [0.5, 0]]},
                     "Size": {"UDim2": [[0, 44], [0, 44]]},
                     "Text": "☆",
-                    "TextColor3": [1, 1, 1],
+                    "TextColor3": [0.960784, 0.956863, 0.913725],
                     "TextSize": 24
                   },
                   "children": [
@@ -289,13 +289,13 @@
                   "properties": {
                     "AnchorPoint": [0, 0.5],
                     "AutoButtonColor": false,
-                    "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+                    "BackgroundColor3": [0.086275, 0.419608, 0.701961],
                     "BorderSizePixel": 0,
                     "Font": "GothamBold",
                     "Position": {"UDim2": [[1, -98], [0.5, 0]]},
                     "Size": {"UDim2": [[0, 90], [0, 44]]},
                     "Text": "Sell",
-                    "TextColor3": [1, 1, 1],
+                    "TextColor3": [0.960784, 0.956863, 0.913725],
                     "TextSize": 20
                   },
                   "children": [
@@ -321,7 +321,7 @@
             "Position": {"UDim2": [[0, 20], [0, 150]]},
             "Size": {"UDim2": [[1, -40], [0, 40]]},
             "Text": "Nothing to sell — harvest some crops first.",
-            "TextColor3": [0.784314, 0.784314, 0.784314],
+            "TextColor3": [0.72549, 0.788235, 0.87451],
             "TextSize": 18,
             "TextWrapped": true,
             "Visible": false
@@ -333,13 +333,13 @@
           "properties": {
             "AnchorPoint": [0, 0],
             "AutoButtonColor": false,
-            "BackgroundColor3": [0.313725, 0.784314, 0.470588],
+            "BackgroundColor3": [0.086275, 0.419608, 0.701961],
             "BorderSizePixel": 0,
             "Font": "GothamBold",
             "Position": {"UDim2": [[0, 20], [1, -56]]},
             "Size": {"UDim2": [[1, -40], [0, 48]]},
             "Text": "SELL ALL",
-            "TextColor3": [1, 1, 1],
+            "TextColor3": [0.960784, 0.956863, 0.913725],
             "TextSize": 22
           },
           "children": [

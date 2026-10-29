@@ -26,6 +26,7 @@ local TweenService = game:GetService("TweenService")
 local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
 local RetentionConfig = require(ReplicatedStorage:WaitForChild("RetentionConfig")) -- feature 003 (US4)
+local GameSettings = require(ReplicatedStorage:WaitForChild("GameSettings")) -- feature 005: phase durations for the HUD countdown
 
 local UIController = {}
 
@@ -67,6 +68,9 @@ if HUD then
         progressBar = barContainer and barContainer:WaitForChild("ProgressBar", 5)
     end
 end
+
+-- Feature 005: phase countdown label (right of the pill).
+local timeLeftLabel = dayNightIndicator and dayNightIndicator:FindFirstChild("TimeLeftLabel")
 
 -- UI open/close state now lives in WindowManager (one window at a time, FR-003).
 
@@ -184,7 +188,7 @@ function UIController.UpdateCurrency(coins, dreamSeeds, animate)
         valueObject.Value = startValue
         
         valueObject.Changed:Connect(function()
-            dreamSeedsLabel.Text = string.format("🌙 Dreams: %d", math.floor(valueObject.Value))
+            dreamSeedsLabel.Text = string.format("💎 Dream Seeds: %d", math.floor(valueObject.Value))
         end)
         
         local tween = TweenService:Create(valueObject, tweenInfo, {Value = endValue})
@@ -200,7 +204,7 @@ function UIController.UpdateCurrency(coins, dreamSeeds, animate)
             valueObject:Destroy()
         end)
     else
-        dreamSeedsLabel.Text = string.format("🌙 Dreams: %d", dreamSeeds)
+        dreamSeedsLabel.Text = string.format("💎 Dream Seeds: %d", dreamSeeds)
     end
     
     lastDreamSeeds = dreamSeeds
@@ -227,29 +231,33 @@ function UIController.UpdateDayNight(phase, progress)
     end
     
     progress = math.clamp(progress, 0, 1)
-    
-    -- Update phase label with appropriate styling
+
+    -- Feature 005: the phase is read from the label text; colours come from the
+    -- theme tokens (ThemeController retints the pill), not per-phase hard-coded RGB.
     if phase == "Day" then
         phaseLabel.Text = "☀️ Day"
-        phaseLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
-        
-        -- Yellow progress bar for day
-        if progressBar:IsA("Frame") then
-            progressBar.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
-        end
     elseif phase == "Night" then
         phaseLabel.Text = "🌙 Night"
-        phaseLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
-        
-        -- Blue progress bar for night
-        if progressBar:IsA("Frame") then
-            progressBar.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-        end
     else
         phaseLabel.Text = "⏳ Transition"
-        phaseLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
     end
-    
+
+    -- Feature 005: countdown to the end of the phase, derived from the shared
+    -- progress and the single-source phase duration (GameSettings). The server
+    -- ticks DayNightUpdate ~once a second, so this refreshes without an
+    -- independent client clock (FR-004).
+    if timeLeftLabel then
+        local duration = (phase == "Day") and GameSettings.DayLengthSec
+            or (phase == "Night") and GameSettings.NightLengthSec
+            or nil
+        if duration then
+            local remaining = math.max(0, math.floor((1 - progress) * duration + 0.5))
+            timeLeftLabel.Text = string.format("%d:%02d", remaining // 60, remaining % 60)
+        else
+            timeLeftLabel.Text = ""
+        end
+    end
+
     -- Animate progress bar
     local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Linear)
     local tween = TweenService:Create(progressBar, tweenInfo, {
@@ -444,34 +452,50 @@ function UIController.Initialize()
         end,
     })
 
-    -- Wire the always-visible menu buttons so touch players can open/switch the
-    -- windows without a keyboard (US1, FR-001/FR-003).
+    -- Feature 005: left column — BAG opens the inventory on touch. QUESTS and GIFTS
+    -- are wired by QuestController / DailyRewardController (they own those windows).
     local menuButtons = HUDControls:WaitForChild("MenuButtons")
-    menuButtons:WaitForChild("ShopButton").Activated:Connect(function()
-        UIController.ToggleShop()
-    end)
     menuButtons:WaitForChild("InventoryButton").Activated:Connect(function()
         UIController.ToggleInventory()
     end)
 
-    -- US6 (FR-013): teleport row (shop / garden / stall). The server validates the
-    -- target and performs the move (RequestTeleport); the buttons only request it.
-    local teleportRow = HUDControls:FindFirstChild("TeleportRow")
-    if teleportRow then
-        task.spawn(function()
-            local RequestTeleport = ReplicatedStorage:WaitForChild("RequestTeleport", 30)
-            if not RequestTeleport then return end
-            local targets = { TeleportShop = "shop", TeleportGarden = "garden", TeleportStall = "stall" }
-            for btnName, targetId in pairs(targets) do
-                local btn = teleportRow:FindFirstChild(btnName)
-                if btn then
-                    btn.Activated:Connect(function()
-                        pcall(function() RequestTeleport:InvokeServer(targetId) end)
-                    end)
-                end
+    -- Feature 005: top-centre primary nav. SEEDS opens the shop; GARDEN and SELL
+    -- request a teleport (server validates and moves the player, RequestTeleport).
+    -- SELL then opens the Sell window so it works from anywhere on the HUD; the
+    -- stall's range-watch keeps it correct once the player arrives.
+    local primaryNav = HUDControls:WaitForChild("PrimaryNav")
+    primaryNav:WaitForChild("SeedsButton").Activated:Connect(function()
+        -- FR-015: open the shop preselecting the Seeds tab (toggle closed if already open).
+        if WindowManager.GetOpen() == "Shop" then
+            WindowManager.Close()
+        else
+            local ok, shop = pcall(require, script.Parent.ShopController)
+            if ok and shop and shop.OpenOnTab then
+                shop.OpenOnTab("seeds")
+            else
+                UIController.ToggleShop()
             end
-        end)
-    end
+        end
+    end)
+    task.spawn(function()
+        local RequestTeleport = ReplicatedStorage:WaitForChild("RequestTeleport", 30)
+        if not RequestTeleport then return end
+        local gardenBtn = primaryNav:FindFirstChild("GardenButton")
+        if gardenBtn then
+            gardenBtn.Activated:Connect(function()
+                pcall(function() RequestTeleport:InvokeServer("garden") end)
+            end)
+        end
+        local sellBtn = primaryNav:FindFirstChild("SellButton")
+        if sellBtn then
+            sellBtn.Activated:Connect(function()
+                task.spawn(function()
+                    local ok = pcall(function() RequestTeleport:InvokeServer("stall") end)
+                    if ok then WindowManager.Open("Sell") end
+                end)
+            end)
+        end
+    end)
 
     -- US2 (FR-004): size and position the menu column and the windows from
     -- ResponsiveLayout so they fit every screen inside the safe area. Recompute
@@ -525,13 +549,14 @@ function UIController.Initialize()
         -- Size both windows (hidden ones too) so they are fitted when opened.
         placeFrame(shopFrame, res.windows.Shop)
         placeFrame(inventoryFrame, res.windows.Inventory)
-        -- Hotbar (US4): position the frame and resize the 3 slots to the mode's
-        -- slot size (64 touch / 100 otherwise), clear of the thumbstick and jump.
+        -- Hotbar: position the frame and resize the five slots (feature 005) to the
+        -- mode's slot size (adaptive on touch / 100 otherwise), clear of the
+        -- thumbstick and jump button.
         hotbarFrame.AnchorPoint = Vector2.new(0, 0)
         hotbarFrame.Position = UDim2.fromOffset(res.hotbar.x, res.hotbar.y)
         hotbarFrame.Size = UDim2.fromOffset(res.hotbar.w, res.hotbar.h)
         local slotSize, gap = res.hotbar.slotSize, res.hotbar.gap
-        for i = 1, 3 do
+        for i = 1, 5 do
             local slot = hotbarFrame:FindFirstChild("Slot" .. i)
             if slot then
                 slot.Size = UDim2.fromOffset(slotSize, slotSize)

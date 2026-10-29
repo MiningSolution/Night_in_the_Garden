@@ -52,19 +52,15 @@ end)
 
 local ShopConfig = ReplicatedStorage:FindFirstChild("ShopConfig") and require(ReplicatedStorage.ShopConfig)
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
+local ItemEmoji = require(ReplicatedStorage:WaitForChild("ItemEmoji")) -- feature 005: single source of item emoji
 
 -- State
-local VISIBLE_SLOTS = 3
+local VISIBLE_SLOTS = 5 -- feature 005: five visible slots; trailing empties show a locked placeholder
 local items = {}        -- ordered list of { serverTool, displayName, emoji }
 local equippedIndex = 1 -- 1-based index into `items`
 local pageStart = 1     -- index of the item shown in Slot1
 
--- Display helpers (real icons arrive in US8; emoji/first-letter fallback for now).
-local EMOJI = {
-    basic_watering_can = "💧", improved_watering_can = "🚿", Harvest = "🧺",
-    carrot_seed = "🥕", wheat_seed = "🌾", tomato_seed = "🍅", pumpkin_seed = "🎃",
-    moonflower_seed = "🌙", starberry_seed = "⭐", dreamroot_seed = "💤",
-}
+-- Display helpers: item emoji comes from the shared ItemEmoji source (feature 005).
 -- Stable seed order for the hotbar list.
 local SEED_ORDER = {
     "carrot_seed", "wheat_seed", "tomato_seed", "pumpkin_seed",
@@ -91,16 +87,17 @@ local function buildItems(inv)
     inv = inv or {}
     local list = {}
     if (inv.basic_watering_can or 0) > 0 then
-        list[#list + 1] = { serverTool = "basic_watering_can", displayName = "Watering Can", emoji = EMOJI.basic_watering_can, icon = iconFor("basic_watering_can") }
+        list[#list + 1] = { serverTool = "basic_watering_can", displayName = "Watering Can", emoji = ItemEmoji.get("basic_watering_can"), icon = iconFor("basic_watering_can") }
     end
     if (inv.improved_watering_can or 0) > 0 then
-        list[#list + 1] = { serverTool = "improved_watering_can", displayName = "Improved Watering Can", emoji = EMOJI.improved_watering_can, icon = iconFor("improved_watering_can") }
+        list[#list + 1] = { serverTool = "improved_watering_can", displayName = "Improved Watering Can", emoji = ItemEmoji.get("improved_watering_can"), icon = iconFor("improved_watering_can") }
     end
     -- Harvest is always available (needs no item).
-    list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = EMOJI.Harvest, icon = "" }
+    list[#list + 1] = { serverTool = "Harvest", displayName = "Harvest", emoji = ItemEmoji.get("Harvest"), icon = "" }
     for _, seedId in ipairs(SEED_ORDER) do
         if (inv[seedId] or 0) > 0 then
-            list[#list + 1] = { serverTool = seedId, displayName = seedDisplayName(seedId), emoji = EMOJI[seedId] or "🌱", icon = iconFor(seedId) }
+            local seedEmoji = ItemEmoji.get(seedId)
+            list[#list + 1] = { serverTool = seedId, displayName = seedDisplayName(seedId), emoji = (seedEmoji ~= "" and seedEmoji) or "🌱", icon = iconFor(seedId) }
         end
     end
     return list
@@ -122,8 +119,10 @@ local function renderSlot(i)
     local item = items[pageStart + i - 1]
     local itemIcon = slot:FindFirstChild("ItemIcon")
     local emojiLabel = itemIcon and itemIcon:FindFirstChild("EmojiLabel")
+    local lockOverlay = slot:FindFirstChild("LockOverlay")
     if item then
         slot.Visible = true
+        if lockOverlay then lockOverlay.Visible = false end
         -- US8: show the real icon when the item has one, else fall back to the emoji.
         if item.icon and item.icon ~= "" then
             if itemIcon then itemIcon.Image = item.icon end
@@ -133,7 +132,9 @@ local function renderSlot(i)
             if emojiLabel then emojiLabel.Text = item.emoji end
         end
     else
-        -- no item for this slot position: blank it
+        -- Feature 005: no tool/seed for this slot yet — show the locked placeholder
+        -- (e.g. the future lantern/net/shovel slots) and blank the icon.
+        if lockOverlay then lockOverlay.Visible = true end
         if emojiLabel then emojiLabel.Text = "" end
         if itemIcon then itemIcon.Image = "rbxassetid://0" end
     end
@@ -200,6 +201,21 @@ function HotbarController.EquipSlot(slotPos)
     ensureVisible()
     render()
     equipCurrent(true)
+end
+
+--[[ Equip a hotbar item by its serverTool id (used by the Backpack Equip action).
+     Returns false (and does nothing) when the item is not on the hotbar. ]]
+function HotbarController.EquipByItemName(name)
+    for idx, item in ipairs(items) do
+        if item.serverTool == name then
+            equippedIndex = idx
+            ensureVisible()
+            render()
+            equipCurrent(true)
+            return true
+        end
+    end
+    return false
 end
 
 --[[ Cycle the equipped item through the whole list (L1/R1). ]]
@@ -302,6 +318,10 @@ local function SetupKeyboardShortcuts()
             HotbarController.EquipSlot(2)
         elseif input.KeyCode == Enum.KeyCode.Three then
             HotbarController.EquipSlot(3)
+        elseif input.KeyCode == Enum.KeyCode.Four then
+            HotbarController.EquipSlot(4)
+        elseif input.KeyCode == Enum.KeyCode.Five then
+            HotbarController.EquipSlot(5)
         end
     end)
 end

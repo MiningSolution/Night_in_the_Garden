@@ -53,6 +53,13 @@ boot(Controllers, "DailyRewardController") -- feature 003: daily login reward (U
 boot(Controllers, "QuestController") -- feature 003: daily quests (US2)
 boot(Controllers, "TutorialController") -- feature 003: first-session onboarding (US5)
 
+-- Feature 004: runtime day/night palette for the static GUI. After the screen
+-- controllers so every ScreenGui exists.
+local ThemeController = boot(Controllers, "ThemeController")
+if ThemeController then
+    ThemeController.Initialize()
+end
+
 -- Feature 001: the shared action layer (keyboard/touch/gamepad). Init after the
 -- controllers so the windows are registered before any action can toggle them.
 local InputActions = boot(Utils, "InputActions")

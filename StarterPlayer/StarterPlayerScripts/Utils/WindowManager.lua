@@ -42,6 +42,8 @@ local function newSignal()
 	}
 end
 
+local GuiEffects = require(script.Parent:WaitForChild("GuiEffects"))
+
 local GuiService = game:GetService("GuiService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -126,6 +128,7 @@ function WindowManager.Open(name)
 
 	openWindow = name
 	spec.gui.Enabled = true
+	GuiEffects.openWindow(spec.frame)
 	if spec.onOpen then
 		local ok, err = pcall(spec.onOpen)
 		if not ok then
