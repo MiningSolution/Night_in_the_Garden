@@ -103,4 +103,77 @@ MessageLabel.TextYAlignment = Enum.TextYAlignment.Center
 MessageLabel.TextWrapped = true
 MessageLabel.Parent = Toast
 
+-- ── Event banners (feature 003, US4) ───────────────────────────────────────────
+-- Brief, non-interactive banners shown by UIController: NightBanner on the Day→Night
+-- edge, AnnounceBanner for a server-wide rare-spirit sighting. Both hidden by default.
+
+local NightBanner = Instance.new("Frame")
+NightBanner.Name = "NightBanner"
+NightBanner.AnchorPoint = Vector2.new(0.5, 0)
+NightBanner.Position = UDim2.new(0.5, 0, 0.16, 0)
+NightBanner.Size = UDim2.new(0.8, 0, 0, 60)
+NightBanner.BackgroundColor3 = Theme.BannerNight
+NightBanner.BackgroundTransparency = 0.05
+NightBanner.BorderSizePixel = 0
+NightBanner.Visible = false
+NightBanner.Parent = Notifications
+
+local nbMax = Instance.new("UISizeConstraint")
+nbMax.MaxSize = Vector2.new(560, 60)
+nbMax.Parent = NightBanner
+
+local nbCorner = Instance.new("UICorner")
+nbCorner.CornerRadius = UDim.new(0, 10)
+nbCorner.Parent = NightBanner
+
+local BannerLabel = Instance.new("TextLabel")
+BannerLabel.Name = "BannerLabel"
+BannerLabel.Size = UDim2.new(1, -24, 1, 0)
+BannerLabel.Position = UDim2.new(0, 12, 0, 0)
+BannerLabel.BackgroundTransparency = 1
+BannerLabel.Text = "🌙 Night falls — spirits awaken"
+BannerLabel.TextColor3 = Theme.TextPrimary
+BannerLabel.TextSize = 24
+BannerLabel.Font = Enum.Font.GothamBold
+BannerLabel.TextScaled = false
+BannerLabel.TextWrapped = true
+BannerLabel.Parent = NightBanner
+
+local AnnounceBanner = Instance.new("Frame")
+AnnounceBanner.Name = "AnnounceBanner"
+AnnounceBanner.AnchorPoint = Vector2.new(0.5, 0)
+AnnounceBanner.Position = UDim2.new(0.5, 0, 0.3, 0)
+AnnounceBanner.Size = UDim2.new(0.72, 0, 0, 48)
+AnnounceBanner.BackgroundColor3 = Theme.Surface
+AnnounceBanner.BackgroundTransparency = 0.05
+AnnounceBanner.BorderSizePixel = 0
+AnnounceBanner.Visible = false
+AnnounceBanner.Parent = Notifications
+
+local abMax = Instance.new("UISizeConstraint")
+abMax.MaxSize = Vector2.new(520, 48)
+abMax.Parent = AnnounceBanner
+
+local abCorner = Instance.new("UICorner")
+abCorner.CornerRadius = UDim.new(0, 10)
+abCorner.Parent = AnnounceBanner
+
+-- rarity accent stroke (reuses the Epic rarity token)
+local abStroke = Instance.new("UIStroke")
+abStroke.Color = Theme.RarityEpic
+abStroke.Thickness = 2
+abStroke.Parent = AnnounceBanner
+
+local AnnounceLabel = Instance.new("TextLabel")
+AnnounceLabel.Name = "AnnounceLabel"
+AnnounceLabel.Size = UDim2.new(1, -24, 1, 0)
+AnnounceLabel.Position = UDim2.new(0, 12, 0, 0)
+AnnounceLabel.BackgroundTransparency = 1
+AnnounceLabel.Text = "✨ A rare spirit has appeared!"
+AnnounceLabel.TextColor3 = Theme.TextPrimary
+AnnounceLabel.TextSize = 20
+AnnounceLabel.Font = Enum.Font.GothamBold
+AnnounceLabel.TextWrapped = true
+AnnounceLabel.Parent = AnnounceBanner
+
 print("✅ Notifications created successfully!")

@@ -25,6 +25,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local StateManager = require(script.Parent.Parent.Utils:WaitForChild("StateManager"))
 local Theme = require(ReplicatedStorage:WaitForChild("UITheme"))
+local RetentionConfig = require(ReplicatedStorage:WaitForChild("RetentionConfig")) -- feature 003 (US4)
 
 local UIController = {}
 
@@ -72,6 +73,45 @@ end
 -- Cache for smooth animations
 local lastCoins = 0
 local lastDreamSeeds = 0
+
+-- Feature 003 (US4): event banners in the Notifications layer. Shown briefly and
+-- non-blocking; the announcement is rate-limited so rapid rare spawns stay readable.
+local lastPhase = nil
+local nightBannerToken = 0
+local announceToken = 0
+local lastAnnounceAt = -math.huge
+
+local function getBanner(name)
+    local notifs = playerGui:FindFirstChild("Notifications")
+    return notifs and notifs:FindFirstChild(name)
+end
+
+local function showNightBanner()
+    local nb = getBanner("NightBanner")
+    if not nb then return end
+    nightBannerToken += 1
+    local myToken = nightBannerToken
+    nb.Visible = true
+    task.delay(RetentionConfig.NightBannerSeconds or 2.5, function()
+        if myToken == nightBannerToken then nb.Visible = false end
+    end)
+end
+
+local function showAnnounce(text)
+    local now = os.clock()
+    if now - lastAnnounceAt < (RetentionConfig.AnnounceDedupeSec or 5) then return end
+    lastAnnounceAt = now
+    local ab = getBanner("AnnounceBanner")
+    if not ab then return end
+    local label = ab:FindFirstChild("AnnounceLabel")
+    if label and text then label.Text = text end
+    announceToken += 1
+    local myToken = announceToken
+    ab.Visible = true
+    task.delay(3, function()
+        if myToken == announceToken then ab.Visible = false end
+    end)
+end
 
 --[[
     Update currency display with optional animation
@@ -173,6 +213,14 @@ end
     @param progress (number) - Progress through current phase (0 to 1)
 ]]
 function UIController.UpdateDayNight(phase, progress)
+    -- Feature 003 (US4): nightfall banner on the Day→Night edge only (R8).
+    if phase == "Night" and lastPhase == "Day" then
+        showNightBanner()
+    end
+    if phase == "Day" or phase == "Night" then
+        lastPhase = phase
+    end
+
     if not phaseLabel or not progressBar then
         warn("⚠️ Day/Night indicator not found in HUD")
         return
@@ -503,6 +551,19 @@ function UIController.Initialize()
     -- US3 (FR-009): no game action depends on Esc — it belongs to the Roblox
     -- menu. Windows close via X, the dim backdrop, or gamepad B (bound by
     -- InputActions while a window is open).
+
+    -- Feature 003 (US4): server-wide announcements (rare spirit). Rate-limited in
+    -- showAnnounce so repeated spawns don't spam the screen (FR-010).
+    task.spawn(function()
+        local ServerAnnounce = ReplicatedStorage:WaitForChild("ServerAnnounce", 30)
+        if ServerAnnounce then
+            ServerAnnounce.OnClientEvent:Connect(function(kind, name, rarity)
+                if kind == "rare_spirit" then
+                    showAnnounce("✨ A " .. tostring(rarity or "rare") .. " spirit appeared: " .. tostring(name or "Spirit") .. "!")
+                end
+            end)
+        end
+    end)
 
     -- Set initial currency values from StateManager
     local coins = StateManager.getCurrency("Coins") or 0

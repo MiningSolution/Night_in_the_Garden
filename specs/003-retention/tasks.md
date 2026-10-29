@@ -127,12 +127,12 @@ when a Rare/Epic spirit appears.
 **Independent Test**: watch a Day→Night→Day cycle (one banner at nightfall, none at sunrise) and force
 a Rare/Epic spawn to see the announcement (quickstart V9/V10).
 
-- [ ] T034 [US4] `ServerScriptService/CreateRemotes.lua`: add `ServerAnnounce` (RemoteEvent, FireAllClients)
-- [ ] T035 [US4] `ServerScriptService/Services/Spirit/SpiritSpawner.lua`: when a spawned spirit's `rarity` is in `RetentionConfig.AnnounceRarities` (Rare/Epic), fire `ServerAnnounce("rare_spirit", displayName, rarity)` to all clients (R9)
-- [ ] T036 [P] [US4] `Tools/StaticGui/builders/CreateNotifications.luau`: add hidden `NightBanner` (full-width, `BannerLabel`) and `AnnounceBanner`/`AnnounceLabel` to the `Notifications` ScreenGui (tokens incl. any new banner accent in `UITheme`; safe area; non-interactive)
-- [ ] T037 [US4] Regenerate models and confirm only `Notifications.model.json` (+ `UITheme` if a token was added) changed
-- [ ] T038 [US4] `StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`: on `DayNightUpdate`, track the last phase and show `NightBanner` for `NightBannerSeconds` only on the Day→Night edge (clear itself; non-blocking); on `ServerAnnounce`, show `AnnounceBanner` rate-limited by `AnnounceDedupeSec` (R8/R9)
-- [ ] T039 [US4] Studio playtest V9+V10 (phone/PC): exactly one banner per nightfall, none at sunrise; Rare/Epic spawn announces, Common does not, bursts collapse readably; Output clean
+- [x] T034 [US4] `ServerScriptService/CreateRemotes.lua`: add `ServerAnnounce` (RemoteEvent, FireAllClients)
+- [x] T035 [US4] `ServerScriptService/Services/Spirit/SpiritSpawner.lua`: when a spawned spirit's `rarity` is in `RetentionConfig.AnnounceRarities` (Rare/Epic), fire `ServerAnnounce("rare_spirit", displayName, rarity)` to all clients (R9)
+- [x] T036 [P] [US4] `Tools/StaticGui/builders/CreateNotifications.luau`: add hidden `NightBanner` (full-width, `BannerLabel`) and `AnnounceBanner`/`AnnounceLabel` to the `Notifications` ScreenGui (tokens incl. any new banner accent in `UITheme`; safe area; non-interactive)
+- [x] T037 [US4] Regenerate models and confirm only `Notifications.model.json` (+ `UITheme` if a token was added) changed
+- [x] T038 [US4] `StarterPlayer/StarterPlayerScripts/Controllers/UIController.lua`: on `DayNightUpdate`, track the last phase and show `NightBanner` for `NightBannerSeconds` only on the Day→Night edge (clear itself; non-blocking); on `ServerAnnounce`, show `AnnounceBanner` rate-limited by `AnnounceDedupeSec` (R8/R9)
+- [x] T039 [US4] Studio playtest V9+V10 (phone/PC): exactly one banner per nightfall, none at sunrise; Rare/Epic spawn announces, Common does not, bursts collapse readably; Output clean
 
 **Checkpoint**: night event functional and independently testable.
 
