@@ -4,8 +4,10 @@
 -- compatible with existing saves (constitution II: reconcile, never drop).
 -- SchemaVersion 2 (feature 002): adds Favourites, per-plot GrowthSeconds, and
 -- inventory keys for the night plants / Dreamroot / items.
+-- SchemaVersion 3 (feature 003): adds DailyReward, Quests and Onboarding for the
+-- retention loop. All additive; reconcile fills them into existing profiles.
 return {
-    SchemaVersion = 2,
+    SchemaVersion = 3,
     Currency = { Coins = 50, DreamSeeds = 0 },
     Inventory = {
         -- seeds
@@ -21,6 +23,15 @@ return {
     },
     -- Per-player set of itemIds excluded from "Sell all" (FR-004). itemId -> true.
     Favourites = {},
+    -- Daily login reward streak (feature 003, FR-001). StreakDay 0 = never claimed;
+    -- LastClaimDay is a UTC day index (os.time()//86400); 0 = never.
+    DailyReward = { StreakDay = 0, LastClaimDay = 0 },
+    -- Daily quests (feature 003, FR-003/004). Day = the UTC day index the set/progress
+    -- belong to (0 = no set yet); Progress[questId] = count; Claimed[questId] = true.
+    Quests = { Day = 0, Progress = {}, Claimed = {} },
+    -- First-session onboarding (feature 003, FR-011). Done is write-once-true; Step is
+    -- the active step (0 = not started, 1..4 while running).
+    Onboarding = { Done = false, Step = 0 },
     Plots = {
         Plot1 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },
         Plot2 = { State="Empty", PlantId=nil, PlantedAt=0, LastWatered=0, GrowthProgress=0, GrowthSeconds=0, IsWatered=false },

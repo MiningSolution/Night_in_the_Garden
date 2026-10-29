@@ -223,6 +223,50 @@ function M.ToggleFavourite(p, itemId)
     end
 end
 
+-- ── Retention state (feature 003) ─────────────────────────────────────────────
+-- All reconciled from DefaultData (schema 3); these accessors are defensive so a
+-- profile mid-reconcile still returns a sane shape (never nil sub-tables).
+
+-- Daily reward: { StreakDay, LastClaimDay }. Server-owned (constitution I).
+function M.GetDailyReward(p)
+    local d = M.Get(p); if not d then return nil end
+    d.DailyReward = d.DailyReward or { StreakDay = 0, LastClaimDay = 0 }
+    return d.DailyReward
+end
+
+function M.SetDailyReward(p, streakDay, lastClaimDay)
+    local dr = M.GetDailyReward(p); if not dr then return end
+    dr.StreakDay = math.max(0, math.floor(tonumber(streakDay) or 0))
+    dr.LastClaimDay = math.max(0, math.floor(tonumber(lastClaimDay) or 0))
+end
+
+-- Daily quests: { Day, Progress = {questId=count}, Claimed = {questId=true} }.
+function M.GetQuestState(p)
+    local d = M.Get(p); if not d then return nil end
+    d.Quests = d.Quests or { Day = 0, Progress = {}, Claimed = {} }
+    d.Quests.Progress = d.Quests.Progress or {}
+    d.Quests.Claimed = d.Quests.Claimed or {}
+    return d.Quests
+end
+
+-- Onboarding: { Done, Step }.
+function M.GetOnboarding(p)
+    local d = M.Get(p); if not d then return nil end
+    d.Onboarding = d.Onboarding or { Done = false, Step = 0 }
+    return d.Onboarding
+end
+
+function M.SetOnboardingStep(p, step)
+    local o = M.GetOnboarding(p); if not o then return end
+    o.Step = math.max(0, math.floor(tonumber(step) or 0))
+end
+
+-- Write-once-true completion flag (FR-011).
+function M.SetOnboardingDone(p)
+    local o = M.GetOnboarding(p); if not o then return end
+    o.Done = true
+end
+
 game:BindToClose(function()
     task.wait(3)
 end)
