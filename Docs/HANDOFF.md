@@ -1,6 +1,6 @@
 # Handoff — 2026-10-29
 
-State at the end of Phase 3 (retention). Owner: Ruslan.
+State after Feature 005 (cosy-garden UI redesign, Stage 1) merged. Owner: Ruslan.
 
 ## Where we are
 
@@ -11,8 +11,11 @@ State at the end of Phase 3 (retention). Owner: Ruslan.
 | Phase 1 — mobile UI access (`001-mobile-ui-access`) | Merged to `main` (PR #6) |
 | Phase 2 — buy–sell economy (`002-buy-sell-economy`) | Merged to `main` (PR #7) |
 | CI workflow (Luau tests + static GUI parity) | On `main` (PR #8) |
-| Phase 3 — retention (`003-retention`) | **PR open to `main`** (owner reviews/merges) |
-| Phase 4 — day/night palette switching | **Next** |
+| Phase 3 — retention (`003-retention`) | Merged to `main` (PR #9) |
+| Phase 4 — visual style / day–night theme engine (`004-visual-style`) | Merged to `main` |
+| Feature 005 — cosy-garden UI redesign, Stage 1 (`005-ui-redesign`) | Merged to `main` (PR #10) |
+| FR-007 — contextual day Harvest hint (closes 005 gap G1) | Merged to `main` (PR #11) |
+| Next | No feature in flight — see "What's next" below |
 
 ## Phase 3 summary (what shipped on `003-retention`)
 
@@ -68,14 +71,58 @@ account, or clear that field to see it again).
 - `execute_luau` via the MCP runs in a separate VM from the running game, so required singletons
   (e.g. `PlayerDataManager.Profiles`) are not shared; drive the real server through RemoteFunctions
   from the client datamodel instead.
-- Synthetic MCP clicks do NOT fire `GuiButton.Activated`; verify button wiring through remotes/direct
-  calls, or leave the click to the owner's pass.
+- Synthetic MCP input now exercises real wiring: `user_mouse_input` on a button's `instance_path`
+  fires `GuiButton.Activated`, and `user_keyboard_input` reaches `UserInputService` handlers (both
+  verified end-to-end in the Feature 005 FR-007 pass — a clicked hint and the F key each harvested).
+- `DayNightManager.currentPhase` IS shared by `execute_luau` in the Server datamodel (setting it made
+  the 1 Hz broadcaster emit the new phase), unlike client PlayerScripts singletons; still prefer
+  remotes for player-scoped state (`PlayerDataManager.Snapshot` returned nil from a fresh require).
 - Static GUI generator needs the Luau CLI; `python3 Tools/StaticGui/build_models.py "$(command -v luau)"`.
 - CI (`.github/workflows/ci.yml`) runs the offline Luau specs + static GUI parity on PRs to `main`.
 
-## Next: Phase 4 (visual style)
+## Phase 4 summary (shipped on `004-visual-style`, merged)
 
-Day/night palette switching per constitution principle V: a light palette for day, the current dark
-palette for night, switched on the `DayNightUpdate` phase change. Mock the key screens in both
-palettes first, migrate remaining hard-coded colours to `UITheme` tokens, add press/purchase sounds
-and window-open animations.
+Day/night palette switching per constitution principle V. `ReplicatedStorage/UITheme.lua` holds two
+palettes (Day "cosy garden" / Night "moonlit") plus structural style tokens; the static GUI builders
+bake the Night colours and tag each themed property with a `Theme_<Prop> = "<Token>"` attribute.
+`Controllers/ThemeController.lua` repaints every tagged instance on the `DayNightUpdate` phase change
+(tweened), with no model regeneration. `theme.spec.luau` enforces token parity across both palettes.
+
+## Feature 005 summary (shipped on `005-ui-redesign`, PR #10 + PR #11, merged)
+
+Cosy-garden UI redesign, **Stage 1** — the HUD, Seed Shop and Backpack rebuilt on the theme engine,
+all server-authoritative with no new remotes (contracts/reused-remotes.md).
+
+1. **HUD (US1)** — top-centre SEEDS / GARDEN / SELL nav, left BAG / QUESTS / GIFTS column, top-right
+   day/night pill with countdown, single current-quest card, bottom-centre five-slot tool strip
+   (slots 3–5 are locked "coming soon" placeholders this stage).
+2. **Seed Shop (US2)** — large image cards with rarity badges, ×1/×5/×10 quantity + Buy, three
+   Seeds/Tools/Special tabs; opening via SEEDS preselects Seeds.
+3. **Backpack (US3)** — multi-column rarity-badged card grid, detail panel with a context action,
+   working Equip (`HotbarController.EquipByItemName`), five tabs incl. a Spirits placeholder.
+4. **Item icons (US4)** — shared emoji/icon source (`ReplicatedStorage/ItemEmoji.lua`) across shop,
+   backpack and hotbar with a letter/emoji fallback.
+5. **FR-007 — day Harvest hint (PR #11, closes gap G1)** — `HUD.HarvestHint` (static GUI, themed,
+   hidden by default) + `Controllers/HarvestHintController.lua`. By day, near a ready plot, a themed
+   hint appears bottom-centre; an on-screen **tap** (primary) or the **F** key harvests the nearest
+   ready plot via the existing `InteractWithPlot` path. Hidden at night, out of range, or with a
+   window open. (F, not E, so it never clashes with the seller stall's E ProximityPrompt.)
+
+Studio-verified (MCP) in Day and Night, both palettes: hint show/tap-harvest/hide, proximity
+re-show, night hide, F harvest next to the stall. No new Output errors.
+
+## Deferred to a later stage (NOT in Feature 005, per the spec's "Out of Scope")
+
+- Real **lantern / net / shovel** tools behind hotbar slots 3–5 (now locked placeholders).
+- Per-player **spirit collection** data, the Spirits tab's real contents, and a **Spirit Journal** screen.
+- New **Moonmoth / Moth-Spirit** creatures; the night **"X appeared!"** capture announcement + a
+  **Capture** net action (capture stays the existing proximity interaction).
+- Full redesign of the **Sell / Notifications / Daily-Gift / Quests** windows (only re-tinted by the
+  theme engine so far).
+
+## What's next
+
+No feature is in flight. The redesign's later stages (the deferred items above) each need new
+server-side systems and owner approval before build. The remaining open item on Stage 1 is the
+owner's **device-emulator visual pass** (phone-landscape + gamepad sweep of every new element — the
+MCP can't drive it), see `specs/005-ui-redesign/quickstart.md`.
