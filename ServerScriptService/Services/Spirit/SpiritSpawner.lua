@@ -84,8 +84,32 @@ local function isLantern(p)
     return ok and equipped == "lantern"
 end
 
+-- Garden World Kit: the moonlit grove is where spirits gather by default. Returns the
+-- SpiritSpawn marker position when the kit map is present, else nil.
+local function groveAnchor()
+    local map = workspace:FindFirstChild("NITG_GardenWorld")
+    local markers = map and map:FindFirstChild("Markers")
+    local m = markers and markers:FindFirstChild("SpiritSpawn")
+    if m and m:IsA("BasePart") then return m.Position end
+    return nil
+end
+
 local function chooseAnchor()
     local list = Players:GetPlayers()
+
+    -- With a lantern out, keep the lantern-biased pull to a player (below). Without one,
+    -- spirits gather at the grove (fixed anchor) when the kit map is present.
+    local hasLantern = false
+    for _, p in ipairs(list) do
+        if isLantern(p) then hasLantern = true break end
+    end
+    if not hasLantern then
+        local grove = groveAnchor()
+        if grove then
+            return grove, Config.SpawnRadius
+        end
+    end
+
     if #list == 0 then
         return Vector3.new(0, 5, 0), Config.SpawnRadius
     end
