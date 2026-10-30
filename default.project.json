@@ -2,6 +2,12 @@
   "name": "NightInTheGarden",
   "tree": {
     "$className": "DataModel",
+    "Workspace": {
+      "$className": "Workspace",
+      "NITG_GardenWorld": {
+        "$path": "Workspace/NITG_GardenWorld.rbxmx"
+      }
+    },
     "ReplicatedStorage": {
       "$path": "ReplicatedStorage"
     },
