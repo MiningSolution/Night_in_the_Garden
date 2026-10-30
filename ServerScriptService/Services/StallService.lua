@@ -13,8 +13,19 @@ local Workspace = game:GetService("Workspace")
 local M = {}
 
 local STALL_NAME = "SellStall"
-local STALL_POSITION = Vector3.new(12, 2.5, 0) -- near spawn; adjust in Studio to taste
+local STALL_POSITION = Vector3.new(12, 2.5, 0) -- fallback (no kit map); adjust in Studio to taste
 local ACTIVATION_DISTANCE = 12 -- studs (SellController watches a slightly larger range)
+
+-- Garden World Kit: when the map is present, the SELL building provides the visuals,
+-- so the stall becomes an invisible anchor (+ the Sell prompt) at the SellTeleport marker
+-- in front of the counter. Without the kit we spawn the standalone wooden stall as before.
+local function kitSellAnchor()
+    local map = Workspace:FindFirstChild("NITG_GardenWorld")
+    local markers = map and map:FindFirstChild("Markers")
+    local m = markers and markers:FindFirstChild("SellTeleport")
+    if m and m:IsA("BasePart") then return m.Position end
+    return nil
+end
 
 function M.Start()
     if Workspace:FindFirstChild(STALL_NAME) then
@@ -24,27 +35,40 @@ function M.Start()
     local model = Instance.new("Model")
     model.Name = STALL_NAME
 
+    local kitAnchor = kitSellAnchor()
+
     local part = Instance.new("Part")
     part.Name = "StallBase"
-    part.Size = Vector3.new(6, 5, 2)
-    part.Position = STALL_POSITION
     part.Anchored = true
-    part.CanCollide = true
-    part.Color = Color3.fromRGB(120, 85, 55)
-    part.Material = Enum.Material.WoodPlanks
+    if kitAnchor then
+        -- Invisible interaction anchor at the kit's SELL counter; building is the visual.
+        part.Size = Vector3.new(4, 4, 4)
+        part.Position = kitAnchor + Vector3.new(0, 2, 0)
+        part.Transparency = 1
+        part.CanCollide = false
+        part.CanQuery = false
+    else
+        part.Size = Vector3.new(6, 5, 2)
+        part.Position = STALL_POSITION
+        part.CanCollide = true
+        part.Color = Color3.fromRGB(120, 85, 55)
+        part.Material = Enum.Material.WoodPlanks
+    end
     part.Parent = model
     model.PrimaryPart = part
 
-    -- A simple sign so the stall reads as a seller's stall.
-    local sign = Instance.new("Part")
-    sign.Name = "Sign"
-    sign.Size = Vector3.new(6, 1.4, 0.4)
-    sign.Position = STALL_POSITION + Vector3.new(0, 3.2, 0)
-    sign.Anchored = true
-    sign.CanCollide = false
-    sign.Color = Color3.fromRGB(90, 60, 40)
-    sign.Material = Enum.Material.WoodPlanks
-    sign.Parent = model
+    if not kitAnchor then
+        -- A simple sign so the standalone stall reads as a seller's stall.
+        local sign = Instance.new("Part")
+        sign.Name = "Sign"
+        sign.Size = Vector3.new(6, 1.4, 0.4)
+        sign.Position = STALL_POSITION + Vector3.new(0, 3.2, 0)
+        sign.Anchored = true
+        sign.CanCollide = false
+        sign.Color = Color3.fromRGB(90, 60, 40)
+        sign.Material = Enum.Material.WoodPlanks
+        sign.Parent = model
+    end
 
     local gui = Instance.new("BillboardGui")
     gui.Name = "SignLabel"
@@ -76,7 +100,7 @@ function M.Start()
     prompt.Parent = part
 
     model.Parent = Workspace
-    print("[StallService] Seller stall spawned at", STALL_POSITION)
+    print("[StallService] Seller stall spawned at", part.Position, kitAnchor and "(kit SELL counter)" or "(standalone)")
     return model
 end
 

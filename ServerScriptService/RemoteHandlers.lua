@@ -356,15 +356,32 @@ end
 local Workspace = game:GetService("Workspace")
 local TELEPORT_TARGETS = { shop = true, garden = true, stall = true }
 
+-- Garden World Kit: resolve quick-travel to the map's invisible markers when present,
+-- so GARDEN/SELL/SEEDS land at the real buildings. Falls back to the pre-kit targets
+-- when the map (or a marker) is absent, so teleport still works and fails closed.
+local function kitMarker(name)
+    local map = Workspace:FindFirstChild("NITG_GardenWorld")
+    local markers = map and map:FindFirstChild("Markers")
+    local m = markers and markers:FindFirstChild(name)
+    if m and m:IsA("BasePart") then return m.Position + Vector3.new(0, 3, 0) end
+    return nil
+end
+
 local function resolveTargetPosition(targetId)
     if targetId == "stall" then
+        local m = kitMarker("SellTeleport")
+        if m then return m end
         local stall = Workspace:FindFirstChild("SellStall")
         local base = stall and (stall.PrimaryPart or stall:FindFirstChildWhichIsA("BasePart"))
         if base then return base.Position + Vector3.new(0, 5, 8) end
     elseif targetId == "garden" then
+        local m = kitMarker("GardenTeleport")
+        if m then return m end
         local plot = Workspace:FindFirstChild("Plot1")
         if plot then return plot:GetPivot().Position + Vector3.new(0, 5, 6) end
     elseif targetId == "shop" then
+        local m = kitMarker("SeedsTeleport")
+        if m then return m end
         -- no dedicated shop building in the test place; a fixed point near spawn
         return Vector3.new(-18, 6, 0)
     end
